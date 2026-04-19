@@ -29,6 +29,7 @@ spring:
             user-name-attribute: default_email
 server:
   port: 9500
+  forward-headers-strategy: native
 springdoc:
   api-docs:
     path: /api-docs
