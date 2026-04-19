@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/png" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — Schoodule</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+    <style>
+        .btn-yandex {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .625rem;
+            width: 100%;
+            padding: .5625rem 1rem;
+            font-size: .875rem;
+            font-weight: 600;
+            font-family: 'DM Sans', system-ui, sans-serif;
+            color: #fff;
+            background: #fc3f1d;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: background var(--ease), transform .15s;
+            letter-spacing: .01em;
+            box-sizing: border-box;
+        }
+
+        .btn-yandex:hover  { background: #e0381a; }
+        .btn-yandex:active { transform: scale(.98); }
+
+        .btn-yandex svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="page-container">
+    <div class="login-card">
+        <div class="card-header">
+            <div class="logo-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8"  y1="2" x2="8"  y2="6"/>
+                    <line x1="3"  y1="10" x2="21" y2="10"/>
+                </svg>
+            </div>
+            <div class="card-title">Schoodule</div>
+            <div class="card-desc">Платформа управления школьными расписаниями</div>
+        </div>
+
+        <a href="/oauth2/authorization/yandex" class="btn-yandex">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#fff">
+                <path d="M13.527 3H10.91C8.17 3 6.36 4.388 6.36 7.118c0 2.373 1.11 3.668 3.193
+                4.928L6 21h3.144l3.38-8.64h1.003V21H16.5V3h-2.973zm0 7.13h-1.1c-1.559
+                0-2.358-.823-2.358-2.24 0-1.457.8-2.16 2.358-2.16h1.1v4.4z"/>
+            </svg>
+            Войти через Яндекс
+        </a>
+
+        <div th:if="${param.error != null and param.error[0] == 'oauth_no_email'}"
+             class="alert error">
+            Яндекс не передал email. Попробуйте войти по логину.
+        </div>
+
+        <div class="divider"><span>или</span></div>
+
+        <form th:action="@{/login}" method="post" class="login-form">
+            <div class="field">
+                <label for="username">Логин</label>
+                <input type="text" id="username" name="username"
+                       placeholder="Введите логин" required autofocus />
+            </div>
+            <div class="field">
+                <label for="password">Пароль</label>
+                <div class="input-wrap">
+                    <input type="password" id="password" name="password"
+                           placeholder="••••••••" required />
+                    <button type="button" class="eye-btn" aria-label="Показать пароль" data-target="password">
+                        <svg class="eye-icon eye-off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                        <svg class="eye-icon eye-on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                             style="display:none">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <button type="submit" class="btn-submit">Войти</button>
+        </form>
+
+        <div th:if="${param.error != null and param.error[0] == 'bad_credentials'}"
+             class="alert error">
+            Неверный логин или пароль
+        </div>
+        <div th:if="${param.error != null and param.error[0] == 'user_not_found'}"
+             class="alert error">
+            Пользователь не найден
+        </div>
+        <div th:if="${param.logout}" class="alert success">
+            Вы вышли из системы
+        </div>
+        <div th:if="${param.registered}" class="alert success">
+            Регистрация успешна! Войдите в систему.
+        </div>
+
+        <div class="divider"><span>или</span></div>
+        <div class="register-link">
+            Нет аккаунта? <a href="/users/register">Зарегистрироваться</a>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script th:src="@{/js/authentication.js}"></script>
+</body>
+</html>

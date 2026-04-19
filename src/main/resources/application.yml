@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: schoodule
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL:${db.url:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}}}
+    username: ${DB_USERNAME:${db.username:postgres}}
+    password: ${DB_PASSWORD:${db.password:postgres}}
+  liquibase:
+    enabled: true
+    change-log: classpath:changelog/changelog.xml
+  security:
+    oauth2:
+      client:
+        registration:
+          yandex:
+            client-id: ${YA_ID:${ya-id:}}
+            client-secret: ${YA_SECRET:${ya-secret:}}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/yandex"
+            scope:
+              - login:email
+              - login:info
+        provider:
+          yandex:
+            authorization-uri: https://oauth.yandex.ru/authorize
+            token-uri: https://oauth.yandex.ru/token
+            user-info-uri: https://login.yandex.ru/info?format=json
+            user-name-attribute: default_email
+server:
+  port: 9500
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+app:
+  bootstrap-admin:
+    enabled: ${BOOTSTRAP_ADMIN_ENABLED:false}
+    username: ${BOOTSTRAP_ADMIN_USERNAME:}
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}

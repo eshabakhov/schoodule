@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — Schoodule</title>
+    <link rel="stylesheet" th:href="@{/css/shadcn.css}">
+    <link rel="icon" type="image/png" href="/favicon.svg">
+    <style>
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        .error-page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+        .error-footer { display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; height: 44px; flex-shrink: 0; border-top: 1px solid var(--border); }
+        .error-footer-logo { font-size: .8125rem; font-weight: 600; letter-spacing: -.02em; color: var(--fg); }
+        .error-footer-copy { font-size: .75rem; color: var(--muted-fg); }
+    </style>
+</head>
+<body>
+<div class="error-page">
+    <div class="error-card">
+        <span class="error-code">404</span>
+        <h1 class="error-title">Страница не найдена</h1>
+        <p class="error-desc">Такой страницы не существует или она была удалена.</p>
+        <a href="javascript:history.back()" class="btn btn-outline-custom">Назад</a>
+    </div>
+</div>
+<footer class="error-footer">
+    <span class="error-footer-logo">Schoodule</span>
+    <span class="error-footer-copy">© 2026</span>
+</footer>
+</body>
+</html>

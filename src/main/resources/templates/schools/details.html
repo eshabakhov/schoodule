@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      layout:decorate="~{base}">
+<head>
+    <title th:text="${pageTitle}">Информация о школе</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="page-title-row" style="margin-bottom:1.5rem;">
+        <div>
+            <h1 th:text="${school.name()}">Название школы</h1>
+            <p class="page-subtitle">Информация о школе</p>
+        </div>
+    </div>
+    <div class="school-info">
+        <div class="info-row">
+            <span class="info-label">ID:</span>
+            <span class="info-value" th:text="${school.uid()}">1</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Название:</span>
+            <span class="info-value" th:text="${school.name()}">Школа</span>
+        </div>
+    </div>
+    <div class="actions" sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/schools/{id}/edit(id=${school.uid()})}" class="btn-outline-action" title="Редактировать">
+            Редактировать
+        </a>
+        <button class="btn-outline-action btn-delete-row"
+            th:data-id="${school.uid()}" th:data-name="${school.name()}"
+            title="Удалить"
+            style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;">
+            Удалить
+        </button>
+    </div>
+    <div id="edit-school" class="modal" sec:authorize="hasRole('ADMIN')">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Редактировать школу</h2>
+            <form id="edit-school-form">
+                <label>
+                    Название
+                    <input type="text"
+                           name="name"
+                           th:value="${school.name()}"
+                           required />
+                </label>
+                <button type="submit" id="submit-update">Обновить</button>
+            </form>
+        </div>
+    </div>
+</div>
+<th:block layout:fragment="page-scripts">
+    <script type="module" th:src="@{/js/school-details.js}" sec:authorize="hasRole('ADMIN')"></script>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+    <changeSet id="schoodule-tables/v1/01-06-2025/1" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.school(
+                id bigserial PRIMARY KEY,
+                name varchar NOT NULL,
+                is_deleted boolean DEFAULT FALSE
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-tables/v1/01-06-2025/4" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.schedule(
+                id bigserial PRIMARY KEY,
+                school_id bigint NOT NULL,
+                name varchar NOT NULL,
+                is_deleted boolean DEFAULT FALSE,
+                CONSTRAINT fk_school_schedule_id
+                    FOREIGN KEY (school_id)
+                        REFERENCES public.school(id)
+                        ON DELETE RESTRICT
+                        ON UPDATE CASCADE
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-tables/v1/01-06-2025/5" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.cabinet(
+               id bigserial PRIMARY KEY,
+               school_id bigint NOT NULL,
+               name varchar NOT NULL,
+               is_deleted boolean NOT NULL DEFAULT FALSE,
+               CONSTRAINT fk_school_cabinet_id
+                   FOREIGN KEY (school_id)
+                       REFERENCES public.school(id)
+                       ON DELETE RESTRICT
+                       ON UPDATE CASCADE
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-tables/v1/01-06-2025/6" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.teacher(
+               id bigserial PRIMARY KEY,
+               school_id bigint NOT NULL,
+               name varchar NOT NULL,
+               is_deleted boolean DEFAULT FALSE,
+               CONSTRAINT fk_school_teacher_id
+                   FOREIGN KEY (school_id)
+                       REFERENCES public.school(id)
+                       ON DELETE RESTRICT
+                       ON UPDATE CASCADE
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-tables/v1/01-06-2025/7" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.subject(
+               id bigserial PRIMARY KEY,
+               school_id bigint NOT NULL,
+               name varchar NOT NULL,
+               is_deleted boolean DEFAULT FALSE,
+               CONSTRAINT fk_school_subject_id
+                   FOREIGN KEY (school_id)
+                       REFERENCES public.school(id)
+                       ON DELETE RESTRICT
+                       ON UPDATE CASCADE
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-tables/v1/01-06-2025/8" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.school_class(
+                id bigserial PRIMARY KEY,
+                school_id bigint NOT NULL,
+                name varchar NOT NULL,
+                is_deleted boolean DEFAULT FALSE,
+                CONSTRAINT fk_school_school_class_id
+                    FOREIGN KEY (school_id)
+                        REFERENCES public.school(id)
+                        ON DELETE RESTRICT
+                        ON UPDATE CASCADE
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-tables/v1/02-02-2025/1" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.user(
+                id bigserial PRIMARY KEY,
+                username varchar(100) NOT NULL UNIQUE,
+                password varchar(255) NOT NULL,
+                email varchar(255) NOT NULL UNIQUE,
+                created_at timestamptz NOT NULL DEFAULT NOW(),
+                corporate boolean NOT NULL DEFAULT FALSE,
+                school_id bigint,
+                deleted timestamptz,
+                CONSTRAINT fk_user_school_id
+                    FOREIGN KEY (school_id)
+                        REFERENCES public.school(id)
+                        ON DELETE CASCADE
+                        ON UPDATE CASCADE
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-tables/v1/02-02-2025/4" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.role(
+                id bigserial PRIMARY KEY,
+                name role_type NOT NULL UNIQUE,
+                description varchar(255)
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-tables/v1/02-02-2025/5" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            INSERT INTO public.role (name, description) VALUES
+                ('ADMIN', 'Администратор системы'),
+                ('DIRECTOR', 'Директор школы'),
+                ('DEPUTY_DIRECTOR', 'Заместитель директора (завуч)'),
+                ('TEACHER', 'Учитель'),
+                ('STUDENT', 'Ученик'),
+                ('BASIC_MAKER', 'Базовый составитель'),
+                ('ADVANCED_MAKER', 'Продвинутый составитель'),
+                ('PRO_MAKER', 'Профессиональный составитель'),
+                ('VIEWER', 'Просмотрщик');
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-tables/v1/02-02-2025/6" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.user_role(
+                 id bigserial PRIMARY KEY,
+                 user_id bigint NOT NULL,
+                 role_id bigint NOT NULL,
+                 assigned_at timestamptz NOT NULL DEFAULT NOW(),
+                 CONSTRAINT fk_user_role_user_id
+                     FOREIGN KEY (user_id)
+                         REFERENCES public.user(id)
+                         ON DELETE CASCADE
+                         ON UPDATE CASCADE,
+                 CONSTRAINT fk_user_role_role_id
+                     FOREIGN KEY (role_id)
+                         REFERENCES public.role(id)
+                         ON DELETE CASCADE
+                         ON UPDATE CASCADE,
+                 UNIQUE (user_id, role_id)
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schedule-planning/v1/02-03-2025/1" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE class_curriculum (
+                id bigserial PRIMARY KEY,
+                schedule_id bigint NOT NULL,
+                school_class_id bigint NOT NULL,
+                subject_id bigint NOT NULL,
+                hours_per_week integer NOT NULL CHECK (hours_per_week > 0),
+                CONSTRAINT fk_curriculum_schedule
+                  FOREIGN KEY (schedule_id)
+                      REFERENCES schedule(id)
+                      ON DELETE CASCADE,
+                CONSTRAINT fk_curriculum_class
+                  FOREIGN KEY (school_class_id)
+                      REFERENCES school_class(id)
+                      ON DELETE RESTRICT,
+                CONSTRAINT fk_curriculum_subject
+                  FOREIGN KEY (subject_id)
+                      REFERENCES subject(id)
+                      ON DELETE RESTRICT,
+                UNIQUE (schedule_id, school_class_id, subject_id)
+            );
+            CREATE TABLE teacher_capacity (
+                id bigserial PRIMARY KEY,
+                schedule_id bigint NOT NULL,
+                teacher_id bigint NOT NULL,
+                max_hours_per_week integer NOT NULL CHECK (max_hours_per_week > 0),
+                min_hours_per_week integer CHECK (min_hours_per_week >= 0),
+                CONSTRAINT fk_capacity_schedule
+                  FOREIGN KEY (schedule_id)
+                      REFERENCES schedule(id)
+                      ON DELETE CASCADE,
+                CONSTRAINT fk_capacity_teacher
+                  FOREIGN KEY (teacher_id)
+                      REFERENCES teacher(id)
+                      ON DELETE RESTRICT,
+                CONSTRAINT check_min_max_hours
+                  CHECK (min_hours_per_week IS NULL OR min_hours_per_week <= max_hours_per_week),
+                UNIQUE (schedule_id, teacher_id)
+            );
+            CREATE TABLE lesson_assignment (
+                id bigserial PRIMARY KEY,
+                class_curriculum_id bigint NOT NULL,
+                teacher_id bigint NOT NULL,
+                hours_per_week integer NOT NULL CHECK (hours_per_week > 0),
+                CONSTRAINT fk_assignment_curriculum
+                   FOREIGN KEY (class_curriculum_id)
+                       REFERENCES class_curriculum(id)
+                       ON DELETE CASCADE,
+                CONSTRAINT fk_assignment_teacher
+                   FOREIGN KEY (teacher_id)
+                       REFERENCES teacher(id)
+                       ON DELETE RESTRICT,
+                UNIQUE (class_curriculum_id, teacher_id)
+            );
+            CREATE TABLE lesson_slot (
+                id bigserial PRIMARY KEY,
+                lesson_assignment_id bigint NOT NULL,
+                day_of_week day_type NOT NULL,
+                lesson_number integer NOT NULL CHECK (lesson_number BETWEEN 1 AND 10),
+                cabinet_id bigint,
+                CONSTRAINT fk_slot_assignment
+                 FOREIGN KEY (lesson_assignment_id)
+                     REFERENCES lesson_assignment(id)
+                     ON DELETE CASCADE,
+                CONSTRAINT fk_slot_cabinet
+                 FOREIGN KEY (cabinet_id)
+                     REFERENCES cabinet(id)
+                     ON DELETE SET NULL
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-data-school-class/v1/02-09-2025/4" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            ALTER TABLE public.school_class
+                ADD COLUMN parent_id bigint;
+            ALTER TABLE public.school_class
+                ADD CONSTRAINT fk_school_class_parent_id
+                    FOREIGN KEY (parent_id)
+                        REFERENCES public.school_class(id)
+                        ON DELETE RESTRICT
+                        ON UPDATE CASCADE;
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-tables/v1/03-13-2026/1" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.login_attempt(
+                id bigserial PRIMARY KEY,
+                user_id bigint NOT NULL,
+                time timestamptz NOT NULL,
+                success boolean NOT NULL,
+                CONSTRAINT fk_user_id
+                    FOREIGN KEY (user_id)
+                        REFERENCES public.user(id)
+                        ON DELETE CASCADE
+                        ON UPDATE CASCADE
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-tables/v1/03-18-2026/subscription" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.subscription (
+                id          bigserial   PRIMARY KEY,
+                user_id     bigint      NOT NULL UNIQUE,
+                plan        varchar(50) NOT NULL DEFAULT 'BASIC',
+                expires_at  timestamptz,
+                created_at  timestamptz NOT NULL DEFAULT NOW(),
+                updated_at  timestamptz NOT NULL DEFAULT NOW(),
+                CONSTRAINT fk_subscription_user
+                    FOREIGN KEY (user_id)
+                        REFERENCES public.user(id)
+                        ON DELETE CASCADE
+                        ON UPDATE CASCADE,
+                CONSTRAINT chk_subscription_plan
+                    CHECK (plan IN ('BASIC','ADVANCED','PRO','VIEWER'))
+            );
+            CREATE TABLE public.subscription_plan_roles (
+                plan        varchar(50) NOT NULL,
+                role_name   role_type   NOT NULL,
+                PRIMARY KEY (plan, role_name),
+                CONSTRAINT chk_spr_plan
+                    CHECK (plan IN ('BASIC','ADVANCED','PRO','VIEWER'))
+            );
+            INSERT INTO public.subscription_plan_roles(plan, role_name) VALUES
+                ('BASIC',    'BASIC_MAKER'),
+                ('ADVANCED', 'ADVANCED_MAKER'),
+                ('ADVANCED', 'BASIC_MAKER'),
+                ('PRO',      'PRO_MAKER'),
+                ('PRO',      'ADVANCED_MAKER'),
+                ('PRO',      'BASIC_MAKER'),
+                ('VIEWER',   'VIEWER');
+            /* ── Migrate existing PERSONAL users only (corporate = false) ──
+               Corporate users (teachers, directors, etc.) are managed
+               by their school administrator and never use subscriptions.
+               Personal users already have BASIC_MAKER from registration,
+               so we only insert the subscription row. */
+            /*INSERT INTO public.subscription(user_id, plan, expires_at)
+            SELECT id, 'BASIC', NULL
+            FROM public.user
+            WHERE corporate = false
+              AND deleted IS NULL
+                ON CONFLICT (user_id) DO NOTHING;*/
+            ]]>
+        </sql>
+    </changeSet>
+</databaseChangeLog>

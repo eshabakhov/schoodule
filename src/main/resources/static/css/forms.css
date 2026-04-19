@@ -1,0 +1,55 @@
+input {
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    margin: 5px 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='tel'],
+input[type='number'],
+input[type='search'],
+select {
+    background: var(--card);
+    border: 1px solid var(--input);
+    border-radius: var(--radius-sm);
+    padding: .5rem .75rem;
+    font-size: .875rem;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--fg);
+    outline: none;
+    box-shadow: none;
+    transition: border-color var(--ease), box-shadow var(--ease);
+    width: 100%;
+}
+
+input:focus, select:focus {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px rgb(24 24 27 / 8%);
+}
+
+/* ── Search wrapper ── */
+.search-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.search-wrap svg {
+    position: absolute;
+    left: .625rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: var(--muted-fg);
+    pointer-events: none;
+}
+
+.search-wrap input {
+    padding-left: 2rem;
+}

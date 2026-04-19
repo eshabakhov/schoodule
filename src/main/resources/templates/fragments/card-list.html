@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <th:block th:fragment="cards(containerId, items)">
+        <div class="cards" th:id="${containerId}">
+            <div class="card" th:each="item : ${items}" th:data-id="${item.uid()}">
+                <div class="card-name" th:text="${item.name()}"></div>
+                <span class="delete-card">&times;</span>
+            </div>
+        </div>
+    </th:block>
+</body>
+</html>

@@ -1,0 +1,309 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg: #fafafa;
+    --fg: #0f0f0f;
+    --card: #fff;
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --ring: #18181b;
+    --muted: #f4f4f5;
+    --muted-fg: #71717a;
+    --primary: #18181b;
+    --primary-fg: #fafafa;
+    --accent: #f4f4f5;
+    --radius: 0.5rem;
+    --radius-sm: 0.375rem;
+    --radius-lg: 0.75rem;
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 5%);
+    --shadow: 0 1px 3px rgb(0 0 0 / 10%), 0 1px 2px -1px rgb(0 0 0 / 10%);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
+    --ease: 150ms cubic-bezier(.4, 0, .2, 1);
+    --destructive: #ef4444;
+    --error-bg: #fef2f2;
+    --error-text: #dc2626;
+    --error-border: #fecaca;
+    --success-bg: #f0fdf4;
+    --success-text: #16a34a;
+    --success-border: #bbf7d0;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, #d4d4d8 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.page-container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.login-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 2rem 2rem 2.25rem;
+    width: 100%;
+    max-width: 380px;
+    animation: card-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes card-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.logo-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius);
+    background: var(--primary);
+    margin-bottom: 0.25rem;
+}
+
+.logo-wrap svg {
+    width: 22px;
+    height: 22px;
+    color: var(--primary-fg);
+}
+
+.card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--fg);
+}
+
+.card-desc {
+    font-size: 0.8125rem;
+    color: var(--muted-fg);
+    text-align: center;
+    line-height: 1.4;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.field label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--fg);
+}
+
+.input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrap input {
+    padding-right: 2.5rem;
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'] {
+    background: var(--card);
+    border: 1px solid var(--input);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--fg);
+    width: 100%;
+    outline: none;
+    transition: border-color var(--ease), box-shadow var(--ease);
+}
+
+input::placeholder {
+    color: var(--muted-fg);
+}
+
+input:focus {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px rgb(24 24 27 / 8%);
+}
+
+.btn-submit {
+    margin-top: 0.25rem;
+    width: 100%;
+    padding: 0.5625rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--primary-fg);
+    background: var(--primary);
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--ease), box-shadow var(--ease), transform 0.15s;
+    letter-spacing: 0.01em;
+}
+
+.btn-submit:hover {
+    background: #27272a;
+}
+
+.btn-submit:active {
+    transform: scale(0.98);
+}
+
+.eye-btn {
+    position: absolute;
+    right: 0.625rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    color: var(--muted-fg);
+    transition: color var(--ease);
+    font-family: inherit;
+}
+
+.eye-btn:hover {
+    color: var(--fg);
+}
+
+.eye-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    margin-top: 0.875rem;
+    border: 1px solid transparent;
+    animation: fade-in 0.2s ease both;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert.error {
+    background: var(--error-bg);
+    border-color: var(--error-border);
+    color: var(--error-text);
+}
+
+.alert.success {
+    background: var(--success-bg);
+    border-color: var(--success-border);
+    color: var(--success-text);
+}
+
+.divider {
+    position: relative;
+    text-align: center;
+    margin: 1.25rem 0 1rem;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
+}
+
+.divider span {
+    position: relative;
+    background: var(--card);
+    padding: 0 0.625rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted-fg);
+    font-weight: 500;
+}
+
+.register-link {
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--muted-fg);
+}
+
+.register-link a {
+    color: var(--fg);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color var(--ease);
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}

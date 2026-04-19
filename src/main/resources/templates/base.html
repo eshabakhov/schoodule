@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.svg">
+    <meta charset="UTF-8">
+    <title th:text="${pageTitle} ?: 'Schoodule'">Schoodule</title>
+    <link rel="stylesheet" th:href="@{/css/shadcn.css}">
+</head>
+<body>
+
+<header class="app-header" id="app-header">
+    <div class="app-header-inner">
+        <a href="/" class="app-header-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="2" style="width:18px;height:18px;">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Schoodule
+            <span class="app-header-logo-version">v0.0.1</span>
+        </a>
+        <span class="app-header-title" th:text="${pageTitle} ?: ''"></span>
+        <a href="/users/subscription" class="logout-btn" title="Подписка" sec:authorize="hasAnyRole('BASIC_MAKER', 'ADVANCED_MAKER', 'PRO_MAKER', 'VIEWER')">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            Подписка
+        </a>
+        <a href="/users/profile" class="logout-btn" title="Профиль">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span sec:authentication="name">username</span>
+        </a>
+    </div>
+</header>
+
+<div class="layout-wrap">
+
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+
+            <div class="sidebar-section" sec:authorize="hasRole('ADMIN')">Общее</div>
+            <a href="/schools" class="sidebar-link" title="Школы" sec:authorize="hasRole('ADMIN')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <span class="sidebar-link-label">Школы</span>
+            </a>
+
+            <th:block th:if="${school != null && school.uid() != null}">
+                <div class="sidebar-section">
+                    <a th:href="@{/schools/{id}(id=${school.uid()})}"
+                       class="sidebar-school-link"
+                       th:text="${school.name()}">Школа</a>
+                </div>
+                <a th:href="@{/schools/{id}/schedules(id=${school.uid()})}" class="sidebar-link" title="Расписания">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span class="sidebar-link-label">Расписания</span>
+                </a>
+                <a th:href="@{/schools/{id}/teachers(id=${school.uid()})}" class="sidebar-link" title="Учителя">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span class="sidebar-link-label">Учителя</span>
+                </a>
+                <a th:href="@{/schools/{id}/classes(id=${school.uid()})}" class="sidebar-link" title="Классы">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                    <span class="sidebar-link-label">Классы</span>
+                </a>
+                <a th:href="@{/schools/{id}/subjects(id=${school.uid()})}" class="sidebar-link" title="Предметы">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                    </svg>
+                    <span class="sidebar-link-label">Предметы</span>
+                </a>
+                <a th:href="@{/schools/{id}/cabinets(id=${school.uid()})}" class="sidebar-link" title="Кабинеты">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="18" rx="2"/>
+                        <line x1="2" y1="9" x2="22" y2="9"/>
+                        <line x1="9" y1="21" x2="9" y2="9"/>
+                    </svg>
+                    <span class="sidebar-link-label">Кабинеты</span>
+                </a>
+            </th:block>
+
+            <th:block th:if="${schedule != null && schedule.uid() != null && school != null}">
+                <div class="sidebar-section">Планирование</div>
+                <a th:href="@{/schools/{s}/schedules/{r}/curriculum(s=${school.uid()},r=${schedule.uid()})}" class="sidebar-link" title="План классов">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                    <span class="sidebar-link-label">План классов</span>
+                </a>
+                <a th:href="@{/schools/{s}/schedules/{r}/capacity(s=${school.uid()},r=${schedule.uid()})}" class="sidebar-link" title="Нагрузка учителей">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span class="sidebar-link-label">Нагрузка учителей</span>
+                </a>
+                <a th:href="@{/schools/{s}/schedules/{r}/assignments(s=${school.uid()},r=${schedule.uid()})}" class="sidebar-link" title="Назначения">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+                        <line x1="8" y1="18" x2="21" y2="18"/>
+                        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+                        <line x1="3" y1="18" x2="3.01" y2="18"/>
+                    </svg>
+                    <span class="sidebar-link-label">Назначения</span>
+                </a>
+                <a th:href="@{/schools/{s}/schedules/{r}/grid(s=${school.uid()},r=${schedule.uid()})}" class="sidebar-link" title="Сетка расписания">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                    </svg>
+                    <span class="sidebar-link-label">Сетка расписания</span>
+                </a>
+                <a th:href="@{/schools/{s}/schedules/{r}/validation(s=${school.uid()},r=${schedule.uid()})}" class="sidebar-link" title="Проверка плана">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    <span class="sidebar-link-label">Проверка плана</span>
+                </a>
+            </th:block>
+
+        </nav>
+    </aside>
+
+    <div class="app-content" id="app-content">
+        <main class="page-body" layout:fragment="content"></main>
+    </div>
+
+</div>
+<div th:replace="~{footer}"></div>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script type="module" th:src="@{/js/ui/modal.js}"></script>
+<script type="module" th:src="@{/js/shared/crud.js}"></script>
+<script type="module" th:src="@{/js/shared/editEntity.js}"></script>
+<script type="module" th:src="@{/js/shared/schoolCrud.js}"></script>
+<th:block layout:fragment="page-scripts"/>
+</body>
+</html>

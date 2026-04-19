@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav class="pagination" th:fragment="pagination(baseUrl, page, hasPrev, hasNext)" >
+    <a th:if="${hasPrev}" th:href="@{${baseUrl}(offset=${page - 1})}">Пред.</a>
+    <span>Стр. <span th:text="${page}"></span></span>
+    <a th:if="${hasNext}" th:href="@{${baseUrl}(offset=${page + 1})}">След.</a>
+</nav>
+</body>
+</html>

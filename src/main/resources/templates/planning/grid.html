@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{base}">
+<head>
+    <title th:text="|${schedule.name()} - Сетка расписания|">Сетка расписания</title>
+    <link rel="stylesheet" th:href="@{/css/planning.css}"/>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="planning-container">
+        <div class="planning-header">
+            <h1 th:text="${schedule.name()}">Расписание</h1>
+        </div>
+
+        <nav class="planning-tabs">
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/curriculum(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link">
+                План классов
+            </a>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/capacity(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link">
+                Нагрузка учителей
+            </a>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/assignments(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link">
+                Назначения
+            </a>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/grid(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link active">
+                Сетка расписания
+            </a>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/validation(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link tab-validation">
+                Проверить план
+            </a>
+        </nav>
+
+        <div class="section-header">
+            <h2>Сетка расписания</h2>
+            <div class="grid-controls">
+                <button id="toggle-view" class="btn-toggle" onclick="toggleView()">
+                    Показать: <span id="view-mode">Учитель</span>
+                </button>
+                <button id="manage-columns-btn" class="btn-toggle" onclick="openColumnsModal()">
+                    Управление классами
+                </button>
+            </div>
+        </div>
+
+        <div th:if="${param.error}" class="error-message" th:text="${param.error}">Ошибка</div>
+
+        <div class="grid-navigation">
+            <button onclick="scrollToDay('MONDAY')" class="nav-btn">Пн</button>
+            <button onclick="scrollToDay('TUESDAY')" class="nav-btn">Вт</button>
+            <button onclick="scrollToDay('WEDNESDAY')" class="nav-btn">Ср</button>
+            <button onclick="scrollToDay('THURSDAY')" class="nav-btn">Чт</button>
+            <button onclick="scrollToDay('FRIDAY')" class="nav-btn">Пт</button>
+            <button onclick="scrollToDay('SATURDAY')" class="nav-btn">Сб</button>
+        </div>
+
+        <div class="grid-scroll" id="grid-container">
+            <table class="schedule-grid" id="schedule-table">
+                <thead>
+                <tr>
+                    <th rowspan="2" class="day-col sticky-col">День</th>
+                    <th rowspan="2" class="lesson-col sticky-col">Урок</th>
+                    <th th:each="cls, iterStat : ${classes.list()}"
+                        colspan="2"
+                        th:text="${cls.name()}"
+                        th:classappend="|class-header class-${cls.uid()}|"
+                        th:data-class-id="${cls.uid()}">5А</th>
+                </tr>
+                <tr>
+                    <th:block th:each="cls : ${classes.list()}">
+                        <th th:classappend="|info-col class-${cls.uid()}|">
+                            <span class="teacher-header">Учитель</span>
+                            <span class="subject-header" style="display:none;">Предмет</span>
+                        </th>
+                        <th th:classappend="|cabinet-col class-${cls.uid()}|">Каб.</th>
+                    </th:block>
+                </tr>
+                </thead>
+                <tbody>
+                <th:block th:each="day : ${ {'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'} }">
+                    <th:block th:each="lessonNum : ${#numbers.sequence(1, 10)}">
+                        <tr th:attr="data-day=${day}">
+                            <td th:if="${lessonNum == 1}"
+                                th:rowspan="10"
+                                class="day-cell sticky-col"
+                                th:id="|day-${day}|"
+                                th:text="${day == 'MONDAY' ? 'Пн' :
+                                         day == 'TUESDAY' ? 'Вт' :
+                                         day == 'WEDNESDAY' ? 'Ср' :
+                                         day == 'THURSDAY' ? 'Чт' :
+                                         day == 'FRIDAY' ? 'Пт' : 'Сб'}">Пн</td>
+                            <td class="lesson-cell sticky-col" th:text="${lessonNum}">1</td>
+
+                            <th:block th:each="cls : ${classes.list()}">
+                                <th:block th:if="${grid.containsKey(day) && grid.get(day).containsKey(lessonNum) && grid.get(day).get(lessonNum).containsKey(cls.uid())}">
+                                    <td th:classappend="|grid-cell filled class-${cls.uid()}|">
+                                        <th:block th:each="lesson, iterStat : ${grid.get(day).get(lessonNum).get(cls.uid())}">
+                                            <div class="lesson-item"
+                                                 th:attr="data-teacher=${lesson.get('teacherName')},
+                                                         data-subject=${lesson.get('subjectName')}">
+                                                <span class="teacher-view" th:text="${lesson.get('teacherName')}">Иванов</span>
+                                                <span class="subject-view" style="display:none;" th:text="${lesson.get('subjectName')}">Математика</span>
+                                                <form th:action="@{/schools/{schoolId}/schedules/{scheduleId}/slots/{slotId}/delete(schoolId=${school.uid()},scheduleId=${schedule.uid()},slotId=${lesson.get('slotId')})}"
+                                                      method="post"
+                                                      class="delete-form"
+                                                      onsubmit="return confirm('Удалить урок?')">
+                                                    <button type="submit" class="btn-delete-mini">×</button>
+                                                </form>
+                                            </div>
+                                        </th:block>
+                                        <div class="add-more"
+                                             th:attr="data-day=${day},
+                                                     data-lesson=${lessonNum},
+                                                     data-class-id=${cls.uid()},
+                                                     data-class-name=${cls.name()}"
+                                             onclick="openPlaceModal(this)">
+                                            <span class="add-more-icon">+</span>
+                                        </div>
+                                    </td>
+                                    <td th:classappend="|cabinet-cell class-${cls.uid()}|">
+                                        <th:block th:each="lesson : ${grid.get(day).get(lessonNum).get(cls.uid())}">
+                                            <div class="cabinet-item" th:text="${lesson.get('cabinetName') ?: '—'}">301</div>
+                                        </th:block>
+                                    </td>
+                                </th:block>
+
+                                <th:block th:unless="${grid.containsKey(day) && grid.get(day).containsKey(lessonNum) && grid.get(day).get(lessonNum).containsKey(cls.uid())}">
+                                    <td th:classappend="|grid-cell empty class-${cls.uid()}|"
+                                        th:attr="data-day=${day},
+                                                data-lesson=${lessonNum},
+                                                data-class-id=${cls.uid()},
+                                                data-class-name=${cls.name()}"
+                                        onclick="openPlaceModal(this)">
+                                        <span class="add-icon">+</span>
+                                    </td>
+                                    <td th:classappend="|cabinet-cell class-${cls.uid()}|">—</td>
+                                </th:block>
+                            </th:block>
+                        </tr>
+                    </th:block>
+                </th:block>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:if="${#lists.isEmpty(classes.list())}" class="empty-state">
+            <p>Нет классов в школе. Добавьте классы для создания расписания.</p>
+        </div>
+    </div>
+
+    <div id="place-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePlaceModal()">&times;</span>
+            <h2>Разместить урок</h2>
+            <div id="modal-info" class="modal-info"></div>
+            <form th:action="@{/schools/{schoolId}/schedules/{scheduleId}/grid/place(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+                  method="post"
+                  id="place-form">
+                <input type="hidden" name="day" id="modal-day"/>
+                <input type="hidden" name="lesson" id="modal-lesson"/>
+
+                <label>
+                    Предмет
+                    <select name="curriculum" id="curriculum-select" required>
+                        <option value="">Выберите предмет</option>
+                    </select>
+                </label>
+
+                <label>
+                    Учитель
+                    <select name="teacher" required>
+                        <option value="">Выберите учителя</option>
+                        <option th:each="teacher : ${teachers.list()}"
+                                th:value="${teacher.uid()}"
+                                th:text="${teacher.name()}">Иванов И.И.</option>
+                    </select>
+                </label>
+
+                <label>
+                    Кабинет (опционально)
+                    <select name="cabinet">
+                        <option value="">Не указан</option>
+                        <option th:each="cabinet : ${cabinets.list()}"
+                                th:value="${cabinet.uid()}"
+                                th:text="${cabinet.name()}">301</option>
+                    </select>
+                </label>
+
+                <button type="submit" class="btn-submit">Разместить</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="columns-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeColumnsModal()">&times;</span>
+            <h2>Управление классами</h2>
+            <div class="columns-controls">
+                <button onclick="selectAllClasses()" class="btn-secondary">Выбрать все</button>
+                <button onclick="deselectAllClasses()" class="btn-secondary">Снять все</button>
+            </div>
+            <div class="columns-list" id="columns-list">
+                <label th:each="cls : ${classes.list()}" class="column-checkbox">
+                    <input type="checkbox"
+                           th:value="${cls.uid()}"
+                           th:id="|class-checkbox-${cls.uid()}|"
+                           checked
+                           onchange="toggleClassColumn(this)"/>
+                    <span th:text="${cls.name()}">5А</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const curriculums = /*[[${curriculums}]]*/ [];
+
+        let showTeacher = true;
+
+        function toggleView() {
+            showTeacher = !showTeacher;
+            document.getElementById('view-mode').textContent = showTeacher ? 'Учитель' : 'Предмет';
+
+            document.querySelectorAll('.teacher-view').forEach(el => {
+                el.style.display = showTeacher ? '' : 'none';
+            });
+            document.querySelectorAll('.subject-view').forEach(el => {
+                el.style.display = showTeacher ? 'none' : '';
+            });
+            document.querySelectorAll('.teacher-header').forEach(el => {
+                el.style.display = showTeacher ? '' : 'none';
+            });
+            document.querySelectorAll('.subject-header').forEach(el => {
+                el.style.display = showTeacher ? 'none' : '';
+            });
+        }
+
+        function openPlaceModal(cell) {
+            const day = cell.dataset.day;
+            const lesson = cell.dataset.lesson;
+            const classId = parseInt(cell.dataset.classId);
+            const className = cell.dataset.className;
+
+            const dayNames = {
+                'MONDAY': 'Понедельник',
+                'TUESDAY': 'Вторник',
+                'WEDNESDAY': 'Среда',
+                'THURSDAY': 'Четверг',
+                'FRIDAY': 'Пятница',
+                'SATURDAY': 'Суббота'
+            };
+
+            document.getElementById('modal-info').innerHTML =
+                '<strong>Класс:</strong> ' + className + '<br/>' +
+                '<strong>День:</strong> ' + dayNames[day] + '<br/>' +
+                '<strong>Урок:</strong> ' + lesson;
+
+            document.getElementById('modal-day').value = day;
+            document.getElementById('modal-lesson').value = lesson;
+
+            const select = document.getElementById('curriculum-select');
+            select.innerHTML = '<option value="">Выберите предмет</option>';
+
+            curriculums.forEach(curr => {
+                if (curr.classId === classId) {
+                    const option = document.createElement('option');
+                    option.value = curr.id;
+                    option.textContent =
+                        curr.subjectName + ' (' + curr.hoursPerWeek + 'ч)';
+                    select.appendChild(option);
+                }
+            });
+
+            document.getElementById('place-modal').style.display = 'flex';
+        }
+
+        function closePlaceModal() {
+            document.getElementById('place-modal').style.display = 'none';
+        }
+
+        function openColumnsModal() {
+            document.getElementById('columns-modal').style.display = 'flex';
+        }
+
+        function closeColumnsModal() {
+            document.getElementById('columns-modal').style.display = 'none';
+        }
+
+        function toggleClassColumn(checkbox) {
+            const classId = checkbox.value;
+            const isVisible = checkbox.checked;
+
+            document.querySelectorAll('.class-' + classId).forEach(el => {
+                el.style.display = isVisible ? '' : 'none';
+            });
+        }
+
+        function selectAllClasses() {
+            document.querySelectorAll('.column-checkbox input').forEach(cb => {
+                cb.checked = true;
+                toggleClassColumn(cb);
+            });
+        }
+
+        function deselectAllClasses() {
+            document.querySelectorAll('.column-checkbox input').forEach(cb => {
+                cb.checked = false;
+                toggleClassColumn(cb);
+            });
+        }
+
+        function scrollToDay(day) {
+            const dayCell = document.getElementById('day-' + day);
+            if (dayCell) {
+                dayCell.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        window.onclick = function(event) {
+            const placeModal = document.getElementById('place-modal');
+            const columnsModal = document.getElementById('columns-modal');
+            if (event.target === placeModal) {
+                closePlaceModal();
+            }
+            if (event.target === columnsModal) {
+                closeColumnsModal();
+            }
+        };
+    </script>
+</div>
+</body>
+</html>

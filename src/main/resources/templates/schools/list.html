@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{base}">
+<head>
+    <title>Школы</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="page-title-row">
+        <div>
+            <h1>Школы</h1>
+            <p class="page-subtitle">Управление школами в системе</p>
+        </div>
+        <a href="/schools/create" class="btn-primary"
+           style="display:inline-flex;align-items:center;gap:.5rem;
+                  padding:.5rem 1rem;border-radius:var(--radius-sm);
+                  font-size:.875rem;font-weight:500;text-decoration:none;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="2" style="width:15px;height:15px;">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5"  y1="12" x2="19" y2="12"/>
+            </svg>
+            Добавить школу
+        </a>
+    </div>
+    <div class="search-wrap" style="width:100%;max-width:320px;margin-bottom:1.25rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="school-search" placeholder="Поиск школы..."
+               th:value="${param.name != null ? param.name[0] : ''}"/>
+    </div>
+    <th:block th:fragment="schools-grid">
+        <div id="schools-results">
+            <div class="card-grid" id="schools-container">
+                <div th:if="${#lists.isEmpty(schools)}"
+                     style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted-fg);">
+                    Школы не найдены.
+                </div>
+                <div th:each="s : ${schools}"
+                     class="card-item school-row"
+                     th:data-id="${s.uid()}"
+                     th:data-name="${s.name().toLowerCase()}"
+                     style="cursor:pointer;">
+                    <div class="card-item-header">
+                        <div class="card-item-title-row">
+                            <div class="card-item-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                     stroke="currentColor" stroke-width="2">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                    <polyline points="9 22 9 12 15 12 15 22"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-item-period">
+                        <span class="card-item-name" th:text="${s.name()}">Школа</span>
+                        <div class="card-item-period-label">
+                            ID:
+                            <span class="td-mono" th:text="${s.uid()}">1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pagination-wrap" id="schools-pagination">
+                <div class="pagination-pages">
+                    <a th:if="${hasPrev}" href="#"
+                       th:data-offset="${page - 1}"
+                       th:data-limit="${limit}"
+                       class="pagination-btn pagination-prev">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                    </a>
+                    <th:block th:with="
+                        start=${page > 3 ? page - 2 : 1},
+                        end=${page + 2 <= totalPages ? page + 2 : totalPages},
+                        end=${end < 5 ? (totalPages < 5 ? totalPages : 5) : end}"
+                        th:if="${totalPages > 1}">
+                        <th:block th:if="${start > 1}">
+                            <a href="#" th:data-offset="1" th:data-limit="${limit}"
+                               class="pagination-btn">1</a>
+                            <span th:if="${start > 2}" class="pagination-ellipsis">…</span>
+                        </th:block>
+                        <th:block th:each="p : ${#numbers.sequence(start, end)}">
+                            <a href="#"
+                               th:data-offset="${p}"
+                               th:data-limit="${limit}"
+                               th:classappend="${p == page} ? 'active' : ''"
+                               th:text="${p}"
+                               class="pagination-btn">1</a>
+                        </th:block>
+                        <th:block th:if="${end < totalPages}">
+                            <span th:if="${end < totalPages - 1}" class="pagination-ellipsis">…</span>
+                            <a href="#" th:data-offset="${totalPages}" th:data-limit="${limit}"
+                               th:text="${totalPages}"
+                               class="pagination-btn">N</a>
+                        </th:block>
+                    </th:block>
+                    <a th:if="${hasNext}" href="#"
+                       th:data-offset="${page + 1}"
+                       th:data-limit="${limit}"
+                       class="pagination-btn pagination-next">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </a>
+                </div>
+                <div class="pagination-size" th:if="${limit >= 15}">
+                    <span class="pagination-size-label">На странице:</span>
+                    <a th:each="s : ${#arrays.toArray({15, 30, 50})}"
+                       href="#"
+                       th:data-offset="1"
+                       th:data-limit="${s}"
+                       th:classappend="${limit == s} ? 'active' : ''"
+                       th:text="${s}"
+                       class="pagination-size-btn">15</a>
+                </div>
+            </div>
+        </div>
+    </th:block>
+</div>
+<th:block layout:fragment="page-scripts">
+    <script type="module" th:src="@{/js/schools.js}"></script>
+</th:block>
+</body>
+</html>

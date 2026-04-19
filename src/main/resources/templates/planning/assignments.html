@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{base}">
+<head>
+    <title th:text="|${schedule.name()} - Назначения|">Назначения</title>
+    <link rel="stylesheet" th:href="@{/css/planning.css}"/>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="planning-container">
+        <div class="planning-header">
+            <h1 th:text="${schedule.name()}">Расписание</h1>
+        </div>
+        <nav class="planning-tabs">
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/curriculum(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link tab-validation">
+                План классов
+            </a>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/capacity(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link tab-validation">
+                Нагрузка учителей
+            </a>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/assignments(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link active">
+                Назначения
+            </a>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/grid(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link tab-validation">
+                Сетка расписания
+            </a>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/validation(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link tab-validation">
+                Проверить план
+            </a>
+        </nav>
+
+        <div class="section-header">
+            <h2>Назначения учителей</h2>
+            <button onclick="document.getElementById('add-modal').style.display='flex'"
+                    class="btn-add">+ Назначить</button>
+        </div>
+
+        <div th:if="${param.error != null and param.error[0] == 'assignment_create_failed'}"
+             class="error-message">
+            Не удалось сохранить назначение учителя
+        </div>
+
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>Класс</th>
+                <th>Предмет</th>
+                <th>Учитель</th>
+                <th>Часов</th>
+                <th>Размещено</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(assignments)}">
+                <td colspan="7" class="empty-state">Нет назначений. Назначьте учителей.</td>
+            </tr>
+            <tr th:each="asgn : ${assignments}">
+                <td th:text="${asgn.get(1)}">5А</td>
+                <td th:text="${asgn.get(2)}">Математика</td>
+                <td th:text="${asgn.get(3)}">Иванов И.И.</td>
+                <td th:text="${asgn.get(4)}">5</td>
+                <td th:text="${asgn.get(5)}">0</td>
+                <td>
+                    <span th:classappend="${asgn.get(5) == asgn.get(4) ? 'status-complete' :
+                                         asgn.get(5) > 0 ? 'status-partial' : 'status-empty'}"
+                          class="status-badge">
+                        <span th:text="${asgn.get(5)}">0</span>/<span th:text="${asgn.get(4)}">5</span>
+                    </span>
+                </td>
+                <td>
+                    <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/slots/place(schoolId=${school.uid()},scheduleId=${schedule.uid()},assignmentId=${asgn.get(0)})}"
+                       class="btn-action btn-place">Разместить</a>
+                    <form th:action="@{/schools/{schoolId}/schedules/{scheduleId}/assignments/{assignmentId}/delete(schoolId=${school.uid()},scheduleId=${schedule.uid()},assignmentId=${asgn.get(0)})}"
+                          method="post"
+                          style="display: inline;"
+                          onsubmit="return confirm('Удалить назначение?')">
+                        <button type="submit" class="btn-action btn-delete">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('add-modal').style.display='none'">&times;</span>
+            <h2>Назначить учителя</h2>
+            <form th:action="@{/schools/{schoolId}/schedules/{scheduleId}/assignments/create(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+                  method="post">
+                <label>
+                    План класса
+                    <select name="curriculum" required>
+                        <option value="">Выберите план</option>
+                        <option th:each="curr : ${curriculums}"
+                                th:value="${curr.get(0)}"
+                                th:text="${curr.get(1)} + ' - ' + ${curr.get(2)} + ' (' + ${curr.get(3)} + 'ч)'">5А - Математика (5ч)</option>
+                    </select>
+                </label>
+                <label>
+                    Учитель
+                    <select name="teacher" required>
+                        <option value="">Выберите учителя</option>
+                        <option th:each="teacher : ${teachers.list()}"
+                                th:value="${teacher.uid()}"
+                                th:text="${teacher.name()}">Иванов И.И.</option>
+                    </select>
+                </label>
+                <label>
+                    Часов
+                    <input type="number" name="hours" min="1" max="10" required/>
+                </label>
+                <button type="submit" class="btn-submit">Назначить</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

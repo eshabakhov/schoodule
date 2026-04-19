@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <th:block th:fragment="empty(text, buttonId, allowed)">
+        <label th:text="${text}"></label>
+        <button th:id="${buttonId}" th:if="${allowed}">
+            Создать
+        </button>
+    </th:block>
+</body>
+</html>

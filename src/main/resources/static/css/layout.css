@@ -1,0 +1,326 @@
+/* ── Body ── */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ── App header ── */
+.app-header {
+    width: 100%;
+    height: var(--header-h);
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-sizing: border-box;
+}
+
+.app-header-inner {
+    max-width: var(--layout-w);
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.app-header-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .9375rem;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    color: var(--fg);
+    text-decoration: none;
+    flex-shrink: 0;
+    padding: .25rem .5rem;
+    border-radius: var(--radius-sm);
+    transition: background var(--ease);
+}
+
+.app-header-logo:hover {
+    background: var(--accent);
+}
+
+.app-header-title {
+    font-size: .875rem;
+    color: var(--muted-fg);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+.app-header .logout-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    gap: .4375rem;
+    padding: .375rem .625rem .375rem .5rem;
+    font-size: .8125rem;
+    font-weight: 500;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--muted-fg);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--ease), color var(--ease), border-color var(--ease);
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.sidebar-link svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+.app-header .logout-btn svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    transition: color var(--ease);
+}
+
+.app-header .logout-btn:hover {
+    background: var(--muted);
+    color: var(--destructive);
+    border-color: var(--border);
+}
+
+.app-header .logout-btn:hover svg {
+    color: var(--destructive);
+}
+
+.app-header-logo-text {
+    display: flex;
+    flex-direction: column;
+    gap: .05rem;
+    line-height: 1;
+}
+
+.app-header-logo-version {
+    font-size: .625rem;
+    font-weight: 500;
+    letter-spacing: .04em;
+    color: var(--muted-fg);
+}
+
+/* ── Layout wrap (sidebar + content, centered) ── */
+.layout-wrap {
+    max-width: var(--layout-w);
+    width: 100%;
+    margin: 0 auto;
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: transparent;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 1rem .5rem;
+}
+
+.sidebar-section {
+    font-size: .6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--muted-fg);
+    padding: .75rem .75rem .25rem;
+    margin-top: .5rem;
+}
+
+.sidebar-section:first-child {
+    margin-top: 0;
+}
+
+.sidebar-school-link {
+    font-size: .6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--muted-fg);
+    text-decoration: none;
+    transition: color var(--ease);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-school-link:hover {
+    color: var(--fg);
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    padding: .4375rem .75rem;
+    border-radius: var(--radius-sm);
+    font-size: .875rem;
+    font-weight: 500;
+    color: var(--muted-fg);
+    transition: background var(--ease), color var(--ease);
+    white-space: nowrap;
+}
+
+.sidebar-link:hover {
+    background: var(--accent);
+    color: var(--fg);
+}
+
+.sidebar-link.active {
+    background: var(--muted);
+    color: var(--fg);
+}
+
+.sidebar-link-label {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* ── App content area ── */
+.app-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    animation: fade-up 200ms ease both;
+    box-sizing: border-box;
+    max-width: var(--content-w);
+}
+
+/* ── Top breadcrumb bar ── */
+.top-bar {
+    height: var(--header-h);
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    gap: .375rem;
+    font-size: .875rem;
+    color: var(--muted-fg);
+}
+
+.top-bar .sep { opacity: .4; }
+
+.top-bar .current {
+    color: var(--fg);
+    font-weight: 500;
+}
+
+.top-bar a {
+    color: var(--muted-fg);
+    transition: color var(--ease);
+}
+
+.top-bar a:hover { color: var(--fg); }
+
+/* ── Page body ── */
+.page-body {
+    padding: 1.5rem;
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.page-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+}
+
+.page-subtitle {
+    font-size: .875rem;
+    color: var(--muted-fg);
+    margin-top: .125rem;
+}
+
+/* ── Page container (centered pages) ── */
+.page-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    flex: 1;
+}
+
+/* ── Error pages ── */
+.error-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    padding: 2rem;
+    gap: 2rem;
+}
+
+.error-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+}
+
+.error-code {
+    font-size: 6rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--primary);
+    letter-spacing: -.04em;
+}
+
+.error-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--fg);
+    margin: 0;
+}
+
+.error-desc {
+    font-size: .9rem;
+    color: var(--muted-fg);
+    margin: 0;
+}
+
+/* ── Landing / login override ── */
+body:has(.landing),
+body:has(.login-card) {
+    display: block;
+}
+
+/* ── Responsive ── */
+@media (width <= 768px) {
+    .sidebar {
+        display: none;
+    }
+}

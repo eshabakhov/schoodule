@@ -1,0 +1,266 @@
+/* ── Button base reset ── */
+button,
+.btn,
+.btn-edit, .btn-back,
+.btn-schedules, .btn-cabinets, .btn-classes,
+.btn-teachers, .btn-subjects,
+.btn-curriculums, .btn-capacities, .btn-assignments,
+.btn-grid, .btn-validation,
+.logout-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .5rem 1rem;
+    font-size: .875rem;
+    font-weight: 500;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    line-height: 1;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background var(--ease), color var(--ease), box-shadow var(--ease);
+    white-space: nowrap;
+}
+
+button:active, .btn:active {
+    transform: scale(.98);
+}
+
+button:focus-visible, .btn:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+}
+
+/* ── Variants ── */
+.btn-primary {
+    background: var(--primary);
+    color: var(--primary-fg);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background: #27272a;
+}
+
+.btn-outline-custom {
+    background: transparent;
+    color: var(--fg);
+    border-color: var(--border);
+}
+
+.btn-outline-custom:hover {
+    background: var(--accent);
+}
+
+.btn-submit {
+    background: var(--primary);
+    color: var(--primary-fg);
+    border-color: var(--primary);
+}
+
+.btn-submit:hover {
+    background: #27272a;
+}
+
+.modal-content .btn-submit {
+    align-self: flex-end;
+    margin: .25rem 0 0;
+}
+
+/* ── Destructive ── */
+.btn-delete,
+.btn-action.btn-delete {
+    background: transparent;
+    color: var(--destructive);
+    border-color: transparent;
+}
+
+.btn-delete:hover,
+.btn-action.btn-delete:hover {
+    background: #fef2f2;
+}
+
+/* ── Ghost icon button ── */
+.btn-icon-ghost {
+    padding: .375rem;
+    background: transparent;
+    border-color: transparent;
+    color: var(--muted-fg);
+    border-radius: var(--radius-sm);
+}
+
+.btn-icon-ghost:hover {
+    background: var(--accent);
+    color: var(--fg);
+}
+
+.btn-icon-ghost svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ── Back icon button ── */
+.btn-icon-back {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--fg);
+    flex-shrink: 0;
+    transition: background var(--ease);
+}
+
+.btn-icon-back:hover {
+    background: var(--muted);
+}
+
+.btn-icon-back svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ── Outline action ── */
+.btn-outline-action {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    padding: .4375rem .875rem;
+    font-size: .875rem;
+    font-weight: 500;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--fg);
+    transition: background var(--ease);
+}
+
+.btn-outline-action:hover {
+    background: var(--muted);
+}
+
+/* ── Nav buttons (school details page) ── */
+.btn-schedules, .btn-cabinets, .btn-classes,
+.btn-teachers, .btn-subjects,
+.btn-curriculums, .btn-capacities, .btn-assignments,
+.btn-grid, .btn-validation {
+    background: var(--muted);
+    color: var(--fg);
+    border-color: var(--border);
+    width: 100%;
+    justify-content: flex-start;
+    padding: .625rem 1rem;
+    font-size: .875rem;
+}
+
+.btn-schedules:hover, .btn-cabinets:hover, .btn-classes:hover,
+.btn-teachers:hover, .btn-subjects:hover,
+.btn-curriculums:hover, .btn-capacities:hover, .btn-assignments:hover,
+.btn-grid:hover, .btn-validation:hover {
+    background: var(--accent);
+    box-shadow: var(--shadow-sm);
+    transform: none;
+}
+
+/* ── Back / edit (details pages) ── */
+.btn-edit {
+    background: transparent;
+    color: var(--fg);
+    border-color: var(--border);
+}
+
+.btn-edit:hover {
+    background: var(--accent);
+}
+
+.btn-back {
+    background: transparent;
+    color: var(--muted-fg);
+    border-color: transparent;
+}
+
+.btn-back:hover {
+    color: var(--fg);
+    background: var(--accent);
+}
+
+/* ── Logout ── */
+.logout-btn {
+    padding: .375rem .625rem;
+    font-size: .8125rem;
+    background: transparent;
+    color: var(--muted-fg);
+    border-color: transparent;
+}
+
+.logout-btn:hover {
+    background: var(--accent);
+    color: var(--destructive);
+}
+
+/* ── Planning: add / action / place ── */
+.btn-add {
+    background: var(--primary);
+    color: var(--primary-fg);
+    border-color: var(--primary);
+    padding: .5rem 1rem;
+    font-size: .875rem;
+    border-radius: var(--radius-sm);
+}
+
+.btn-add:hover {
+    background: #27272a;
+}
+
+.btn-action {
+    padding: .3rem .625rem;
+    font-size: .8125rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    display: inline-flex;
+    align-items: center;
+    transition: opacity var(--ease), background var(--ease);
+    text-decoration: none;
+}
+
+.btn-action.btn-place {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+.btn-action.btn-place:hover {
+    background: #dbeafe;
+}
+
+/* ── Card open button ── */
+.btn-card-open {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .375rem;
+    padding: .4375rem .75rem;
+    font-size: .8125rem;
+    font-weight: 500;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--fg);
+    transition: background var(--ease);
+    cursor: pointer;
+}
+
+.btn-card-open:hover {
+    background: var(--muted);
+}

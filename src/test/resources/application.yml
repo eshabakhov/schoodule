@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: schoodule
+  liquibase:
+    enabled: false
+    change-log: classpath:changelog/changelog.xml
+  security:
+    oauth2:
+      client:
+        registration:
+          yandex:
+            client-id: ${ya-id}
+            client-secret: ${ya-secret}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/yandex"
+            scope:
+              - login:email
+              - login:info
+        provider:
+          yandex:
+            authorization-uri: https://oauth.yandex.ru/authorize
+            token-uri: https://oauth.yandex.ru/token
+            user-info-uri: https://login.yandex.ru/info?format=json
+            user-name-attribute: default_email
+server:
+  port: 9500
+  servlet:
+    context-path: /api
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+app:
+  cors:
+    allowed-origins: http://localhost:3000

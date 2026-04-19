@@ -1,0 +1,21 @@
+<th:block th:fragment="modal(id, title, formId, placeholder, submitId)">
+    <div th:id="${id}" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 th:text="${title}"></h2>
+            <form th:id="${formId}">
+                <label>
+                    <input type="text"
+                           name="name"
+                           th:placeholder="${placeholder}"
+                           required />
+                </label>
+                <button
+                        type="submit"
+                        th:id="${submitId}">
+                    Сохранить
+                </button>
+            </form>
+        </div>
+    </div>
+</th:block>

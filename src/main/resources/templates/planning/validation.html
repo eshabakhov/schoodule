@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{base}">
+<head>
+    <title th:text="|${schedule.name()} - Проверка плана|">Проверка плана</title>
+    <link rel="stylesheet" th:href="@{/css/planning.css}"/>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="planning-container">
+        <div class="planning-header">
+            <h1 th:text="${schedule.name()}">Расписание</h1>
+        </div>
+
+        <nav class="planning-tabs">
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/curriculum(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link tab-validation">
+                План классов
+            </a>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/capacity(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link tab-validation">
+                Нагрузка учителей
+            </a>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/assignments(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link tab-validation">
+                Назначения
+            </a>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/grid(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link tab-validation">
+                Сетка расписания
+            </a>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/validation(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="tab-link active">
+                Проверить план
+            </a>
+        </nav>
+
+        <div class="section-header">
+            <h2>Проверка плана расписания</h2>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/validation(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
+               class="btn-add">🔄 Обновить</a>
+        </div>
+
+        <div th:if="${valid}" class="validation-results valid">
+            <h3>✓ Расписание корректно!</h3>
+            <p>Все часы назначены и размещены в сетке. Проблем не найдено.</p>
+        </div>
+
+        <div th:if="${!valid}" class="validation-results invalid">
+            <h3>✗ Найдено проблем: <span th:text="${issueCount}">3</span></h3>
+            <p>Исправьте проблемы перед утверждением расписания.</p>
+        </div>
+
+        <div th:if="${!valid}" class="issues-list">
+            <div th:each="issue : ${issues}"
+                 th:classappend="${issue.type == 'CURRICULUM_GAP' ? 'validation-issue curriculum-gap' :
+                                 issue.type == 'TEACHER_OVERLOAD' ? 'validation-issue teacher-overload' :
+                                 'validation-issue slot-gap'}">
+
+                <div th:if="${issue.type == 'CURRICULUM_GAP'}">
+                    <strong>Пробел в плане класса</strong><br/>
+                    <span th:text="${issue.className}">5А</span> -
+                    <span th:text="${issue.subjectName}">Математика</span>:
+                    назначено <span th:text="${issue.assigned}">3</span> из
+                    <span th:text="${issue.planned}">5</span> часов
+                    <br/>
+                    <small>Перейдите во вкладку "Назначения" и назначьте учителя на оставшиеся часы</small>
+                </div>
+
+                <div th:if="${issue.type == 'TEACHER_OVERLOAD'}">
+                    <strong>Перегрузка учителя</strong><br/>
+                    <span th:text="${issue.teacherName}">Иванов И.И.</span>:
+                    назначено <span th:text="${issue.assigned}">22</span> часа при лимите
+                    <span th:text="${issue.limit}">20</span> часов
+                    <br/>
+                    <small>Перейдите во вкладку "Нагрузка учителей" и увеличьте лимит или перераспределите часы</small>
+                </div>
+
+                <div th:if="${issue.type == 'SLOT_GAP'}">
+                    <strong>Не все уроки размещены в сетке</strong><br/>
+                    <span th:text="${issue.className}">5Б</span> -
+                    <span th:text="${issue.subjectName}">Русский</span>
+                    (<span th:text="${issue.teacherName}">Петрова П.П.</span>):
+                    размещено <span th:text="${issue.filled}">4</span> из
+                    <span th:text="${issue.planned}">6</span> уроков
+                    <br/>
+                    <small>Перейдите во вкладку "Назначения" и нажмите "Разместить" для этого назначения</small>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${valid}" class="success-actions">
+            <p>Расписание готово к использованию. Вы можете:</p>
+            <ul>
+                <li>
+                    <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/grid(schoolId=${school.uid()},scheduleId=${schedule.uid()})}">
+                        Просмотреть сетку расписания
+                    </a>
+                </li>
+                <li>Экспортировать расписание (функция в разработке)</li>
+                <li>Опубликовать для учителей и учеников (функция в разработке)</li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{base}">
+<head>
+    <title th:text="|${scheduleName} - Разместить урок|">Разместить урок</title>
+    <link rel="stylesheet" th:href="@{/css/planning.css}"/>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="planning-container">
+        <div class="planning-header">
+            <h1 th:text="${scheduleName}">Расписание</h1>
+            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/assignments(schoolId=${schoolId},scheduleId=${scheduleId})}"
+               class="btn-nav">← Назад к назначениям</a>
+        </div>
+
+        <div class="section-header">
+            <h2>Разместить урок</h2>
+        </div>
+
+        <div class="slot-info-panel">
+            <p><strong>Класс:</strong> <span th:text="${className}">5А</span></p>
+            <p><strong>Предмет:</strong> <span th:text="${subjectName}">Математика</span></p>
+            <p><strong>Учитель:</strong> <span th:text="${teacherName}">Иванов И.И.</span></p>
+        </div>
+
+        <div th:if="${param.error}" class="error-message" th:text="${param.error}">Ошибка</div>
+
+        <div class="form-panel">
+            <form th:action="@{/schools/{schoolId}/schedules/{scheduleId}/slots/create(schoolId=${schoolId},scheduleId=${scheduleId})}"
+                  method="post">
+                <input type="hidden" name="assignmentId" th:value="${assignmentId}"/>
+
+                <label>
+                    День недели
+                    <select name="dayOfWeek" required>
+                        <option value="">Выберите день</option>
+                        <option value="MONDAY">Понедельник</option>
+                        <option value="TUESDAY">Вторник</option>
+                        <option value="WEDNESDAY">Среда</option>
+                        <option value="THURSDAY">Четверг</option>
+                        <option value="FRIDAY">Пятница</option>
+                        <option value="SATURDAY">Суббота</option>
+                    </select>
+                </label>
+
+                <label>
+                    Номер урока
+                    <input type="number" name="lessonNumber" min="1" max="10" required/>
+                </label>
+
+                <label>
+                    Кабинет (опционально)
+                    <select name="cabinetId">
+                        <option value="">Не указан</option>
+                        <option th:each="cabinet : ${cabinets}"
+                                th:value="${cabinet.id}"
+                                th:text="${cabinet.name}">301</option>
+                    </select>
+                </label>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">Разместить</button>
+                    <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/assignments(schoolId=${schoolId},scheduleId=${scheduleId})}"
+                       class="btn-cancel">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
