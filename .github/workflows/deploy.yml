@@ -36,6 +36,7 @@ jobs:
           mkdir -p deploy/target
           cp Dockerfile deploy/
           cp haproxy/haproxy.cfg deploy/haproxy
+          cp haproxy/fullchain.pem deploy/haproxy
           cp docker-compose.yml deploy/
           cp .dockerignore deploy/
           cp target/schoodule-0.0.1.jar deploy/target/
@@ -59,6 +60,8 @@ jobs:
           ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<EOF
           set -e
           cd "${{ secrets.DEPLOY_PATH }}"
+          echo "${{ secrets.SSL_PRIVATE_KEY }}" > haproxy/privkey.pem
+          cat haproxy/fullchain.pem haproxy/privkey.pem > haproxy/site.pem
 
           export APP_IMAGE="${{ vars.APP_IMAGE || 'schoodule-app:local' }}"
           export APP_PORT="${{ vars.APP_PORT || '9500' }}"
