@@ -6,6 +6,7 @@ services:
       - schoodule
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./haproxy:/usr/local/etc/haproxy
 
