@@ -34,6 +34,7 @@ jobs:
         run: |
           mkdir -p deploy/target
           cp Dockerfile deploy/
+          cp haproxy.cfg deploy/
           cp docker-compose.yml deploy/
           cp .dockerignore deploy/
           cp target/schoodule-0.0.1.jar deploy/target/
