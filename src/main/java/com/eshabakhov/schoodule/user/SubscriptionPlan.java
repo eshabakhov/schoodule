@@ -34,8 +34,8 @@ public enum SubscriptionPlan {
     /** Paid plan with editing capabilities. */
     ADVANCED(
         "Продвинутый",
-        "299 ₽ / месяц",
-        299,
+        "0 ₽ / месяц",
+        0,
         List.of(
             "Всё из Базового",
             "Создание и редактирование расписаний",
@@ -48,8 +48,8 @@ public enum SubscriptionPlan {
     /** Full-access plan with reporting and validation. */
     PRO(
         "Профессиональный",
-        "799 ₽ / месяц",
-        799,
+        "0 ₽ / месяц",
+        0,
         List.of(
             "Всё из Продвинутого",
             "Неограниченное количество расписаний",
@@ -63,8 +63,8 @@ public enum SubscriptionPlan {
     /** Read-only plan for teachers and parents. */
     VIEWER(
         "Просмотрщик",
-        "99 ₽ / месяц",
-        99,
+        "0 ₽ / месяц",
+        0,
         List.of(
             "Просмотр готового расписания",
             "Фильтрация по классу и учителю",
