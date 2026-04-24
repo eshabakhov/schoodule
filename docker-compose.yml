@@ -57,9 +57,15 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring:/etc/prometheus
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=2h"
+      - "--storage.tsdb.min-block-duration=2h"
+    deploy:
+      resources:
+        limits:
+          memory: 300m
 
   grafana:
     image: grafana/grafana
@@ -70,6 +76,12 @@ services:
       - prometheus
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_LOG_LEVEL=warn
+    deploy:
+      resources:
+        limits:
+          memory: 200m
 
 volumes:
   postgres-data:
