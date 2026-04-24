@@ -74,6 +74,9 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_LOG_LEVEL=warn
+    volumes:
+      - grafana-data:/var/lib/grafana
 
 volumes:
   postgres-data:
+  grafana-data:
