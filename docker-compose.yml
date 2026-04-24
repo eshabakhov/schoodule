@@ -14,7 +14,7 @@ services:
 
   postgres:
     container_name: postgres
-    image: ${POSTGRES_IMAGE:-postgres:14-alpine}
+    image: postgres:14-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:-postgres}
@@ -30,7 +30,7 @@ services:
 
   schoodule:
     container_name: schoodule
-    image: ${APP_IMAGE:-schoodule-app:local}
+    image: ghcr.io/eshabakhov/schoodule:latest
     build:
       context: .
       args:
@@ -52,6 +52,8 @@ services:
       BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-}
       BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+    env_file:
+      - .env
 
   prometheus:
     image: prom/prometheus
