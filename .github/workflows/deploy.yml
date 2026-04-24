@@ -33,10 +33,12 @@ jobs:
       - name: Prepare deployment bundle
         run: |
           mkdir -p deploy/haproxy
-          mkdir -p deploy/target
-          cp Dockerfile deploy/
           cp haproxy/haproxy.cfg deploy/haproxy
           cp haproxy/fullchain.pem deploy/haproxy
+          mkdir -p deploy/monitoring
+          cp monitoring/prometheus.yml deploy/monitoring
+          mkdir -p deploy/target
+          cp Dockerfile deploy/
           cp docker-compose.yml deploy/
           cp .dockerignore deploy/
           cp target/schoodule-0.0.1.jar deploy/target/
