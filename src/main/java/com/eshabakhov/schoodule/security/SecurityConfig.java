@@ -112,7 +112,8 @@ public class SecurityConfig {
                         "/",
                         "/api-docs/**",
                         "/swagger-ui.html",
-                        "/swagger-ui/**"
+                        "/swagger-ui/**",
+                        "/actuator/prometheus"
                     ).permitAll()
                     .anyRequest().authenticated()
             )
