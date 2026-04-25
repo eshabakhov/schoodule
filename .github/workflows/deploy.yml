@@ -74,6 +74,14 @@ jobs:
           rsync -az --delete monitoring/ \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/monitoring/"
 
+      - name: Create site.pem
+        run: |
+          echo "${{ secrets.SITE_KEY }}" > key.pem
+          cat key.pem haproxy/fullchain.pem > site.pem
+          rsync -az site.pem \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/haproxy/"
+          rm key.pem site.pem
+
       - name: Deploy
         run: |
           ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<EOF
