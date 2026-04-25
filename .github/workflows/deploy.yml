@@ -62,6 +62,15 @@ jobs:
       - name: Add host
         run: ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
 
+      - name: Sync config files
+        run: |
+          rsync -az docker-compose.yml \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
+          rsync -az --delete haproxy/ \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/haproxy/"
+          rsync -az --delete monitoring/ \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/monitoring/"
+
       - name: Deploy
         run: |
           ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<EOF
