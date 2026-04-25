@@ -4,11 +4,13 @@ services:
     container_name: haproxy
     depends_on:
       - schoodule
+      - grafana
+      - prometheus
     ports:
       - "443:443"
-      - "3000:3000"
-      - "8404:8404"
-      - "9090:9090"
+    environment:
+      MONITORING_BASIC_AUTH_USERNAME: ${MONITORING_BASIC_AUTH_USERNAME:?MONITORING_BASIC_AUTH_USERNAME is required}
+      MONITORING_BASIC_AUTH_PASSWORD: ${MONITORING_BASIC_AUTH_PASSWORD:?MONITORING_BASIC_AUTH_PASSWORD is required}
     volumes:
       - ./haproxy:/usr/local/etc/haproxy
 
@@ -17,9 +19,9 @@ services:
     image: postgres:14-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:-postgres}
-      POSTGRES_USER: ${DB_USERNAME:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-schoodule}
+      POSTGRES_USER: ${DB_USERNAME:-schoodule}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -42,9 +44,9 @@ services:
     environment:
       DB_HOST: ${DB_HOST:-postgres}
       DB_PORT: ${DB_PORT:-5432}
-      DB_NAME: ${DB_NAME:-postgres}
-      DB_USERNAME: ${DB_USERNAME:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-schoodule}
+      DB_USERNAME: ${DB_USERNAME:-schoodule}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       SERVER_PORT: 9500
       YA_ID: ${YA_ID:-}
       YA_SECRET: ${YA_SECRET:-}
@@ -52,8 +54,10 @@ services:
       BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-}
       BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
-    env_file:
-      - .env
+      APP_SECURITY_ALLOWED_ORIGINS: ${APP_SECURITY_ALLOWED_ORIGINS:-https://schoodule.ru}
+      APP_SECURITY_DOCS_ENABLED: ${APP_SECURITY_DOCS_ENABLED:-false}
+      APP_SECURITY_PROMETHEUS_ENABLED: ${APP_SECURITY_PROMETHEUS_ENABLED:-true}
+      APP_SECURITY_SECURE_COOKIE: ${APP_SECURITY_SECURE_COOKIE:-true}
 
   prometheus:
     image: prom/prometheus
@@ -64,6 +68,8 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.retention.time=2h"
       - "--storage.tsdb.min-block-duration=2h"
+      - "--web.external-url=${APP_BASE_URL:-https://schoodule.ru}/prometheus/"
+      - "--web.route-prefix=/prometheus/"
 
   grafana:
     image: grafana/grafana
@@ -71,9 +77,11 @@ services:
     depends_on:
       - prometheus
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:?GF_SECURITY_ADMIN_PASSWORD is required}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_LOG_LEVEL=warn
+      - GF_SERVER_ROOT_URL=${APP_BASE_URL:-https://schoodule.ru}/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
     volumes:
       - grafana-data:/var/lib/grafana
 

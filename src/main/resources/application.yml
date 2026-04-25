@@ -30,10 +30,18 @@ spring:
 server:
   port: 9500
   forward-headers-strategy: native
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${APP_SECURITY_SECURE_COOKIE:true}
 springdoc:
   api-docs:
+    enabled: ${APP_SECURITY_DOCS_ENABLED:false}
     path: /api-docs
   swagger-ui:
+    enabled: ${APP_SECURITY_DOCS_ENABLED:false}
     path: /swagger-ui.html
 app:
   bootstrap-admin:
@@ -41,8 +49,19 @@ app:
     username: ${BOOTSTRAP_ADMIN_USERNAME:}
     email: ${BOOTSTRAP_ADMIN_EMAIL:}
     password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+  security:
+    docs:
+      enabled: ${APP_SECURITY_DOCS_ENABLED:false}
+    prometheus:
+      enabled: ${APP_SECURITY_PROMETHEUS_ENABLED:false}
+    allowed-origins: ${APP_SECURITY_ALLOWED_ORIGINS:}
 management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
   endpoints:
     web:
       exposure:
-        include: health,metrics,prometheus
+        include: health,prometheus

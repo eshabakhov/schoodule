@@ -4,6 +4,8 @@
     <link rel="icon" type="image/png" href="/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
     <title>Вход — Schoodule</title>
     <link rel="stylesheet" th:href="@{/css/login.css}">
     <style>
@@ -77,6 +79,10 @@
         <div class="divider"><span>или</span></div>
 
         <form th:action="@{/login}" method="post" class="login-form">
+            <input type="hidden"
+                   th:if="${_csrf != null}"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
             <div class="field">
                 <label for="username">Логин</label>
                 <input type="text" id="username" name="username"
@@ -128,6 +134,7 @@
     </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script th:src="@{/js/security.js}"></script>
 <script th:src="@{/js/authentication.js}"></script>
 </body>
 </html>
