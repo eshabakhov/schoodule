@@ -70,6 +70,10 @@
             <div class="card-body">
                 <form th:action="@{/logout}" method="post"
                       style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+                    <input type="hidden"
+                           th:if="${_csrf != null}"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}">
                     <div>
                         <div style="font-size:.875rem;font-weight:500;color:var(--fg);">Выйти из системы</div>
                         <div style="font-size:.8125rem;color:var(--muted-fg);margin-top:.125rem;">

@@ -30,7 +30,7 @@ mvn clean install -Pqulice
 docker compose up --build
 ```
 
-Docker Compose reads deployment variables directly from the environment. For deployment from GitHub Actions or a server shell, pass image names, ports, database credentials, OAuth, and bootstrap admin settings through environment variables.
+Docker Compose reads deployment variables from the environment or from a local `.env` file.
 
 Open `http://localhost:9500/`. If OAuth login is needed, provide `ya-id` and `ya-secret`. If you need to create the first administrator, enable bootstrap admin settings:
 
