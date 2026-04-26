@@ -13,6 +13,8 @@ services:
       MONITORING_BASIC_AUTH_PASSWORD: ${MONITORING_BASIC_AUTH_PASSWORD:?MONITORING_BASIC_AUTH_PASSWORD is required}
     volumes:
       - ./haproxy:/usr/local/etc/haproxy
+    command: >
+      sh -c "envsubst </usr/local/etc/haproxy/haproxy.tmpl> /usr/local/etc/haproxy/haproxy.cfg"
 
   postgres:
     container_name: postgres
