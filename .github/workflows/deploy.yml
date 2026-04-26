@@ -82,20 +82,16 @@ jobs:
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/haproxy/"
           rm key.pem site.pem
 
-      - name: Render haproxy config
-        run: |
-          set -a
-          source .env
-          set +a
-          envsubst < ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/haproxy/haproxy.tmpl > \
-          ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/haproxy/haproxy.cfg
-
       - name: Deploy
         run: |
           ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<EOF
           set -e
           export IMAGE=${{ env.IMAGE_NAME }}:latest
           cd "${{ secrets.DEPLOY_PATH }}"
+          set -a
+          source .env
+          set +a
+          envsubst < ${{ secrets.DEPLOY_PATH }}/haproxy/haproxy.tmpl > ${{ secrets.DEPLOY_PATH }}/haproxy/haproxy.cfg
           docker pull \$IMAGE
           docker compose down
           docker compose up -d
