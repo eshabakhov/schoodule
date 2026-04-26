@@ -8,9 +8,8 @@ services:
       - prometheus
     ports:
       - "443:443"
-    environment:
-      MONITORING_BASIC_AUTH_USERNAME: ${MONITORING_BASIC_AUTH_USERNAME:?MONITORING_BASIC_AUTH_USERNAME is required}
-      MONITORING_BASIC_AUTH_PASSWORD: ${MONITORING_BASIC_AUTH_PASSWORD:?MONITORING_BASIC_AUTH_PASSWORD is required}
+    env_file:
+      - .env
     volumes:
       - ./haproxy:/usr/local/etc/haproxy
 
@@ -41,23 +40,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    environment:
-      DB_HOST: ${DB_HOST:-postgres}
-      DB_PORT: ${DB_PORT:-5432}
-      DB_NAME: ${DB_NAME:-schoodule}
-      DB_USERNAME: ${DB_USERNAME:-schoodule}
-      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
-      SERVER_PORT: 9500
-      YA_ID: ${YA_ID:-}
-      YA_SECRET: ${YA_SECRET:-}
-      BOOTSTRAP_ADMIN_ENABLED: ${BOOTSTRAP_ADMIN_ENABLED:-false}
-      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-}
-      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
-      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
-      APP_SECURITY_ALLOWED_ORIGINS: ${APP_SECURITY_ALLOWED_ORIGINS:-https://schoodule.ru}
-      APP_SECURITY_DOCS_ENABLED: ${APP_SECURITY_DOCS_ENABLED:-false}
-      APP_SECURITY_PROMETHEUS_ENABLED: ${APP_SECURITY_PROMETHEUS_ENABLED:-true}
-      APP_SECURITY_SECURE_COOKIE: ${APP_SECURITY_SECURE_COOKIE:-true}
+    env_file:
+      - .env
 
   prometheus:
     image: prom/prometheus
@@ -76,12 +60,8 @@ services:
     container_name: grafana
     depends_on:
       - prometheus
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:?GF_SECURITY_ADMIN_PASSWORD is required}
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_LOG_LEVEL=warn
-      - GF_SERVER_ROOT_URL=${APP_BASE_URL:-https://schoodule.ru}/grafana/
-      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    env_file:
+      - .env
     volumes:
       - grafana-data:/var/lib/grafana
 

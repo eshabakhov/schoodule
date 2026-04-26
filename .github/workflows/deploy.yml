@@ -57,13 +57,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Render haproxy config
-        run: |
-          set -a
-          source .env
-          set +a
-          envsubst < haproxy/haproxy.tmpl > haproxy/haproxy.cfg
-
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -95,6 +88,10 @@ jobs:
           set -e
           export IMAGE=${{ env.IMAGE_NAME }}:latest
           cd "${{ secrets.DEPLOY_PATH }}"
+          set -a
+          source .env
+          set +a
+          envsubst < ${{ secrets.DEPLOY_PATH }}/haproxy/haproxy.tmpl > ${{ secrets.DEPLOY_PATH }}/haproxy/haproxy.cfg
           docker pull \$IMAGE
           docker compose down
           docker compose up -d
