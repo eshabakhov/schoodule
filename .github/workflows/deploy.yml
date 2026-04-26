@@ -57,6 +57,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Render haproxy config
+        run: |
+          set -a
+          source .env
+          set +a
+          envsubst < haproxy/haproxy.tmpl > haproxy/haproxy.cfg
+
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
