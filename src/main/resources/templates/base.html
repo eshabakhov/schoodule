@@ -4,6 +4,8 @@
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
     <link rel="icon" type="image/png" href="/favicon.svg">
     <meta charset="UTF-8">
     <title th:text="${pageTitle} ?: 'Schoodule'">Schoodule</title>
@@ -152,6 +154,7 @@
 </div>
 <div th:replace="~{footer}"></div>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script type="module" th:src="@{/js/security.js}"></script>
 <script type="module" th:src="@{/js/ui/modal.js}"></script>
 <script type="module" th:src="@{/js/shared/crud.js}"></script>
 <script type="module" th:src="@{/js/shared/editEntity.js}"></script>
