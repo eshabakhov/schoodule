@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{base}">
+<head><title>Редактировать учителя</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="page-title-row" style="justify-content:center;">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <div>
+                <h1 style="margin:0;">Редактировать учителя</h1>
+                <p class="page-subtitle" th:text="${teacher.name()}">Иванов Иван Иванович</p>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${param.error}" class="error-message">
+        Имя не может быть пустым
+    </div>
+
+    <div style="max-width:480px;margin:0 auto;">
+        <form th:action="@{/schools/{s}/teachers/{t}/edit(s=${school.uid()},t=${teacher.uid()})}"
+              method="post"
+              style="display:flex;flex-direction:column;gap:1rem;">
+            <label style="display:flex;flex-direction:column;gap:.375rem;
+                          font-size:.875rem;font-weight:500;">
+                ФИО учителя
+                <input type="text"
+                       name="name"
+                       th:value="${teacher.name()}"
+                       autofocus
+                       required />
+            </label>
+            <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
+                <a th:href="@{/schools/{s}/teachers/{t}(s=${school.uid()},t=${teacher.uid()})}"
+                   class="btn-outline-action">Отмена</a>
+                <button type="submit" class="btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
