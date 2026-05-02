@@ -31,6 +31,9 @@ frontend http
     default_backend schoodule_app
 
 backend schoodule_app
+    acl is_static path_end .css .js
+    http-request cache-use static_cache if is_static
+    http-response cache-store static_cache if is_static
     server schoodule schoodule:9500 check
 
 backend grafana_app
