@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{base}">
+<head>
+    <title th:text="${pageTitle}">Учитель</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="page-title-row" style="margin-bottom:1.5rem;">
+        <div>
+            <h1 th:text="${teacher.name()}">Учитель</h1>
+            <p class="page-subtitle">Информация об учителе</p>
+        </div>
+    </div>
+    <div class="school-info">
+        <div class="info-row">
+            <span class="info-label">ID:</span>
+            <span class="info-value" th:text="${teacher.uid()}">1</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">ФИО:</span>
+            <span class="info-value" th:text="${teacher.name()}">Иванов Иван Иванович</span>
+        </div>
+    </div>
+    <div class="actions">
+        <a th:href="@{/schools/{s}/teachers/{t}/edit(s=${school.uid()},t=${teacher.uid()})}"
+           class="btn-outline-action">
+            Редактировать
+        </a>
+        <button class="btn-outline-action btn-delete-row"
+                th:data-id="${teacher.uid()}"
+                th:data-name="${teacher.name()}"
+                style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;">
+            Удалить
+        </button>
+    </div>
+</div>
+<th:block layout:fragment="page-scripts">
+    <script th:inline="javascript">
+        const schoolId = /*[[${school.uid()}]]*/ 0;
+    </script>
+    <script>
+        $(() => {
+            $(document).on('click', '.btn-delete-row', function () {
+                const id   = $(this).data('id');
+                const name = $(this).data('name');
+                if (!confirm(`Удалить «${name}»? Это действие нельзя отменить.`)) return;
+                $.ajax({
+                    url: `/api/schools/${schoolId}/teachers/${id}`,
+                    method: 'DELETE',
+                    headers: { version: 'SIMPLE' }
+                })
+                    .done(() => {
+                        window.location.href = `/schools/${schoolId}/teachers`;
+                    })
+                    .fail(() => alert('Не удалось удалить учителя'));
+            });
+        });
+    </script>
+</th:block>
+</body>
+</html>
