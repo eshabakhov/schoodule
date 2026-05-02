@@ -9,6 +9,12 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:changelog/changelog.xml
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          max-age: 3600
+          cache-public: true
   security:
     oauth2:
       client:
