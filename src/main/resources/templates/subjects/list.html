@@ -2,7 +2,9 @@
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       xmlns:th="http://www.thymeleaf.org"
       layout:decorate="~{base}">
-<head><title>Предметы</title></head>
+<head>
+    <title th:text="${pageTitle}">Предметы</title>
+</head>
 <body>
 <div layout:fragment="content">
     <div class="page-title-row">
@@ -10,89 +12,128 @@
             <h1>Предметы</h1>
             <p class="page-subtitle">Управление предметами школы</p>
         </div>
-        <button id="open-create-subject">
+        <a th:href="@{/schools/{id}/subjects/create(id=${school.uid()})}"
+           class="btn-primary"
+           style="display:inline-flex;align-items:center;gap:.5rem;
+                  padding:.5rem 1rem;border-radius:var(--radius-sm);
+                  font-size:.875rem;font-weight:500;text-decoration:none;">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                  stroke="currentColor" stroke-width="2" style="width:15px;height:15px;">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
             Добавить предмет
-        </button>
+        </a>
     </div>
-    <div class="card">
-        <div class="card-header">
-            <div class="card-header-left">
-                <div class="card-title">Список предметов</div>
-                <div class="card-desc">Всего: <span th:text="${#lists.isEmpty(subjects) ? 0 : #lists.size(subjects)}">0</span></div>
-            </div>
-            <div class="search-wrap" style="width:220px;">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <input type="text" id="entity-search" placeholder="Поиск..."/>
-            </div>
-        </div>
-        <div class="data-table-wrap" id="subjects-container">
-            <table class="shadcn-table">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Название</th>
-                    <th>Действия</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:if="${#lists.isEmpty(subjects)}">
-                    <td colspan="3" class="table-empty">Предметы не найдены. Добавьте первый предмет.</td>
-                </tr>
-                <tr th:each="item : ${subjects}"
-                    class="entity-row"
-                    th:data-id="${item.uid()}"
-                    th:data-name="${item.name().toLowerCase()}">
-                    <td class="td-mono" th:text="${item.uid()}">1</td>
-                    <td class="td-primary" th:text="${item.name()}">Предмет</td>
-                    <td>
-                        <div class="td-actions">
-                            <button class="btn-icon-ghost btn-edit-row"
-                                    th:data-id="${item.uid()}" th:data-name="${item.name()}"
-                                    title="Редактировать">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+
+    <div class="search-wrap" style="width:100%;max-width:320px;margin-bottom:1.25rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="subject-search" placeholder="Поиск предмета..."
+               th:value="${param.name != null ? param.name[0] : ''}"/>
+    </div>
+
+    <th:block th:fragment="subjects-grid">
+        <div id="subjects-results">
+            <div class="card-grid" id="subjects-container">
+                <div th:if="${#lists.isEmpty(subjects)}"
+                     style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted-fg);">
+                    Предметы не найдены.
+                    <a th:href="@{/schools/{id}/subjects/create(id=${school.uid()})}"
+                       style="color:var(--primary);font-weight:600;
+                              text-decoration:underline;margin-left:.25rem;">
+                        Добавить первый
+                    </a>
+                </div>
+
+                <div th:each="item : ${subjects}"
+                     class="card-item subject-row"
+                     th:data-id="${item.uid()}"
+                     th:data-name="${item.name().toLowerCase()}"
+                     style="cursor:pointer;">
+                    <div class="card-item-header">
+                        <div class="card-item-title-row">
+                            <div class="card-item-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                     stroke="currentColor" stroke-width="2">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                    <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/>
                                 </svg>
-                            </button>
-                            <button class="btn-icon-ghost btn-delete-row"
-                                    th:data-id="${item.uid()}" th:data-name="${item.name()}"
-                                    title="Удалить" style="color:var(--destructive);">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <polyline points="3 6 5 6 21 6"/>
-                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                                    <path d="M10 11v6M14 11v6"/>
-                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                                </svg>
-                            </button>
+                            </div>
                         </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+                    </div>
+                    <div class="card-item-period">
+                        <span class="card-item-name" th:text="${item.name()}">Предмет</span>
+                        <div class="card-item-period-label">
+                            ID:
+                            <span class="td-mono" th:text="${item.uid()}">1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pagination-wrap" id="subjects-pagination">
+                <div class="pagination-pages">
+                    <a th:if="${hasPrev}" href="#"
+                       th:data-offset="${page - 1}"
+                       th:data-limit="${limit}"
+                       class="pagination-btn pagination-prev">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                    </a>
+                    <th:block th:with="
+                        start=${page > 3 ? page - 2 : 1},
+                        end=${page + 2 <= totalPages ? page + 2 : totalPages},
+                        end=${end < 5 ? (totalPages < 5 ? totalPages : 5) : end}"
+                              th:if="${totalPages > 1}">
+                        <th:block th:if="${start > 1}">
+                            <a href="#" th:data-offset="1" th:data-limit="${limit}"
+                               class="pagination-btn">1</a>
+                            <span th:if="${start > 2}" class="pagination-ellipsis">…</span>
+                        </th:block>
+                        <th:block th:each="p : ${#numbers.sequence(start, end)}">
+                            <a href="#"
+                               th:data-offset="${p}"
+                               th:data-limit="${limit}"
+                               th:classappend="${p == page} ? 'active' : ''"
+                               th:text="${p}"
+                               class="pagination-btn">1</a>
+                        </th:block>
+                        <th:block th:if="${end < totalPages}">
+                            <span th:if="${end < totalPages - 1}" class="pagination-ellipsis">…</span>
+                            <a href="#" th:data-offset="${totalPages}" th:data-limit="${limit}"
+                               th:text="${totalPages}"
+                               class="pagination-btn">N</a>
+                        </th:block>
+                    </th:block>
+                    <a th:if="${hasNext}" href="#"
+                       th:data-offset="${page + 1}"
+                       th:data-limit="${limit}"
+                       class="pagination-btn pagination-next">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </a>
+                </div>
+                <div class="pagination-size" th:if="${limit >= 15}">
+                    <span class="pagination-size-label">На странице:</span>
+                    <a th:each="s : ${#arrays.toArray({15, 30, 50})}"
+                       href="#"
+                       th:data-offset="1"
+                       th:data-limit="${s}"
+                       th:classappend="${limit == s} ? 'active' : ''"
+                       th:text="${s}"
+                       class="pagination-size-btn">15</a>
+                </div>
+            </div>
         </div>
-        <th:block th:insert="~{fragments/pagination :: pagination('/subjects', ${page}, ${hasPrev}, ${hasNext})}"></th:block>
-    </div>
-    <th:block th:insert="~{fragments/modal-form :: modal(
-        'create-subject',
-        'Добавить предмет',
-        'create-subject-form',
-        'Например: Математика',
-        'submit-create')}"
-    ></th:block>
-    <th:block th:insert="~{fragments/modal-form :: modal(
-        'edit-subject',
-        'Редактировать предмет',
-        'edit-subject-form',
-        '',
-        'submit-update')}"
-    ></th:block>
+    </th:block>
 </div>
 <th:block layout:fragment="page-scripts">
     <script type="module" th:src="@{/js/subjects.js}"></script>
