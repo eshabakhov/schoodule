@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{base}">
+<head><title>Новый класс</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="page-title-row" style="justify-content: center;">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <div>
+                <h1 style="margin:0;">Новый класс</h1>
+                <p class="page-subtitle">Заполните данные для создания класса</p>
+            </div>
+        </div>
+    </div>
+    <div th:if="${param.error}" class="error-message">
+        Название не может быть пустым
+    </div>
+    <div style="max-width:480px; margin: 0 auto;">
+        <form th:action="@{/schools/{id}/classes/create(id=${school.uid()})}" method="post"
+              style="display:flex;flex-direction:column;gap:1rem;">
+            <label style="display:flex;flex-direction:column;gap:.375rem;
+                          font-size:.875rem;font-weight:500;">
+                Название класса
+                <input type="text"
+                       name="name"
+                       placeholder="Например: 10А"
+                       autofocus
+                       required />
+            </label>
+            <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
+                <a th:href="@{/schools/{id}/classes(id=${school.uid()})}" class="btn-outline-action">Отмена</a>
+                <button type="submit" class="btn-primary">Создать</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
