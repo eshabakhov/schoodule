@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{base}">
+<head>
+    <title th:text="${pageTitle}">Расписание</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="page-title-row" style="margin-bottom:1.5rem;">
+        <div>
+            <h1 th:text="${schedule.name()}">Расписание</h1>
+            <p class="page-subtitle" th:text="${school.name()}">Школа</p>
+        </div>
+    </div>
+    <div class="school-info">
+        <div class="info-row">
+            <span class="info-label">ID:</span>
+            <span class="info-value" th:text="${schedule.uid()}">1</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Название:</span>
+            <span class="info-value" th:text="${schedule.name()}">Расписание</span>
+        </div>
+    </div>
+    <div class="actions">
+        <a th:href="@{/schools/{s}/schedules/{r}/edit(s=${school.uid()},r=${schedule.uid()})}"
+           class="btn-outline-action">
+            Редактировать
+        </a>
+        <button class="btn-outline-action btn-delete-row"
+                th:data-id="${schedule.uid()}"
+                th:data-name="${schedule.name()}"
+                style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;">
+            Удалить
+        </button>
+    </div>
+
+    <div class="tabs-list" style="margin-top:1.5rem;">
+        <a th:href="@{/schools/{s}/schedules/{r}/curriculum(s=${school.uid()},r=${schedule.uid()})}"
+           class="tab-trigger">План классов</a>
+        <a th:href="@{/schools/{s}/schedules/{r}/capacity(s=${school.uid()},r=${schedule.uid()})}"
+           class="tab-trigger">Нагрузка</a>
+        <a th:href="@{/schools/{s}/schedules/{r}/assignments(s=${school.uid()},r=${schedule.uid()})}"
+           class="tab-trigger">Назначения</a>
+        <a th:href="@{/schools/{s}/schedules/{r}/validation(s=${school.uid()},r=${schedule.uid()})}"
+           class="tab-trigger">Проверка</a>
+    </div>
+
+    <div class="stat-grid" style="margin-top:1.5rem;width:100%;">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-label">Классов</span>
+            </div>
+            <div class="stat-value" th:text="${classCount} ?: '—'">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-label">Предметов</span>
+            </div>
+            <div class="stat-value" th:text="${subjectCount} ?: '—'">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-label">Учителей</span>
+            </div>
+            <div class="stat-value" th:text="${teacherCount} ?: '—'">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-label">Кабинетов</span>
+            </div>
+            <div class="stat-value" th:text="${cabinetCount} ?: '—'">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-label">Уроков</span>
+            </div>
+            <div class="stat-value" th:text="${lessonCount} ?: '—'">—</div>
+        </div>
+    </div>
+</div>
+<th:block layout:fragment="page-scripts">
+    <script th:inline="javascript">
+        const schoolId = /*[[${school.uid()}]]*/ 0;
+    </script>
+    <script>
+        $(() => {
+            $(document).on('click', '.btn-delete-row', function() {
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                if (!confirm(`Удалить «${name}»? Это действие нельзя отменить.`)) return;
+                $.ajax({
+                    url: `/api/schools/${schoolId}/schedules/${id}`,
+                    method: 'DELETE',
+                    headers: { version: 'SIMPLE' }
+                })
+                    .done(() => {
+                        window.location.href = `/schools/${schoolId}/schedules`;
+                    })
+                    .fail(() => alert('Не удалось удалить расписание'));
+            });
+        });
+    </script>
+</th:block>
+</body>
+</html>
