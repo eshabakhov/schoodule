@@ -9,8 +9,6 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.Schedule;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.tables.ClassCurriculum;
-import com.eshabakhov.schoodule.tables.LessonAssignment;
-import com.eshabakhov.schoodule.tables.LessonSlot;
 import java.util.Map;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
@@ -200,50 +198,6 @@ public class SchedulesHtmlController {
                     "classCount", sch.schoolClasses()
                         .list(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
                         .total(),
-                    "lessonCount", this.datasource
-                        .select(DSL.count())
-                        .from(LessonSlot.LESSON_SLOT)
-                        .join(LessonAssignment.LESSON_ASSIGNMENT)
-                        .on(
-                            LessonSlot.LESSON_SLOT.LESSON_ASSIGNMENT_ID
-                                .eq(LessonAssignment.LESSON_ASSIGNMENT.ID)
-                        )
-                        .join(ClassCurriculum.CLASS_CURRICULUM)
-                        .on(
-                            LessonAssignment.LESSON_ASSIGNMENT.CLASS_CURRICULUM_ID
-                                .eq(ClassCurriculum.CLASS_CURRICULUM.ID)
-                        )
-                        .where(ClassCurriculum.CLASS_CURRICULUM.SCHEDULE_ID.eq(schedule))
-                        .fetchOne(0, Integer.class),
-                    "cabinetCount", this.datasource
-                        .select(DSL.countDistinct(LessonSlot.LESSON_SLOT.CABINET_ID))
-                        .from(LessonSlot.LESSON_SLOT)
-                        .join(LessonAssignment.LESSON_ASSIGNMENT)
-                        .on(
-                            LessonSlot.LESSON_SLOT.LESSON_ASSIGNMENT_ID
-                                .eq(LessonAssignment.LESSON_ASSIGNMENT.ID)
-                        )
-                        .join(ClassCurriculum.CLASS_CURRICULUM)
-                        .on(
-                            LessonAssignment.LESSON_ASSIGNMENT.CLASS_CURRICULUM_ID
-                                .eq(ClassCurriculum.CLASS_CURRICULUM.ID)
-                        )
-                        .where(ClassCurriculum.CLASS_CURRICULUM.SCHEDULE_ID.eq(schedule))
-                        .fetchOne(0, Integer.class),
-                    "teacherCount", this.datasource
-                        .select()
-                        .from(LessonAssignment.LESSON_ASSIGNMENT)
-                        .join(ClassCurriculum.CLASS_CURRICULUM)
-                        .on(
-                            LessonAssignment.LESSON_ASSIGNMENT.CLASS_CURRICULUM_ID
-                                .eq(ClassCurriculum.CLASS_CURRICULUM.ID)
-                        )
-                        .where(ClassCurriculum.CLASS_CURRICULUM.SCHEDULE_ID.eq(schedule))
-                        .fetch()
-                        .stream()
-                        .map(r -> r.get(LessonAssignment.LESSON_ASSIGNMENT.TEACHER_ID))
-                        .distinct()
-                        .count(),
                     "subjectCount", this.datasource
                         .select(DSL.countDistinct(ClassCurriculum.CLASS_CURRICULUM.SUBJECT_ID))
                         .from(ClassCurriculum.CLASS_CURRICULUM)

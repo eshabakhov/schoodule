@@ -39,12 +39,6 @@
     <div class="tabs-list" style="margin-top:1.5rem;">
         <a th:href="@{/schools/{s}/schedules/{r}/curriculum(s=${school.uid()},r=${schedule.uid()})}"
            class="tab-trigger">План классов</a>
-        <a th:href="@{/schools/{s}/schedules/{r}/capacity(s=${school.uid()},r=${schedule.uid()})}"
-           class="tab-trigger">Нагрузка</a>
-        <a th:href="@{/schools/{s}/schedules/{r}/assignments(s=${school.uid()},r=${schedule.uid()})}"
-           class="tab-trigger">Назначения</a>
-        <a th:href="@{/schools/{s}/schedules/{r}/validation(s=${school.uid()},r=${schedule.uid()})}"
-           class="tab-trigger">Проверка</a>
     </div>
 
     <div class="stat-grid" style="margin-top:1.5rem;width:100%;">
@@ -59,24 +53,6 @@
                 <span class="stat-label">Предметов</span>
             </div>
             <div class="stat-value" th:text="${subjectCount} ?: '—'">—</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-card-header">
-                <span class="stat-label">Учителей</span>
-            </div>
-            <div class="stat-value" th:text="${teacherCount} ?: '—'">—</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-card-header">
-                <span class="stat-label">Кабинетов</span>
-            </div>
-            <div class="stat-value" th:text="${cabinetCount} ?: '—'">—</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-card-header">
-                <span class="stat-label">Уроков</span>
-            </div>
-            <div class="stat-value" th:text="${lessonCount} ?: '—'">—</div>
         </div>
     </div>
 </div>

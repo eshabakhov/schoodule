@@ -17,22 +17,6 @@
                class="tab-link active">
                 План классов
             </a>
-            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/capacity(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
-               class="tab-link tab-validation">
-                Нагрузка учителей
-            </a>
-            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/assignments(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
-               class="tab-link tab-validation">
-                Назначения
-            </a>
-            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/grid(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
-               class="tab-link tab-validation">
-                Сетка расписания
-            </a>
-            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/validation(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
-               class="tab-link tab-validation">
-                Проверить план
-            </a>
         </nav>
 
         <div class="section-header">
@@ -49,27 +33,17 @@
                 <th>Класс</th>
                 <th>Предмет</th>
                 <th>Часов/неделю</th>
-                <th>Назначено</th>
-                <th>Статус</th>
                 <th>Действия</th>
             </tr>
             </thead>
             <tbody>
             <tr th:if="${#lists.isEmpty(curriculums)}">
-                <td colspan="6" class="empty-state">Нет данных. Добавьте план класса.</td>
+                <td colspan="4" class="empty-state">Нет данных. Добавьте план класса.</td>
             </tr>
             <tr th:each="curric : ${curriculums.list()}">
                 <td th:text="${curric.schoolClass().name()}">5А</td>
                 <td th:text="${curric.subject().name()}">Математика</td>
                 <td th:text="${curric.hoursPerWeek()}">5</td>
-                <td th:text="${curric.assignedCurriculum().assignedHours() != null ? curric.assignedCurriculum().assignedHours() : 0}">0</td>
-                <td>
-                    <span th:classappend="${curric.assignedCurriculum().assignedHours() == curric.hoursPerWeek() ? 'status-complete' :
-                                        curric.assignedCurriculum().assignedHours() != null && curric.assignedCurriculum().assignedHours() > 0 ? 'status-partial' : 'status-empty'}"
-                          class="status-badge">
-                        <span th:text="${curric.assignedCurriculum().assignedHours() != null ? curric.assignedCurriculum().assignedHours() : 0}">0</span>/<span th:text="${curric.hoursPerWeek()}">5</span>
-                    </span>
-                </td>
                 <td>
                     <form th:action="@{/schools/{schoolId}/schedules/{scheduleId}/curriculum/{curriculumId}/delete(schoolId=${school.uid()},scheduleId=${schedule.uid()},curriculumId=${curric.uid()})}"
                           method="post"
