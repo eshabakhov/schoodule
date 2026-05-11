@@ -7,12 +7,14 @@ import com.eshabakhov.schoodule.school.Cabinet;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 
 /**
  * Postgres implementation of {@link Cabinet}.
  *
  * @since 0.0.1
  */
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public final class CbPostgres implements Cabinet {
 
     /** JOOQ DSL context for executing database queries. */
@@ -33,34 +35,22 @@ public final class CbPostgres implements Cabinet {
 
     @Override
     public String name() {
-        return this.ctx
-            .fetchOne(
-                """
-                SELECT name
-                FROM public.cabinet
-                WHERE id = ?
-                """,
-                this.id
-            )
-            .get("name", String.class);
+        return this.ctx.select(DSL.field("name"))
+            .from("public.cabinet")
+            .where(DSL.condition("id = ?", this.id))
+            .fetchOne("name", String.class);
     }
 
     @Override
     public ObjectNode json() {
-        return this.ctx
+        return this.ctx.select(DSL.field("id"), DSL.field("name"))
+            .from("public.cabinet")
+            .where(DSL.condition("id = ?", this.id))
             .fetchOne(
-                """
-                SELECT id, name
-                FROM public.cabinet
-                WHERE id = ?
-                """,
-                this.id
-            )
-            .map(
-                r ->
+                rec ->
                     JsonNodeFactory.instance.objectNode()
-                        .put("id", r.get("id", Long.class))
-                        .put("name", r.get("name", String.class))
+                        .put("id", rec.get("id", Long.class))
+                        .put("name", rec.get("name", String.class))
             );
     }
 }
