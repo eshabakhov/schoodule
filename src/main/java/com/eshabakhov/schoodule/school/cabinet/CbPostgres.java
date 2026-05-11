@@ -7,7 +7,6 @@ import com.eshabakhov.schoodule.school.Cabinet;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
-import org.jooq.impl.DSL;
 
 /**
  * Postgres implementation of {@link Cabinet}.
@@ -16,8 +15,9 @@ import org.jooq.impl.DSL;
  */
 public final class CbPostgres implements Cabinet {
 
-    /** Name field. */
-    private static final String NAME_FIELD = "name";
+    /** JOOQ Table for Cabinet. */
+    private static final com.eshabakhov.schoodule.tables.Cabinet CABINET =
+        com.eshabakhov.schoodule.tables.Cabinet.CABINET;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -37,22 +37,24 @@ public final class CbPostgres implements Cabinet {
 
     @Override
     public String name() {
-        return this.ctx.select(DSL.field(CbPostgres.NAME_FIELD))
-            .from("public.cabinet")
-            .where(DSL.condition("id = ?", this.id))
-            .fetchOne(CbPostgres.NAME_FIELD, String.class);
+        return this.ctx
+            .select(CbPostgres.CABINET.NAME)
+            .from(CbPostgres.CABINET)
+            .where(CbPostgres.CABINET.ID.eq(this.id))
+            .fetchOneInto(String.class);
     }
 
     @Override
     public ObjectNode json() {
-        return this.ctx.select(DSL.field("id"), DSL.field(CbPostgres.NAME_FIELD))
-            .from("public.cabinet")
-            .where(DSL.condition("id = ?", this.id))
+        return this.ctx
+            .select(CbPostgres.CABINET.ID, CbPostgres.CABINET.NAME)
+            .from(CbPostgres.CABINET)
+            .where(CbPostgres.CABINET.ID.eq(this.id))
             .fetchOne(
-                rec ->
+                clazz ->
                     JsonNodeFactory.instance.objectNode()
-                        .put("id", rec.get("id", Long.class))
-                        .put(CbPostgres.NAME_FIELD, rec.get(CbPostgres.NAME_FIELD, String.class))
+                        .put("id", clazz.get(CbPostgres.CABINET.ID))
+                        .put("name", clazz.get(CbPostgres.CABINET.NAME))
             );
     }
 }
