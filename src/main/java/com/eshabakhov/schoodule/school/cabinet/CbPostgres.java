@@ -15,46 +15,52 @@ import org.jooq.DSLContext;
  */
 public final class CbPostgres implements Cabinet {
 
-    /** JOOQ Table for Cabinet. */
-    private static final com.eshabakhov.schoodule.tables.Cabinet CABINET =
-        com.eshabakhov.schoodule.tables.Cabinet.CABINET;
-
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
     /** Cabinet id. */
-    private final long cid;
+    private final long id;
 
-    public CbPostgres(final DSLContext datasource, final long cid) {
-        this.datasource = datasource;
-        this.cid = cid;
+    public CbPostgres(final DSLContext ctx, final long id) {
+        this.ctx = ctx;
+        this.id = id;
     }
 
     @Override
     public Long uid() {
-        return this.cid;
+        return this.id;
     }
 
     @Override
     public String name() {
-        return this.datasource
-            .select(CbPostgres.CABINET.NAME)
-            .from(CbPostgres.CABINET)
-            .where(CbPostgres.CABINET.ID.eq(this.cid))
-            .fetchOneInto(String.class);
+        return this.ctx
+            .fetchOne(
+                """
+                SELECT name
+                FROM public.cabinet
+                WHERE id = ?
+                """,
+                this.id
+            )
+            .get("name", String.class);
     }
 
     @Override
     public ObjectNode json() {
-        return this.datasource
-            .select(CbPostgres.CABINET.ID, CbPostgres.CABINET.NAME)
-            .from(CbPostgres.CABINET)
-            .where(CbPostgres.CABINET.ID.eq(this.cid))
+        return this.ctx
             .fetchOne(
-                clazz ->
+                """
+                SELECT id, name
+                FROM public.cabinet
+                WHERE id = ?
+                """,
+                this.id
+            )
+            .map(
+                r ->
                     JsonNodeFactory.instance.objectNode()
-                        .put("id", clazz.get(CbPostgres.CABINET.ID))
-                        .put("name", clazz.get(CbPostgres.CABINET.NAME))
+                        .put("id", r.get("id", Long.class))
+                        .put("name", r.get("name", String.class))
             );
     }
 }
