@@ -260,17 +260,6 @@ table.shadcn-table {
     background: var(--card);
 }
 
-.schedule-grid th,
-.schedule-grid td {
-    border-color: var(--border);
-}
-
-.schedule-grid thead th {
-    background: var(--muted);
-    color: var(--muted-fg);
-    font-size: .75rem;
-}
-
 table.shadcn-table thead th {
     padding: .75rem 1rem;
     text-align: left;
@@ -565,10 +554,6 @@ table.shadcn-table tbody tr:hover {
     background: transparent;
 }
 
-.tab-link.tab-validation {
-    background: transparent;
-}
-
 /* ── Tabs (schedule details) ── */
 .tabs-list {
     display: inline-flex;
@@ -611,46 +596,6 @@ table.shadcn-table tbody tr:hover {
     padding: .875rem 1rem;
     font-size: .875rem;
     margin-bottom: 1rem;
-}
-
-/* ── Validation results ── */
-.validation-results {
-    border-radius: var(--radius-lg);
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
-    border-width: 1px;
-    border-style: solid;
-}
-
-.validation-results.valid {
-    background: #f0fdf4;
-    border-color: #bbf7d0;
-    color: #15803d;
-}
-
-.validation-results.invalid {
-    background: #fef2f2;
-    border-color: #fecaca;
-    color: #991b1b;
-}
-
-.validation-results h3 {
-    font-size: 1rem;
-    margin-bottom: .375rem;
-}
-
-.validation-issue {
-    padding: 1rem;
-    background: var(--card);
-    border-radius: var(--radius);
-    border-left-width: 3px;
-    border-left-style: solid;
-    box-shadow: var(--shadow-sm);
-}
-
-.lesson-item {
-    border-radius: var(--radius-sm);
-    font-size: .8125rem;
 }
 
 /* ── School list (column layout) ── */

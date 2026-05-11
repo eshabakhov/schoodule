@@ -16,7 +16,6 @@ import com.eshabakhov.schoodule.tables.records.ClassCurriculumRecord;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 /**
@@ -38,10 +37,6 @@ public final class PgClassCurriculums implements ClassCurriculums {
     /** JOOQ Subject table. */
     private static final com.eshabakhov.schoodule.tables.Subject SUBJECT =
         com.eshabakhov.schoodule.tables.Subject.SUBJECT;
-
-    /** JOOQ Lesson assignment table. */
-    private static final com.eshabakhov.schoodule.tables.LessonAssignment ASSIGNMENT =
-        com.eshabakhov.schoodule.tables.LessonAssignment.LESSON_ASSIGNMENT;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext datasource;
@@ -134,16 +129,13 @@ public final class PgClassCurriculums implements ClassCurriculums {
         final Condition condition,
         final Page page
     ) throws Exception {
-        final Field<Integer> assigned = PgClassCurriculums.ASSIGNMENT
-            .HOURS_PER_WEEK.sum().cast(Integer.class).as("assigned_hours");
         return new ResponsePageableList<>(
             this.datasource
                 .select(
                     PgClassCurriculums.CURRICULUM.ID,
                     PgClassCurriculums.CLASS.ID,
                     PgClassCurriculums.SUBJECT.ID,
-                    PgClassCurriculums.CURRICULUM.HOURS_PER_WEEK,
-                    assigned
+                    PgClassCurriculums.CURRICULUM.HOURS_PER_WEEK
                 )
                 .from(PgClassCurriculums.CURRICULUM)
                 .join(PgClassCurriculums.CLASS)
@@ -158,65 +150,25 @@ public final class PgClassCurriculums implements ClassCurriculums {
                         PgClassCurriculums.SUBJECT.ID
                     )
                 )
-                .leftJoin(PgClassCurriculums.ASSIGNMENT)
-                .on(
-                    PgClassCurriculums.ASSIGNMENT.CLASS_CURRICULUM_ID.eq(
-                        PgClassCurriculums.CURRICULUM.ID
-                    )
-                )
                 .where(PgClassCurriculums.CURRICULUM.SCHEDULE_ID.eq(this.sid))
-                .groupBy(
-                    PgClassCurriculums.CURRICULUM.ID,
-                    PgClassCurriculums.CLASS.ID,
-                    PgClassCurriculums.SUBJECT.ID,
-                    PgClassCurriculums.CURRICULUM.HOURS_PER_WEEK
-                )
                 .fetch(
-                    selected -> new SimpleAssignedClassCurriculum(
-                        new SimpleClassCurriculum(
-                            selected.get(PgClassCurriculums.CURRICULUM.ID),
-                            new ScPostgres(
-                                this.datasource,
-                                selected.get(PgClassCurriculums.CLASS.ID)
-                            ),
-                            new SbPostgres(
-                                this.datasource,
-                                selected.get(PgClassCurriculums.SUBJECT.ID)
-                            ),
-                            selected.get(PgClassCurriculums.CURRICULUM.HOURS_PER_WEEK)
+                    selected -> new SimpleClassCurriculum(
+                        selected.get(PgClassCurriculums.CURRICULUM.ID),
+                        new ScPostgres(
+                            this.datasource,
+                            selected.get(PgClassCurriculums.CLASS.ID)
                         ),
-                        selected.get(assigned)
+                        new SbPostgres(
+                            this.datasource,
+                            selected.get(PgClassCurriculums.SUBJECT.ID)
+                        ),
+                        selected.get(PgClassCurriculums.CURRICULUM.HOURS_PER_WEEK)
                     )
                 ),
             this.datasource
                 .fetchCount(
-                    this.datasource.select(PgClassCurriculums.CURRICULUM.ID)
-                        .from(PgClassCurriculums.CURRICULUM)
-                        .join(PgClassCurriculums.CLASS)
-                        .on(
-                            PgClassCurriculums.CURRICULUM.SCHOOL_CLASS_ID.eq(
-                                PgClassCurriculums.CLASS.ID
-                            )
-                        )
-                        .join(PgClassCurriculums.SUBJECT)
-                        .on(
-                            PgClassCurriculums.CURRICULUM.SUBJECT_ID.eq(
-                                PgClassCurriculums.SUBJECT.ID
-                            )
-                        )
-                        .leftJoin(PgClassCurriculums.ASSIGNMENT)
-                        .on(
-                            PgClassCurriculums.ASSIGNMENT.CLASS_CURRICULUM_ID.eq(
-                                PgClassCurriculums.CURRICULUM.ID
-                            )
-                        )
+                    this.datasource.selectFrom(PgClassCurriculums.CURRICULUM)
                         .where(PgClassCurriculums.CURRICULUM.SCHEDULE_ID.eq(this.sid))
-                        .groupBy(
-                            PgClassCurriculums.CURRICULUM.ID,
-                            PgClassCurriculums.CLASS.ID,
-                            PgClassCurriculums.SUBJECT.ID,
-                            PgClassCurriculums.CURRICULUM.HOURS_PER_WEEK
-                        )
                 ),
             page
         );

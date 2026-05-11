@@ -4,8 +4,7 @@ button,
 .btn-edit, .btn-back,
 .btn-schedules, .btn-cabinets, .btn-classes,
 .btn-teachers, .btn-subjects,
-.btn-curriculums, .btn-capacities, .btn-assignments,
-.btn-grid, .btn-validation,
+.btn-curriculums,
 .logout-btn {
     all: unset;
     box-sizing: border-box;
@@ -149,8 +148,7 @@ button:focus-visible, .btn:focus-visible {
 /* ── Nav buttons (school details page) ── */
 .btn-schedules, .btn-cabinets, .btn-classes,
 .btn-teachers, .btn-subjects,
-.btn-curriculums, .btn-capacities, .btn-assignments,
-.btn-grid, .btn-validation {
+.btn-curriculums {
     background: var(--muted);
     color: var(--fg);
     border-color: var(--border);
@@ -162,8 +160,7 @@ button:focus-visible, .btn:focus-visible {
 
 .btn-schedules:hover, .btn-cabinets:hover, .btn-classes:hover,
 .btn-teachers:hover, .btn-subjects:hover,
-.btn-curriculums:hover, .btn-capacities:hover, .btn-assignments:hover,
-.btn-grid:hover, .btn-validation:hover {
+.btn-curriculums:hover {
     background: var(--accent);
     box-shadow: var(--shadow-sm);
     transform: none;
@@ -205,7 +202,7 @@ button:focus-visible, .btn:focus-visible {
     color: var(--destructive);
 }
 
-/* ── Planning: add / action / place ── */
+/* ── Planning: add / action ── */
 .btn-add {
     background: var(--primary);
     color: var(--primary-fg);
@@ -230,16 +227,6 @@ button:focus-visible, .btn:focus-visible {
     align-items: center;
     transition: opacity var(--ease), background var(--ease);
     text-decoration: none;
-}
-
-.btn-action.btn-place {
-    background: #eff6ff;
-    color: #1d4ed8;
-    border-color: #bfdbfe;
-}
-
-.btn-action.btn-place:hover {
-    background: #dbeafe;
 }
 
 /* ── Card open button ── */

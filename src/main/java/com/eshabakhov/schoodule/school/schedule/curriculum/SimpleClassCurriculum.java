@@ -62,11 +62,6 @@ public final class SimpleClassCurriculum implements ClassCurriculum {
     }
 
     @Override
-    public AssignedClassCurriculum assignedCurriculum() {
-        return null;
-    }
-
-    @Override
     public ObjectNode json() {
         final var node = JsonNodeFactory.instance.objectNode();
         node.put("id", this.cid);

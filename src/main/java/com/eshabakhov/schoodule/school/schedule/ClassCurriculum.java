@@ -6,7 +6,6 @@ package com.eshabakhov.schoodule.school.schedule;
 import com.eshabakhov.schoodule.Jsonable;
 import com.eshabakhov.schoodule.school.SchoolClass;
 import com.eshabakhov.schoodule.school.Subject;
-import com.eshabakhov.schoodule.school.schedule.curriculum.AssignedClassCurriculum;
 
 /**
  * Class curriculum domain entity interface.
@@ -45,6 +44,4 @@ public interface ClassCurriculum extends Jsonable {
      * @return Hours per week
      */
     Integer hoursPerWeek();
-
-    AssignedClassCurriculum assignedCurriculum();
 }
