@@ -19,8 +19,10 @@ import org.jooq.impl.DSL;
  * @since 0.0.1
  */
 @EqualsAndHashCode
-@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public final class CbsPostgres implements Cabinets {
+
+    /** Cabinet table. */
+    private static final String CABINET = "public.cabinet";
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -39,7 +41,7 @@ public final class CbsPostgres implements Cabinets {
             config -> {
                 final DSLContext ttx = DSL.using(config);
                 final var existing = ttx.select(DSL.field("id"))
-                    .from("public.cabinet")
+                    .from(CbsPostgres.CABINET)
                     .where(
                         DSL.condition(
                         "school_id = ? AND name = ? AND is_deleted = false",
@@ -51,7 +53,7 @@ public final class CbsPostgres implements Cabinets {
                 if (existing != null) {
                     throw new CabinetAlreadyExistsException(name);
                 }
-                final var created = ttx.insertInto(DSL.table("public.cabinet"))
+                final var created = ttx.insertInto(DSL.table(CbsPostgres.CABINET))
                     .columns(
                         DSL.field("school_id"),
                         DSL.field("name"),
@@ -71,7 +73,7 @@ public final class CbsPostgres implements Cabinets {
     @Override
     public Cabinet find(final long cid) throws Exception {
         final var selected = this.ctx.select(DSL.field("id"))
-            .from("public.cabinet")
+            .from(CbsPostgres.CABINET)
             .where(
                 DSL.condition("id = ? AND school_id = ? AND is_deleted = false", cid, this.sid)
             )
@@ -87,7 +89,7 @@ public final class CbsPostgres implements Cabinets {
     @Override
     public Cabinet find(final String name) throws Exception {
         final var selected = this.ctx.select(DSL.field("id"))
-            .from("public.cabinet")
+            .from(CbsPostgres.CABINET)
             .where(
                 DSL.condition(
                     "school_id = ? AND name = ? AND is_deleted = false",
@@ -113,7 +115,7 @@ public final class CbsPostgres implements Cabinets {
             .and(condition);
         return new ResponsePageableList<>(
             this.ctx.select(DSL.field("id"))
-                .from("public.cabinet")
+                .from(CbsPostgres.CABINET)
                 .where(base)
                 .orderBy(DSL.field("name").asc())
                 .limit(page.limit())
@@ -126,7 +128,7 @@ public final class CbsPostgres implements Cabinets {
                 ),
             this.ctx.fetchCount(
                 this.ctx.select()
-                    .from("public.cabinet")
+                    .from(CbsPostgres.CABINET)
                     .where(base)
             ),
             page
@@ -136,7 +138,7 @@ public final class CbsPostgres implements Cabinets {
     @Override
     public Cabinet put(final Long cid, final String name) throws Exception {
         final var selected = this.ctx.select(DSL.field("id"))
-            .from("public.cabinet")
+            .from(CbsPostgres.CABINET)
             .where(
                 DSL.condition(
                     "id = ? AND school_id = ? AND is_deleted = false",
@@ -147,7 +149,7 @@ public final class CbsPostgres implements Cabinets {
             .fetchOne();
         final Cabinet result;
         if (selected == null) {
-            final var inserted = this.ctx.insertInto(DSL.table("public.cabinet"))
+            final var inserted = this.ctx.insertInto(DSL.table(CbsPostgres.CABINET))
                 .columns(
                     DSL.field("school_id"),
                     DSL.field("name"),
@@ -161,7 +163,7 @@ public final class CbsPostgres implements Cabinets {
             }
             result = new CbPostgres(this.ctx, inserted.get("id", Long.class));
         } else {
-            final var updated = this.ctx.update(DSL.table("public.cabinet"))
+            final var updated = this.ctx.update(DSL.table(CbsPostgres.CABINET))
                 .set(DSL.field("name"), name)
                 .where(
                     DSL.condition("id = ?", cid)
@@ -179,7 +181,7 @@ public final class CbsPostgres implements Cabinets {
     @Override
     public void remove(final long cid) throws Exception {
         final var cabinet = this.ctx.select(DSL.field("id"))
-            .from("public.cabinet")
+            .from(CbsPostgres.CABINET)
             .where(
                 DSL.condition(
                     "id = ? AND school_id = ? AND is_deleted = false",
@@ -193,7 +195,7 @@ public final class CbsPostgres implements Cabinets {
                 String.format("Cabinet with id=%d not found", cid)
             );
         }
-        this.ctx.update(DSL.table("public.cabinet"))
+        this.ctx.update(DSL.table(CbsPostgres.CABINET))
             .set(DSL.field("is_deleted"), true)
             .where(DSL.condition("id = ?", cid))
             .execute();
