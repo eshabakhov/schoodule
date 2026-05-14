@@ -275,4 +275,59 @@
             ]]>
         </sql>
     </changeSet>
+    <changeSet id="federal-curriculum/v1/05-14-2026/tables" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.federal_curriculum (
+                id bigserial PRIMARY KEY,
+                title varchar NOT NULL,
+                education_level education_level_type NOT NULL,
+                study_week_type study_week_type NOT NULL,
+                version varchar NOT NULL,
+                academic_year varchar(9) NOT NULL,
+                description varchar,
+                is_deleted boolean NOT NULL DEFAULT FALSE,
+                created_at timestamptz NOT NULL DEFAULT NOW(),
+                updated_at timestamptz NOT NULL DEFAULT NOW(),
+                CONSTRAINT uq_federal_curriculum_variant
+                    UNIQUE (
+                        education_level,
+                        study_week_type,
+                        version,
+                        academic_year
+                    ),
+                CONSTRAINT chk_federal_curriculum_academic_year
+                    CHECK (academic_year ~ '^[0-9]{4}/[0-9]{4}$')
+            );
+
+            CREATE TABLE public.federal_curriculum_requirement (
+                id bigserial PRIMARY KEY,
+                federal_curriculum_id bigint NOT NULL,
+                grade integer NOT NULL,
+                subject_name varchar NOT NULL,
+                weekly_hours integer NOT NULL,
+                part_type curriculum_part_type NOT NULL,
+                is_deleted boolean NOT NULL DEFAULT FALSE,
+                created_at timestamptz NOT NULL DEFAULT NOW(),
+                updated_at timestamptz NOT NULL DEFAULT NOW(),
+                CONSTRAINT fk_federal_curriculum_requirement_curriculum
+                    FOREIGN KEY (federal_curriculum_id)
+                        REFERENCES public.federal_curriculum(id)
+                        ON DELETE CASCADE
+                        ON UPDATE CASCADE,
+                CONSTRAINT uq_federal_curriculum_requirement_subject
+                    UNIQUE (
+                        federal_curriculum_id,
+                        grade,
+                        subject_name,
+                        part_type
+                    ),
+                CONSTRAINT chk_federal_curriculum_requirement_grade
+                    CHECK (grade BETWEEN 1 AND 11),
+                CONSTRAINT chk_federal_curriculum_requirement_weekly_hours
+                    CHECK (weekly_hours > 0)
+            );
+            ]]>
+        </sql>
+    </changeSet>
 </databaseChangeLog>
