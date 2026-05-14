@@ -21,4 +21,25 @@
             ]]>
         </sql>
     </changeSet>
+    <changeSet id="federal-curriculum/v1/05-14-2026/types" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TYPE education_level_type AS ENUM (
+                'PRIMARY',
+                'BASIC',
+                'SECONDARY'
+            );
+
+            CREATE TYPE study_week_type AS ENUM (
+                'FIVE_DAYS',
+                'SIX_DAYS'
+            );
+
+            CREATE TYPE curriculum_part_type AS ENUM (
+                'MANDATORY',
+                'OPTIONAL'
+            );
+            ]]>
+        </sql>
+    </changeSet>
 </databaseChangeLog>
