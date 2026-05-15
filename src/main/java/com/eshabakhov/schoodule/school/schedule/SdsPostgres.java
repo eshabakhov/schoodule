@@ -20,6 +20,7 @@ import org.jooq.impl.DSL;
  * @since 0.0.1
  */
 @EqualsAndHashCode
+@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public final class SdsPostgres implements Schedules {
 
     /** JOOQ Table for Schedule. */
@@ -68,7 +69,7 @@ public final class SdsPostgres implements Schedules {
     }
 
     @Override
-    public Schedule find(final long scheduleid) throws Exception {
+    public Schedule schedule(final long scheduleid) throws Exception {
         final ScheduleRecord selected = this.datasource.selectFrom(SdsPostgres.SCHEDULE)
             .where(
                 SdsPostgres.SCHEDULE.ID.eq(scheduleid)
@@ -85,7 +86,7 @@ public final class SdsPostgres implements Schedules {
     }
 
     @Override
-    public Schedule find(final String name) throws Exception {
+    public Schedule schedule(final String name) throws Exception {
         final ScheduleRecord selected = this.datasource.selectFrom(SdsPostgres.SCHEDULE)
             .where(
                 SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid)
@@ -102,7 +103,7 @@ public final class SdsPostgres implements Schedules {
     }
 
     @Override
-    public PageableList<Schedule> list(
+    public PageableList<Schedule> schedules(
         final Condition condition,
         final Page page
     ) throws Exception {

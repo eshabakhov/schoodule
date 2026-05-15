@@ -33,7 +33,7 @@ public interface Schedules {
      * @return The found {@link Schedule}
      * @throws Exception if not found
      */
-    Schedule find(long id) throws Exception;
+    Schedule schedule(long id) throws Exception;
 
     /**
      * Finds a schedule by its name.
@@ -42,7 +42,7 @@ public interface Schedules {
      * @return The found {@link Schedule}
      * @throws Exception if not found
      */
-    Schedule find(String name) throws Exception;
+    Schedule schedule(String name) throws Exception;
 
     /**
      * Returns a paginated list of schedules optionally filtered by a search string.
@@ -52,7 +52,7 @@ public interface Schedules {
      * @return List of {@link Schedule} instances
      * @throws Exception if listing fails
      */
-    PageableList<Schedule> list(Condition condition, Page page) throws Exception;
+    PageableList<Schedule> schedules(Condition condition, Page page) throws Exception;
 
     /**
      * Updates the name of an existing schedule.

@@ -53,7 +53,7 @@ public class CurriculumHtmlController {
         final Model model
     ) throws Exception {
         final var sch = new SlsPostgres(this.datasource).school(school);
-        final var sched = sch.schedules().find(schedule);
+        final var sched = sch.schedules().schedule(schedule);
         final var curriculums = sched
             .curriculums()
             .list(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1));
@@ -90,7 +90,7 @@ public class CurriculumHtmlController {
             new SlsPostgres(this.datasource)
                 .school(school)
                 .schedules()
-                .find(schedule)
+                .schedule(schedule)
                 .curriculums()
                 .add(
                     new ScPostgres(this.datasource, clazz),
@@ -124,7 +124,7 @@ public class CurriculumHtmlController {
         new SlsPostgres(this.datasource)
             .school(school)
             .schedules()
-            .find(schedule)
+            .schedule(schedule)
             .curriculums()
             .remove(curriculum);
         return String.format(
