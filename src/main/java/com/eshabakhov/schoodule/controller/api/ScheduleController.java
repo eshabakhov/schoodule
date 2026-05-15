@@ -219,7 +219,7 @@ public class ScheduleController {
                 new SlsPostgres(this.datasource)
                     .school(school)
                     .schedules()
-                    .list(condition, new PageRequest(limit, offset))
+                    .schedules(condition, new PageRequest(limit, offset))
             );
     }
 
@@ -295,7 +295,7 @@ public class ScheduleController {
                         new SlsPostgres(this.datasource)
                             .school(school)
                             .schedules()
-                            .find(schedule)
+                            .schedule(schedule)
                     )
                 );
         } else {

@@ -63,7 +63,7 @@ public class SchedulesHtmlController {
         final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<Schedule> schedules = sch
             .schedules()
-            .list(condition, new PageRequest(limit, offset));
+            .schedules(condition, new PageRequest(limit, offset));
         return new ModelAndView("schedules/list")
             .addAllObjects(
                 Map.of(
@@ -98,7 +98,7 @@ public class SchedulesHtmlController {
         final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<Schedule> schedules = sch
             .schedules()
-            .list(condition, new PageRequest(limit, offset));
+            .schedules(condition, new PageRequest(limit, offset));
         return new ModelAndView("schedules/list :: schedules-grid")
             .addAllObjects(
                 Map.of(
@@ -154,7 +154,7 @@ public class SchedulesHtmlController {
             .addAllObjects(
                 Map.of(
                     "school", sch,
-                    "schedule", sch.schedules().find(schedule),
+                    "schedule", sch.schedules().schedule(schedule),
                     "pageTitle", "Редактировать расписание"
                 )
             );
@@ -189,7 +189,7 @@ public class SchedulesHtmlController {
         @PathVariable final long schedule
     ) throws Exception {
         final School sch = new SlsPostgres(this.datasource).school(school);
-        final var sched = sch.schedules().find(schedule);
+        final var sched = sch.schedules().schedule(schedule);
         return new ModelAndView("schedules/details")
             .addAllObjects(
                 Map.of(

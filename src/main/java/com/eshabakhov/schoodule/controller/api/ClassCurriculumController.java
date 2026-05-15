@@ -135,7 +135,7 @@ public class ClassCurriculumController {
             final ClassCurriculum curriculum = new SlsPostgres(this.datasource)
                 .school(school)
                 .schedules()
-                .find(schedule)
+                .schedule(schedule)
                 .curriculums()
                 .add(
                     new ScPostgres(this.datasource, classid.asLong()),
@@ -175,7 +175,7 @@ public class ClassCurriculumController {
                 new SlsPostgres(this.datasource)
                     .school(school)
                     .schedules()
-                    .find(schedule)
+                    .schedule(schedule)
                     .curriculums()
                     .list(DSL.trueCondition(), new PageRequest(limit, offset))
             );
@@ -192,7 +192,7 @@ public class ClassCurriculumController {
         return new SlsPostgres(this.datasource)
             .school(school)
             .schedules()
-            .find(schedule)
+            .schedule(schedule)
             .curriculums()
             .find(curriculum);
     }
@@ -245,7 +245,7 @@ public class ClassCurriculumController {
             final var updated = new SlsPostgres(this.datasource)
                 .school(school)
                 .schedules()
-                .find(schedule)
+                .schedule(schedule)
                 .curriculums()
                 .put(
                     curriculum,
@@ -295,7 +295,7 @@ public class ClassCurriculumController {
         new SlsPostgres(this.datasource)
             .school(school)
             .schedules()
-            .find(schedule)
+            .schedule(schedule)
             .curriculums()
             .remove(curriculum);
         return ResponseEntity.noContent().build();
