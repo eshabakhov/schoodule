@@ -31,7 +31,7 @@ public interface Teachers {
      * @param id The teacher ID
      * @return The found {@link Teacher}
      */
-    Teacher find(long id) throws Exception;
+    Teacher teacher(long id) throws Exception;
 
     /**
      * Finds a teacher by its name.
@@ -39,7 +39,7 @@ public interface Teachers {
      * @param name The teacher name
      * @return The found {@link Teacher}
      */
-    Teacher find(String name) throws Exception;
+    Teacher teacher(String name) throws Exception;
 
     /**
      * Returns a paginated list of teachers optionally filtered by a search string.
@@ -48,7 +48,7 @@ public interface Teachers {
      * @param page Pagination (contains limit and offset)
      * @return List of {@link Teacher} instances
      */
-    PageableList<Teacher> list(Condition condition, Page page) throws Exception;
+    PageableList<Teacher> teachers(Condition condition, Page page) throws Exception;
 
     /**
      * Updates the name of an existing teacher.

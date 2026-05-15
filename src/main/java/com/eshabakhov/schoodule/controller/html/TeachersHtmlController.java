@@ -64,7 +64,7 @@ public class TeachersHtmlController {
         final School sch = new SlsPostgres(this.ctx).school(school);
         final PageableList<Teacher> teachers = sch
             .teachers()
-            .list(condition, new PageRequest(limit, offset));
+            .teachers(condition, new PageRequest(limit, offset));
         return new ModelAndView("teachers/list")
             .addAllObjects(
                 Map.of(
@@ -101,7 +101,7 @@ public class TeachersHtmlController {
         final School sch = new SlsPostgres(this.ctx).school(school);
         final PageableList<Teacher> teachers = sch
             .teachers()
-            .list(condition, new PageRequest(limit, offset));
+            .teachers(condition, new PageRequest(limit, offset));
         return new ModelAndView("teachers/list :: teachers-grid")
             .addAllObjects(
                 Map.of(
@@ -127,8 +127,8 @@ public class TeachersHtmlController {
             .addAllObjects(
                 Map.of(
                     "school", sch,
-                    "teacher", sch.teachers().find(teacher),
-                    "pageTitle", sch.teachers().find(teacher).name()
+                    "teacher", sch.teachers().teacher(teacher),
+                    "pageTitle", sch.teachers().teacher(teacher).name()
                 )
             );
     }
@@ -173,7 +173,7 @@ public class TeachersHtmlController {
             .addAllObjects(
                 Map.of(
                     "school", sch,
-                    "teacher", sch.teachers().find(teacher),
+                    "teacher", sch.teachers().teacher(teacher),
                     "pageTitle", "Редактировать учителя"
                 )
             );

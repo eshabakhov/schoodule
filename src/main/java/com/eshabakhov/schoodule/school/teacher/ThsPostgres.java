@@ -20,6 +20,7 @@ import org.jooq.impl.DSL;
  * @since 0.0.1
  */
 @EqualsAndHashCode
+@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public final class ThsPostgres implements Teachers {
 
     /** JOOQ Table for Teacher. */
@@ -68,7 +69,7 @@ public final class ThsPostgres implements Teachers {
     }
 
     @Override
-    public Teacher find(final long tid) throws Exception {
+    public Teacher teacher(final long tid) throws Exception {
         final TeacherRecord selected = this.datasource.selectFrom(ThsPostgres.TEACHER)
             .where(
                 ThsPostgres.TEACHER.ID.eq(tid)
@@ -85,7 +86,7 @@ public final class ThsPostgres implements Teachers {
     }
 
     @Override
-    public Teacher find(final String name) throws Exception {
+    public Teacher teacher(final String name) throws Exception {
         final TeacherRecord selected = this.datasource.selectFrom(ThsPostgres.TEACHER)
             .where(
                 ThsPostgres.TEACHER.SCHOOL_ID.eq(this.sid)
@@ -102,7 +103,8 @@ public final class ThsPostgres implements Teachers {
     }
 
     @Override
-    public PageableList<Teacher> list(final Condition condition, final Page page) throws Exception {
+    public PageableList<Teacher> teachers(final Condition condition, final Page page)
+        throws Exception {
         return new ResponsePageableList<>(
             this.datasource.selectFrom(ThsPostgres.TEACHER)
                 .where(condition.and(ThsPostgres.TEACHER.SCHOOL_ID.eq(this.sid)))
