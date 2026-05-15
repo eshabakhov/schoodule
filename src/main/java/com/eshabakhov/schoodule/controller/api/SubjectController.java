@@ -219,7 +219,7 @@ public class SubjectController {
                 new SlsPostgres(this.datasource)
                     .school(school)
                     .subjects()
-                    .list(condition, new PageRequest(limit, offset))
+                    .subjects(condition, new PageRequest(limit, offset))
             );
     }
 
@@ -290,7 +290,7 @@ public class SubjectController {
             final var found = new SlsPostgres(this.datasource)
                 .school(school)
                 .subjects()
-                .find(subject);
+                .subject(subject);
             return ResponseEntity
                 .ok()
                 .contentType(SubjectController.SIMPLE_TYPE)

@@ -33,7 +33,7 @@ public interface Subjects {
      * @return The found {@link Subject}
      * @throws Exception if not found
      */
-    Subject find(long id) throws Exception;
+    Subject subject(long id) throws Exception;
 
     /**
      * Finds a subject by its name.
@@ -42,7 +42,7 @@ public interface Subjects {
      * @return The found {@link Subject}
      * @throws Exception if not found
      */
-    Subject find(String name) throws Exception;
+    Subject subject(String name) throws Exception;
 
     /**
      * Returns a paginated list of subjects optionally filtered by a search string.
@@ -52,7 +52,7 @@ public interface Subjects {
      * @return List of {@link Subject} instances
      * @throws Exception if listing fails
      */
-    PageableList<Subject> list(Condition condition, Page page) throws Exception;
+    PageableList<Subject> subjects(Condition condition, Page page) throws Exception;
 
     /**
      * Updates the name of an existing subject.

@@ -62,7 +62,7 @@ public class SubjectsHtmlController {
         final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<Subject> subjects = sch
             .subjects()
-            .list(condition, new PageRequest(limit, offset));
+            .subjects(condition, new PageRequest(limit, offset));
         return new ModelAndView("subjects/list")
             .addAllObjects(
                 Map.of(
@@ -97,7 +97,7 @@ public class SubjectsHtmlController {
         final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<Subject> subjects = sch
             .subjects()
-            .list(condition, new PageRequest(limit, offset));
+            .subjects(condition, new PageRequest(limit, offset));
         return new ModelAndView("subjects/list :: subjects-grid")
             .addAllObjects(
                 Map.of(
@@ -119,7 +119,7 @@ public class SubjectsHtmlController {
         @PathVariable final long subject
     ) throws Exception {
         final School sch = new SlsPostgres(this.datasource).school(school);
-        final Subject sub = sch.subjects().find(subject);
+        final Subject sub = sch.subjects().subject(subject);
         return new ModelAndView("subjects/details")
             .addAllObjects(
                 Map.of(
@@ -170,7 +170,7 @@ public class SubjectsHtmlController {
             .addAllObjects(
                 Map.of(
                     "school", sch,
-                    "subject", sch.subjects().find(subject),
+                    "subject", sch.subjects().subject(subject),
                     "pageTitle", "Редактировать предмет"
                 )
             );
