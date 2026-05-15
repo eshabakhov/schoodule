@@ -222,7 +222,7 @@ public class SchoolClassController {
                 new SlsPostgres(this.datasource)
                     .school(school)
                     .schoolClasses()
-                    .list(condition, new PageRequest(limit, offset))
+                    .classes(condition, new PageRequest(limit, offset))
             );
     }
 
@@ -299,7 +299,7 @@ public class SchoolClassController {
                         new SlsPostgres(this.datasource)
                             .school(school)
                             .schoolClasses()
-                            .find(clazz)
+                            .clazz(clazz)
                     )
                 );
         } else {

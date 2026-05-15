@@ -62,7 +62,7 @@ public class SchoolClassHtmlController {
         final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<SchoolClass> classes = sch
             .schoolClasses()
-            .list(condition, new PageRequest(limit, offset));
+            .classes(condition, new PageRequest(limit, offset));
         return new ModelAndView("schoolclasses/list")
             .addAllObjects(
                 Map.of(
@@ -98,7 +98,7 @@ public class SchoolClassHtmlController {
         final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<SchoolClass> classes = sch
             .schoolClasses()
-            .list(condition, new PageRequest(limit, offset));
+            .classes(condition, new PageRequest(limit, offset));
         return new ModelAndView("schoolclasses/list :: school-classes-grid")
             .addAllObjects(
                 Map.of(
@@ -120,7 +120,7 @@ public class SchoolClassHtmlController {
         @PathVariable final long clazz
     ) throws Exception {
         final School sch = new SlsPostgres(this.datasource).school(school);
-        final SchoolClass scl = sch.schoolClasses().find(clazz);
+        final SchoolClass scl = sch.schoolClasses().clazz(clazz);
         return new ModelAndView("schoolclasses/details")
             .addAllObjects(
                 Map.of(
@@ -172,7 +172,7 @@ public class SchoolClassHtmlController {
             .addAllObjects(
                 Map.of(
                     "school", sch,
-                    "clazz", sch.schoolClasses().find(clazz),
+                    "clazz", sch.schoolClasses().clazz(clazz),
                     "pageTitle", "Редактировать класс"
                 )
             );

@@ -196,7 +196,7 @@ public class SchedulesHtmlController {
                     "school", sch,
                     "schedule", sched,
                     "classCount", sch.schoolClasses()
-                        .list(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
+                        .classes(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
                         .total(),
                     "subjectCount", this.datasource
                         .select(DSL.countDistinct(ClassCurriculum.CLASS_CURRICULUM.SUBJECT_ID))

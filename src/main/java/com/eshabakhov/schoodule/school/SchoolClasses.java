@@ -31,7 +31,7 @@ public interface SchoolClasses {
      * @param id The class ID
      * @return The found {@link SchoolClass}
      */
-    SchoolClass find(long id) throws Exception;
+    SchoolClass clazz(long id) throws Exception;
 
     /**
      * Finds a school class by its name.
@@ -39,7 +39,7 @@ public interface SchoolClasses {
      * @param name The school class name
      * @return The found {@link SchoolClass}
      */
-    SchoolClass find(String name) throws Exception;
+    SchoolClass clazz(String name) throws Exception;
 
     /**
      * Returns a paginated list of school classes optionally filtered by a search string.
@@ -48,7 +48,7 @@ public interface SchoolClasses {
      * @param page Pagination (contains limit and offset)
      * @return List of {@link SchoolClass} instances
      */
-    PageableList<SchoolClass> list(Condition condition, Page page) throws Exception;
+    PageableList<SchoolClass> classes(Condition condition, Page page) throws Exception;
 
     /**
      * Updates the name of an existing school class.
