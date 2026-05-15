@@ -212,7 +212,7 @@ public class CabinetController {
                 new SlsPostgres(this.datasource)
                     .school(school)
                     .cabinets()
-                    .list(condition, new PageRequest(limit, offset))
+                    .cabinets(condition, new PageRequest(limit, offset))
             );
     }
 
@@ -279,7 +279,7 @@ public class CabinetController {
         @PathVariable final long cabinet
     ) throws Exception {
         return new SlsPostgres(this.datasource).school(school)
-            .cabinets().find(cabinet);
+            .cabinets().cabinet(cabinet);
     }
 
     @PutMapping("/{cabinet}")
