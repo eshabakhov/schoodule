@@ -170,7 +170,7 @@ public class SubjectController {
                 );
             }
             final Subject subject = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .subjects()
                 .create(new SbBase(name.asText()));
             return ResponseEntity
@@ -217,7 +217,7 @@ public class SubjectController {
             .ok()
             .body(
                 new SlsPostgres(this.datasource)
-                    .find(school)
+                    .school(school)
                     .subjects()
                     .list(condition, new PageRequest(limit, offset))
             );
@@ -288,7 +288,7 @@ public class SubjectController {
     ) throws Exception {
         if (SubjectVersion.SIMPLE.equals(version)) {
             final var found = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .subjects()
                 .find(subject);
             return ResponseEntity
@@ -428,7 +428,7 @@ public class SubjectController {
             }
             final var toupdate = new SbBase(school, name.asText());
             final var updated = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .subjects()
                 .put(new SbBase(subject, name.asText()));
             final ResponseEntity<Subject> response;
@@ -465,7 +465,7 @@ public class SubjectController {
         @PathVariable final long subject
     ) throws Exception {
         new SlsPostgres(this.datasource)
-            .find(school)
+            .school(school)
             .subjects()
             .remove(subject);
         return ResponseEntity.noContent().build();

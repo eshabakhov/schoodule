@@ -59,7 +59,7 @@ public class SubjectsHtmlController {
                 SubjectsHtmlController.SUBJECT.NAME.likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<Subject> subjects = sch
             .subjects()
             .list(condition, new PageRequest(limit, offset));
@@ -94,7 +94,7 @@ public class SubjectsHtmlController {
                 SubjectsHtmlController.SUBJECT.NAME.likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<Subject> subjects = sch
             .subjects()
             .list(condition, new PageRequest(limit, offset));
@@ -118,7 +118,7 @@ public class SubjectsHtmlController {
         @PathVariable final long school,
         @PathVariable final long subject
     ) throws Exception {
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         final Subject sub = sch.subjects().find(subject);
         return new ModelAndView("subjects/details")
             .addAllObjects(
@@ -136,7 +136,7 @@ public class SubjectsHtmlController {
         return new ModelAndView("subjects/create")
             .addAllObjects(
                 Map.of(
-                    "school", new SlsPostgres(this.datasource).find(school),
+                    "school", new SlsPostgres(this.datasource).school(school),
                     "pageTitle", "Новый предмет"
                 )
             );
@@ -152,7 +152,7 @@ public class SubjectsHtmlController {
         } else {
             result = String.format("redirect:/schools/%d/subjects", school);
             new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .subjects()
                 .create(new SbBase(name.trim()));
         }
@@ -165,7 +165,7 @@ public class SubjectsHtmlController {
         @PathVariable final long school,
         @PathVariable final long subject
     ) throws Exception {
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         return new ModelAndView("subjects/edit")
             .addAllObjects(
                 Map.of(
@@ -190,7 +190,7 @@ public class SubjectsHtmlController {
             );
         } else {
             new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .subjects()
                 .put(new SbBase(subject, name.trim()));
             result = String.format("redirect:/schools/%d/subjects/%d", school, subject);

@@ -78,7 +78,7 @@ final class SlsPostgresTest {
                 this.datasource,
                 1L
             ),
-            new SlsPostgres(this.datasource).find(1L)
+            new SlsPostgres(this.datasource).school(1L)
         );
     }
 
@@ -94,7 +94,7 @@ final class SlsPostgresTest {
                 this.datasource,
                 1L
             ),
-            new SlsPostgres(this.datasource).find("Cool school")
+            new SlsPostgres(this.datasource).school("Cool school")
         );
     }
 
@@ -125,7 +125,7 @@ final class SlsPostgresTest {
                 2,
                 new PageRequest(10, 1)
             ),
-            new SlsPostgres(this.datasource).list(
+            new SlsPostgres(this.datasource).schools(
                 DSL.trueCondition(),
                 new PageRequest(10, 1)
             )
@@ -169,7 +169,7 @@ final class SlsPostgresTest {
                 1,
                 new PageRequest(10, 1)
             ),
-            new SlsPostgres(this.datasource).list(
+            new SlsPostgres(this.datasource).schools(
                 School.SCHOOL.IS_DELETED.eq(false),
                 new PageRequest(10, 1)
             )

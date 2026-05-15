@@ -60,7 +60,7 @@ public class SchedulesHtmlController {
                 SchedulesHtmlController.SCHEDULE.NAME.likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<Schedule> schedules = sch
             .schedules()
             .list(condition, new PageRequest(limit, offset));
@@ -95,7 +95,7 @@ public class SchedulesHtmlController {
                 SchedulesHtmlController.SCHEDULE.NAME.likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<Schedule> schedules = sch
             .schedules()
             .list(condition, new PageRequest(limit, offset));
@@ -120,7 +120,7 @@ public class SchedulesHtmlController {
         return new ModelAndView("schedules/create")
             .addAllObjects(
                 Map.of(
-                    "school", new SlsPostgres(this.datasource).find(school),
+                    "school", new SlsPostgres(this.datasource).school(school),
                     "pageTitle", "Новое расписание"
                 )
             );
@@ -136,7 +136,7 @@ public class SchedulesHtmlController {
         } else {
             result = String.format("redirect:/schools/%d/schedules", school);
             new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .schedules()
                 .add(name.trim());
         }
@@ -149,7 +149,7 @@ public class SchedulesHtmlController {
         @PathVariable final long school,
         @PathVariable final long schedule
     ) throws Exception {
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         return new ModelAndView("schedules/edit")
             .addAllObjects(
                 Map.of(
@@ -174,7 +174,7 @@ public class SchedulesHtmlController {
             );
         } else {
             new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .schedules()
                 .put(schedule, name.trim());
             result = String.format("redirect:/schools/%d/schedules/%d", school, schedule);
@@ -188,7 +188,7 @@ public class SchedulesHtmlController {
         @PathVariable final long school,
         @PathVariable final long schedule
     ) throws Exception {
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         final var sched = sch.schedules().find(schedule);
         return new ModelAndView("schedules/details")
             .addAllObjects(

@@ -58,7 +58,7 @@ public class CabinetsHtmlController {
                 CabinetsHtmlController.CABINET.NAME.likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<Cabinet> cabinets = sch
             .cabinets()
             .list(condition, new PageRequest(limit, offset));
@@ -93,7 +93,7 @@ public class CabinetsHtmlController {
                 CabinetsHtmlController.CABINET.NAME.likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<Cabinet> cabinets = sch
             .cabinets()
             .list(condition, new PageRequest(limit, offset));
@@ -117,7 +117,7 @@ public class CabinetsHtmlController {
         @PathVariable final long school,
         @PathVariable final long cabinet
     ) throws Exception {
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         final Cabinet cab = sch.cabinets().find(cabinet);
         return new ModelAndView("cabinets/details")
             .addAllObjects(
@@ -136,7 +136,7 @@ public class CabinetsHtmlController {
         return new ModelAndView("cabinets/create")
             .addAllObjects(
                 Map.of(
-                    "school", new SlsPostgres(this.datasource).find(school),
+                    "school", new SlsPostgres(this.datasource).school(school),
                     "pageTitle", "Новый кабинет"
                 )
             );
@@ -152,7 +152,7 @@ public class CabinetsHtmlController {
         } else {
             result = String.format("redirect:/schools/%d/cabinets", school);
             new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .cabinets()
                 .add(name.trim());
         }
@@ -165,7 +165,7 @@ public class CabinetsHtmlController {
         @PathVariable final long school,
         @PathVariable final long cabinet
     ) throws Exception {
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         return new ModelAndView("cabinets/edit")
             .addAllObjects(
                 Map.of(
@@ -190,7 +190,7 @@ public class CabinetsHtmlController {
             );
         } else {
             new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .cabinets()
                 .put(cabinet, name.trim());
             result = String.format("redirect:/schools/%d/cabinets/%d", school, cabinet);

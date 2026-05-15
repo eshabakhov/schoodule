@@ -133,7 +133,7 @@ public class ClassCurriculumController {
                 );
             }
             final ClassCurriculum curriculum = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .schedules()
                 .find(schedule)
                 .curriculums()
@@ -173,7 +173,7 @@ public class ClassCurriculumController {
             .ok()
             .body(
                 new SlsPostgres(this.datasource)
-                    .find(school)
+                    .school(school)
                     .schedules()
                     .find(schedule)
                     .curriculums()
@@ -190,7 +190,7 @@ public class ClassCurriculumController {
         @PathVariable final long curriculum
     ) throws Exception {
         return new SlsPostgres(this.datasource)
-            .find(school)
+            .school(school)
             .schedules()
             .find(schedule)
             .curriculums()
@@ -243,7 +243,7 @@ public class ClassCurriculumController {
                 );
             }
             final var updated = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .schedules()
                 .find(schedule)
                 .curriculums()
@@ -293,7 +293,7 @@ public class ClassCurriculumController {
         @PathVariable final long curriculum
     ) throws Exception {
         new SlsPostgres(this.datasource)
-            .find(school)
+            .school(school)
             .schedules()
             .find(schedule)
             .curriculums()

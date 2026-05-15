@@ -38,7 +38,7 @@ public class SchoolDetailsHtmlController {
         final long school,
         final Model model
     ) throws Exception {
-        final School sch = new SlsPostgres(this.ctx).find(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         model.addAttribute("school", sch);
         model.addAttribute("pageTitle", sch.name());
         return "schools/details";

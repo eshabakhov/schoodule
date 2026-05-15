@@ -61,7 +61,7 @@ public class TeachersHtmlController {
                 )
             );
         }
-        final School sch = new SlsPostgres(this.ctx).find(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         final PageableList<Teacher> teachers = sch
             .teachers()
             .list(condition, new PageRequest(limit, offset));
@@ -98,7 +98,7 @@ public class TeachersHtmlController {
                 )
             );
         }
-        final School sch = new SlsPostgres(this.ctx).find(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         final PageableList<Teacher> teachers = sch
             .teachers()
             .list(condition, new PageRequest(limit, offset));
@@ -122,7 +122,7 @@ public class TeachersHtmlController {
         @PathVariable final long school,
         @PathVariable final long teacher
     ) throws Exception {
-        final School sch = new SlsPostgres(this.ctx).find(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         return new ModelAndView("teachers/details")
             .addAllObjects(
                 Map.of(
@@ -139,7 +139,7 @@ public class TeachersHtmlController {
         return new ModelAndView("teachers/create")
             .addAllObjects(
                 Map.of(
-                    "school", new SlsPostgres(this.ctx).find(school),
+                    "school", new SlsPostgres(this.ctx).school(school),
                     "pageTitle", "Новый учитель"
                 )
             );
@@ -155,7 +155,7 @@ public class TeachersHtmlController {
         } else {
             result = String.format("redirect:/schools/%d/teachers", school);
             new SlsPostgres(this.ctx)
-                .find(school)
+                .school(school)
                 .teachers()
                 .create(new ThBase(name.trim()));
         }
@@ -168,7 +168,7 @@ public class TeachersHtmlController {
         @PathVariable final long school,
         @PathVariable final long teacher
     ) throws Exception {
-        final School sch = new SlsPostgres(this.ctx).find(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         return new ModelAndView("teachers/edit")
             .addAllObjects(
                 Map.of(
@@ -193,7 +193,7 @@ public class TeachersHtmlController {
             );
         } else {
             new SlsPostgres(this.ctx)
-                .find(school)
+                .school(school)
                 .teachers()
                 .put(new ThBase(teacher, name.trim()));
             result = String.format("redirect:/schools/%d/teachers/%d", school, teacher);

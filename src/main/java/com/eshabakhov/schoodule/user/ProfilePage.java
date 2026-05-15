@@ -36,7 +36,7 @@ public final class ProfilePage {
         model.addAttribute("pageTitle", "Профиль");
         model.addAttribute("user", user);
         if (user.info().school() != null) {
-            model.addAttribute("school", new SlsPostgres(this.ctx).find(user.info().school()));
+            model.addAttribute("school", new SlsPostgres(this.ctx).school(user.info().school()));
         } else {
             model.addAttribute("school", null);
         }
