@@ -20,6 +20,7 @@ import org.jooq.impl.DSL;
  * @since 0.0.1
  */
 @EqualsAndHashCode
+@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public final class SbsPostgres implements Subjects {
 
     /** JOOQ Table for Cabinet. */
@@ -68,7 +69,7 @@ public final class SbsPostgres implements Subjects {
     }
 
     @Override
-    public Subject find(final long subid) throws Exception {
+    public Subject subject(final long subid) throws Exception {
         final SubjectRecord selected = this.datasource.selectFrom(SbsPostgres.SUBJECT)
             .where(
                 SbsPostgres.SUBJECT.ID.eq(subid)
@@ -85,7 +86,7 @@ public final class SbsPostgres implements Subjects {
     }
 
     @Override
-    public Subject find(final String name) throws Exception {
+    public Subject subject(final String name) throws Exception {
         final SubjectRecord selected = this.datasource.selectFrom(SbsPostgres.SUBJECT)
             .where(
                 SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid)
@@ -102,7 +103,8 @@ public final class SbsPostgres implements Subjects {
     }
 
     @Override
-    public PageableList<Subject> list(final Condition condition, final Page page) throws Exception {
+    public PageableList<Subject> subjects(final Condition condition, final Page page)
+        throws Exception {
         return new ResponsePageableList<>(
             this.datasource.selectFrom(SbsPostgres.SUBJECT)
                 .where(condition.and(SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid)))

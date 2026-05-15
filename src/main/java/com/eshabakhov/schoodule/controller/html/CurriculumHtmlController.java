@@ -70,7 +70,7 @@ public class CurriculumHtmlController {
             "subjects",
             sch
                 .subjects()
-                .list(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
+                .subjects(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
         );
         return  "planning/curriculum";
     }
