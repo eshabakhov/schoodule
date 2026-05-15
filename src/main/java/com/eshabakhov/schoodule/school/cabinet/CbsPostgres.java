@@ -20,6 +20,7 @@ import org.jooq.impl.DSL;
  * @since 0.0.1
  */
 @EqualsAndHashCode
+@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public final class CbsPostgres implements Cabinets {
 
     /** JOOQ Table for Cabinet. */
@@ -68,7 +69,7 @@ public final class CbsPostgres implements Cabinets {
     }
 
     @Override
-    public Cabinet find(final long cid) throws Exception {
+    public Cabinet cabinet(final long cid) throws Exception {
         final var selected = this.ctx.selectFrom(CbsPostgres.CABINET)
             .where(
                 CbsPostgres.CABINET.ID.eq(cid)
@@ -85,7 +86,7 @@ public final class CbsPostgres implements Cabinets {
     }
 
     @Override
-    public Cabinet find(final String name) throws Exception {
+    public Cabinet cabinet(final String name) throws Exception {
         final CabinetRecord selected = this.ctx.selectFrom(CbsPostgres.CABINET)
             .where(
                 CbsPostgres.CABINET.SCHOOL_ID.eq(this.sid)
@@ -102,7 +103,8 @@ public final class CbsPostgres implements Cabinets {
     }
 
     @Override
-    public PageableList<Cabinet> list(final Condition condition, final Page page) throws Exception {
+    public PageableList<Cabinet> cabinets(final Condition condition, final Page page)
+        throws Exception {
         final var cnd = condition.and(CbsPostgres.CABINET.SCHOOL_ID.eq(this.sid));
         return new ResponsePageableList<>(
             this.ctx.selectFrom(CbsPostgres.CABINET)

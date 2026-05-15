@@ -33,7 +33,7 @@ public interface Cabinets {
      * @return The found {@link Cabinet}
      * @throws Exception if not found
      */
-    Cabinet find(long id) throws Exception;
+    Cabinet cabinet(long id) throws Exception;
 
     /**
      * Finds a cabinet by its name.
@@ -42,7 +42,7 @@ public interface Cabinets {
      * @return The found {@link Cabinet}
      * @throws Exception if not found
      */
-    Cabinet find(String name) throws Exception;
+    Cabinet cabinet(String name) throws Exception;
 
     /**
      * Lists cabinets optionally filtered by a search string.
@@ -52,7 +52,7 @@ public interface Cabinets {
      * @return List of {@link Cabinet} objects
      * @throws Exception if listing fails
      */
-    PageableList<Cabinet> list(Condition condition, Page page) throws Exception;
+    PageableList<Cabinet> cabinets(Condition condition, Page page) throws Exception;
 
     /**
      * Updates the name of a cabinet.

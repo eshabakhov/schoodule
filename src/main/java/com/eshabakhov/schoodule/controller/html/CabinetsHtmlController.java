@@ -61,7 +61,7 @@ public class CabinetsHtmlController {
         final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<Cabinet> cabinets = sch
             .cabinets()
-            .list(condition, new PageRequest(limit, offset));
+            .cabinets(condition, new PageRequest(limit, offset));
         return new ModelAndView("cabinets/list")
             .addAllObjects(
                 Map.of(
@@ -96,7 +96,7 @@ public class CabinetsHtmlController {
         final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<Cabinet> cabinets = sch
             .cabinets()
-            .list(condition, new PageRequest(limit, offset));
+            .cabinets(condition, new PageRequest(limit, offset));
         return new ModelAndView("cabinets/list :: cabinets-grid")
             .addAllObjects(
                 Map.of(
@@ -118,7 +118,7 @@ public class CabinetsHtmlController {
         @PathVariable final long cabinet
     ) throws Exception {
         final School sch = new SlsPostgres(this.datasource).school(school);
-        final Cabinet cab = sch.cabinets().find(cabinet);
+        final Cabinet cab = sch.cabinets().cabinet(cabinet);
         return new ModelAndView("cabinets/details")
             .addAllObjects(
                 Map.of(
@@ -170,7 +170,7 @@ public class CabinetsHtmlController {
             .addAllObjects(
                 Map.of(
                     "school", sch,
-                    "cabinet", sch.cabinets().find(cabinet),
+                    "cabinet", sch.cabinets().cabinet(cabinet),
                     "pageTitle", "Редактировать кабинет"
                 )
             );
