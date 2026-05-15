@@ -145,7 +145,7 @@ public class UserController {
         } else {
             created = new UrsPostgres(
                 this.ctx,
-                new SlsPostgres(this.ctx).find(school.asLong()).uid()
+                new SlsPostgres(this.ctx).school(school.asLong()).uid()
             ).register(
                 username.asText(),
                 password.asText(),

@@ -18,6 +18,7 @@ import org.jooq.impl.DSL;
  *
  * @since 0.0.1
  */
+@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public final class SlsPostgres implements Schools {
 
     /** JOOQ Table for School. */
@@ -49,7 +50,7 @@ public final class SlsPostgres implements Schools {
     }
 
     @Override
-    public School find(final long sid) throws Exception {
+    public School school(final long sid) throws Exception {
         final SchoolRecord selected = this.ctx.selectFrom(SlsPostgres.SCHOOL)
             .where(SlsPostgres.SCHOOL.ID.eq(sid).and(SlsPostgres.SCHOOL.IS_DELETED.eq(false)))
             .fetchOne();
@@ -60,7 +61,7 @@ public final class SlsPostgres implements Schools {
     }
 
     @Override
-    public School find(final String name) throws Exception {
+    public School school(final String name) throws Exception {
         final SchoolRecord selected = this.ctx.selectFrom(SlsPostgres.SCHOOL)
             .where(SlsPostgres.SCHOOL.NAME.eq(name).and(SlsPostgres.SCHOOL.IS_DELETED.eq(false)))
             .fetchOne();
@@ -73,7 +74,8 @@ public final class SlsPostgres implements Schools {
     }
 
     @Override
-    public PageableList<School> list(final Condition condition, final Page page) throws Exception {
+    public PageableList<School> schools(final Condition condition, final Page page)
+        throws Exception {
         return new ResponsePageableList<>(
             this.ctx.selectFrom(SlsPostgres.SCHOOL)
                 .where(condition)

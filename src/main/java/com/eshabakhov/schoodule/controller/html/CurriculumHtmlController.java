@@ -52,7 +52,7 @@ public class CurriculumHtmlController {
         @PathVariable final long schedule,
         final Model model
     ) throws Exception {
-        final var sch = new SlsPostgres(this.datasource).find(school);
+        final var sch = new SlsPostgres(this.datasource).school(school);
         final var sched = sch.schedules().find(schedule);
         final var curriculums = sched
             .curriculums()
@@ -88,7 +88,7 @@ public class CurriculumHtmlController {
         String response;
         try {
             new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .schedules()
                 .find(schedule)
                 .curriculums()
@@ -122,7 +122,7 @@ public class CurriculumHtmlController {
         @PathVariable final long curriculum
     ) throws Exception {
         new SlsPostgres(this.datasource)
-            .find(school)
+            .school(school)
             .schedules()
             .find(schedule)
             .curriculums()

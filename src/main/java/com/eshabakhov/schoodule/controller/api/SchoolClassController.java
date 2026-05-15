@@ -171,7 +171,7 @@ public class SchoolClassController {
                 );
             }
             final SchoolClass clazz = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .schoolClasses()
                 .add(name.asText());
             return ResponseEntity
@@ -220,7 +220,7 @@ public class SchoolClassController {
             .ok()
             .body(
                 new SlsPostgres(this.datasource)
-                    .find(school)
+                    .school(school)
                     .schoolClasses()
                     .list(condition, new PageRequest(limit, offset))
             );
@@ -297,7 +297,7 @@ public class SchoolClassController {
                 .body(
                     new ScBase(
                         new SlsPostgres(this.datasource)
-                            .find(school)
+                            .school(school)
                             .schoolClasses()
                             .find(clazz)
                     )
@@ -436,7 +436,7 @@ public class SchoolClassController {
                 );
             }
             final var updated = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .schoolClasses()
                 .put(clazz, name.asText());
             final ResponseEntity<SchoolClass> response;
@@ -473,7 +473,7 @@ public class SchoolClassController {
         @PathVariable final long clazz
     ) throws Exception {
         new SlsPostgres(this.datasource)
-            .find(school)
+            .school(school)
             .schoolClasses()
             .remove(clazz);
         return ResponseEntity.noContent().build();

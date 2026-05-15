@@ -63,7 +63,7 @@ public final class SchoolsHtmlController {
             );
         }
         final PageableList<School> schools = new SlsPostgres(this.ctx)
-            .list(condition, new PageRequest(limit, offset));
+            .schools(condition, new PageRequest(limit, offset));
         model.addAttribute("pageTitle", "Школы");
         model.addAttribute("schools", schools.list());
         model.addAttribute("page", offset);
@@ -95,7 +95,7 @@ public final class SchoolsHtmlController {
             );
         }
         final PageableList<School> schools =
-            new SlsPostgres(this.ctx).list(condition, new PageRequest(limit, offset));
+            new SlsPostgres(this.ctx).schools(condition, new PageRequest(limit, offset));
         model.addAttribute("schools", schools.list());
         model.addAttribute("page", offset);
         model.addAttribute("limit", limit);
@@ -147,7 +147,7 @@ public final class SchoolsHtmlController {
             throw new AccessDeniedException(SchoolsHtmlController.ADMIN_REQUIRED);
         }
         model.addAttribute("pageTitle", "Редактировать школу");
-        model.addAttribute("school", new SlsPostgres(this.ctx).find(id));
+        model.addAttribute("school", new SlsPostgres(this.ctx).school(id));
         return "schools/edit";
     }
 
