@@ -59,7 +59,7 @@ public class SchoolClassHtmlController {
                     .likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<SchoolClass> classes = sch
             .schoolClasses()
             .list(condition, new PageRequest(limit, offset));
@@ -95,7 +95,7 @@ public class SchoolClassHtmlController {
                     .likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         final PageableList<SchoolClass> classes = sch
             .schoolClasses()
             .list(condition, new PageRequest(limit, offset));
@@ -119,7 +119,7 @@ public class SchoolClassHtmlController {
         @PathVariable final long school,
         @PathVariable final long clazz
     ) throws Exception {
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         final SchoolClass scl = sch.schoolClasses().find(clazz);
         return new ModelAndView("schoolclasses/details")
             .addAllObjects(
@@ -138,7 +138,7 @@ public class SchoolClassHtmlController {
         return new ModelAndView("schoolclasses/create")
             .addAllObjects(
                 Map.of(
-                    "school", new SlsPostgres(this.datasource).find(school),
+                    "school", new SlsPostgres(this.datasource).school(school),
                     "pageTitle", "Новый класс"
                 )
             );
@@ -154,7 +154,7 @@ public class SchoolClassHtmlController {
         } else {
             result = String.format("redirect:/schools/%d/classes", school);
             new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .schoolClasses()
                 .add(name.trim());
         }
@@ -167,7 +167,7 @@ public class SchoolClassHtmlController {
         @PathVariable final long school,
         @PathVariable final long clazz
     ) throws Exception {
-        final School sch = new SlsPostgres(this.datasource).find(school);
+        final School sch = new SlsPostgres(this.datasource).school(school);
         return new ModelAndView("schoolclasses/edit")
             .addAllObjects(
                 Map.of(
@@ -192,7 +192,7 @@ public class SchoolClassHtmlController {
             );
         } else {
             new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .schoolClasses()
                 .put(clazz, name.trim());
             result = String.format("redirect:/schools/%d/classes/%d", school, clazz);

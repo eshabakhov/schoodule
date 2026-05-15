@@ -170,7 +170,7 @@ public class ScheduleController {
                 );
             }
             final Schedule schedule = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .schedules()
                 .add(name.asText());
             return ResponseEntity
@@ -217,7 +217,7 @@ public class ScheduleController {
             .ok()
             .body(
                 new SlsPostgres(this.datasource)
-                    .find(school)
+                    .school(school)
                     .schedules()
                     .list(condition, new PageRequest(limit, offset))
             );
@@ -293,7 +293,7 @@ public class ScheduleController {
                 .body(
                     new SimpleSchedule(
                         new SlsPostgres(this.datasource)
-                            .find(school)
+                            .school(school)
                             .schedules()
                             .find(schedule)
                     )
@@ -430,7 +430,7 @@ public class ScheduleController {
                 );
             }
             final var updated = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .schedules()
                 .put(schedule, name.asText());
             final ResponseEntity<Schedule> response;
@@ -467,7 +467,7 @@ public class ScheduleController {
         @PathVariable final long schedule
     ) throws Exception {
         new SlsPostgres(this.datasource)
-            .find(school)
+            .school(school)
             .schedules()
             .remove(schedule);
         return ResponseEntity.noContent().build();

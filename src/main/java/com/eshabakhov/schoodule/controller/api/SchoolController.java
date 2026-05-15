@@ -215,7 +215,7 @@ public class SchoolController {
             .ok()
             .body(
                 new SlsPostgres(this.datasource)
-                    .list(condition, new PageRequest(limit, offset))
+                    .schools(condition, new PageRequest(limit, offset))
             );
     }
 
@@ -267,7 +267,7 @@ public class SchoolController {
         @PathVariable final long school
     ) throws Exception {
         if (SchoolVersion.SIMPLE.equals(version)) {
-            final var found = new SlsPostgres(this.datasource).find(school);
+            final var found = new SlsPostgres(this.datasource).school(school);
             return ResponseEntity
                 .ok()
                 .contentType(SchoolController.SIMPLE_TYPE)

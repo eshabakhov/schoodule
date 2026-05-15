@@ -163,7 +163,7 @@ public class CabinetController {
                 );
             }
             final Cabinet cabinet = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .cabinets()
                 .add(name.asText());
             return ResponseEntity
@@ -210,7 +210,7 @@ public class CabinetController {
             .ok()
             .body(
                 new SlsPostgres(this.datasource)
-                    .find(school)
+                    .school(school)
                     .cabinets()
                     .list(condition, new PageRequest(limit, offset))
             );
@@ -278,7 +278,7 @@ public class CabinetController {
         @PathVariable final long school,
         @PathVariable final long cabinet
     ) throws Exception {
-        return new SlsPostgres(this.datasource).find(school)
+        return new SlsPostgres(this.datasource).school(school)
             .cabinets().find(cabinet);
     }
 
@@ -409,7 +409,7 @@ public class CabinetController {
                 );
             }
             final var updated = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .cabinets()
                 .put(cabinet, name.asText());
             final ResponseEntity<Cabinet> response;
@@ -446,7 +446,7 @@ public class CabinetController {
         @PathVariable final long cabinet
     ) throws Exception {
         new SlsPostgres(this.datasource)
-            .find(school)
+            .school(school)
             .cabinets()
             .remove(cabinet);
         return ResponseEntity.noContent().build();

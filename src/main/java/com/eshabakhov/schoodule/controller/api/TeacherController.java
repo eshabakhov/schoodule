@@ -170,7 +170,7 @@ public class TeacherController {
                 );
             }
             final Teacher teacher = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .teachers()
                 .create(new ThBase(name.asText()));
             return ResponseEntity
@@ -216,7 +216,7 @@ public class TeacherController {
             .ok()
             .body(
                 new SlsPostgres(this.datasource)
-                    .find(school)
+                    .school(school)
                     .teachers()
                     .list(condition, new PageRequest(limit, offset))
             );
@@ -287,7 +287,7 @@ public class TeacherController {
     ) throws Exception {
         if (TeacherVersion.SIMPLE.equals(version)) {
             final var found = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .teachers()
                 .find(teacher);
             return ResponseEntity
@@ -427,7 +427,7 @@ public class TeacherController {
             }
             final var toupdate = new ThBase(teacher, name.asText());
             final var updated = new SlsPostgres(this.datasource)
-                .find(school)
+                .school(school)
                 .teachers()
                 .put(new ThBase(teacher, name.asText()));
             final ResponseEntity<Teacher> response;
@@ -464,7 +464,7 @@ public class TeacherController {
         @PathVariable final long teacher
     ) throws Exception {
         new SlsPostgres(this.datasource)
-            .find(school)
+            .school(school)
             .teachers()
             .remove(teacher);
         return ResponseEntity.noContent().build();
