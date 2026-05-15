@@ -60,7 +60,7 @@
             </a>
 
             <th:block th:if="${school != null && school.uid() != null}"
-                      th:with="schoolSchedules=${school.schedules().list(T(org.jooq.impl.DSL).trueCondition(), new com.eshabakhov.schoodule.page.PageRequest(2147483647, 1)).list()}">
+                      th:with="schoolSchedules=${school.schedules().schedules(T(org.jooq.impl.DSL).trueCondition(), new com.eshabakhov.schoodule.page.PageRequest(2147483647, 1)).list()}">
                 <div class="sidebar-section">
                     <a th:href="@{/schools/{id}(id=${school.uid()})}"
                        class="sidebar-school-link"
