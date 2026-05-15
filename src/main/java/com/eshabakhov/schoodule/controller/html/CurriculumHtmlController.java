@@ -64,7 +64,7 @@ public class CurriculumHtmlController {
             "classes",
             sch
                 .schoolClasses()
-                .list(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
+                .classes(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
         );
         model.addAttribute(
             "subjects",

@@ -68,7 +68,7 @@ public final class ScsPostgres implements SchoolClasses {
     }
 
     @Override
-    public SchoolClass find(final long clazzid) throws Exception {
+    public SchoolClass clazz(final long clazzid) throws Exception {
         final SchoolClassRecord selected = this.datasource.selectFrom(ScsPostgres.SCHOOL_CLASS)
             .where(
                 ScsPostgres.SCHOOL_CLASS.ID.eq(clazzid)
@@ -85,7 +85,7 @@ public final class ScsPostgres implements SchoolClasses {
     }
 
     @Override
-    public SchoolClass find(final String name) throws Exception {
+    public SchoolClass clazz(final String name) throws Exception {
         final SchoolClassRecord clazz = this.datasource.selectFrom(ScsPostgres.SCHOOL_CLASS)
             .where(
                 ScsPostgres.SCHOOL_CLASS.SCHOOL_ID.eq(this.sid)
@@ -102,7 +102,7 @@ public final class ScsPostgres implements SchoolClasses {
     }
 
     @Override
-    public PageableList<SchoolClass> list(
+    public PageableList<SchoolClass> classes(
         final Condition condition,
         final Page page
     ) throws Exception {
