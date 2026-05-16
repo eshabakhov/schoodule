@@ -157,7 +157,7 @@ public class SchoolClassHtmlController {
         @RequestParam final Integer grade
     ) throws Exception {
         final String result;
-        if (litter == null || litter.isBlank()) {
+        if (litter == null || litter.isBlank() || grade == null) {
             result = String.format("redirect:/schools/%d/classes/create?error=empty", school);
         } else {
             result = String.format("redirect:/schools/%d/classes", school);
@@ -196,7 +196,7 @@ public class SchoolClassHtmlController {
         @RequestParam final Integer grade
     ) throws Exception {
         final String result;
-        if (litter == null || litter.isBlank()) {
+        if (litter == null || litter.isBlank() || grade == null) {
             result = String.format(
                 "redirect:/schools/%d/classes/%d/edit?error=empty", school, clazz
             );
