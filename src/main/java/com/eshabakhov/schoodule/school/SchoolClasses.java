@@ -20,10 +20,11 @@ public interface SchoolClasses {
     /**
      * Creates a new school class with the given name.
      *
-     * @param name The school class name
+     * @param litter The school class litter
+     * @param grade The school class grade
      * @return The created {@link SchoolClass}
      */
-    SchoolClass add(String name) throws Exception;
+    SchoolClass add(String litter, Integer grade) throws Exception;
 
     /**
      * Finds a school class by its unique identifier.
@@ -32,14 +33,6 @@ public interface SchoolClasses {
      * @return The found {@link SchoolClass}
      */
     SchoolClass clazz(long id) throws Exception;
-
-    /**
-     * Finds a school class by its name.
-     *
-     * @param name The school class name
-     * @return The found {@link SchoolClass}
-     */
-    SchoolClass clazz(String name) throws Exception;
 
     /**
      * Returns a paginated list of school classes optionally filtered by a search string.
@@ -54,10 +47,11 @@ public interface SchoolClasses {
      * Updates the name of an existing school class.
      *
      * @param id ID School class
-     * @param name The school class name
+     * @param litter The school class litter
+     * @param grade The school class grade
      * @return The updated {@link SchoolClass}
      */
-    SchoolClass put(Long id, String name) throws Exception;
+    SchoolClass put(Long id, String litter, Integer grade) throws Exception;
 
     /**
      * Removes a school class by its ID.

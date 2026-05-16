@@ -89,7 +89,8 @@
             CREATE TABLE public.school_class(
                 id bigserial PRIMARY KEY,
                 school_id bigint NOT NULL,
-                name varchar NOT NULL,
+                litter varchar NOT NULL,
+                grade integer NOT NULL,
                 is_deleted boolean DEFAULT FALSE,
                 CONSTRAINT fk_school_school_class_id
                     FOREIGN KEY (school_id)
@@ -194,20 +195,6 @@
                       ON DELETE RESTRICT,
                 UNIQUE (schedule_id, school_class_id, subject_id)
             );
-            ]]>
-        </sql>
-    </changeSet>
-    <changeSet id="schoodule-data-school-class/v1/02-09-2025/4" author="Shabakhov_Eset">
-        <sql>
-            <![CDATA[
-            ALTER TABLE public.school_class
-                ADD COLUMN parent_id bigint;
-            ALTER TABLE public.school_class
-                ADD CONSTRAINT fk_school_class_parent_id
-                    FOREIGN KEY (parent_id)
-                        REFERENCES public.school_class(id)
-                        ON DELETE RESTRICT
-                        ON UPDATE CASCADE;
             ]]>
         </sql>
     </changeSet>

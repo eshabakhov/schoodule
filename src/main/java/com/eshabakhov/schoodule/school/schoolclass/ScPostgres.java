@@ -7,6 +7,7 @@ import com.eshabakhov.schoodule.school.SchoolClass;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 
 /**
  * Postgres implementation of {@link SchoolClass}.
@@ -38,7 +39,30 @@ public final class ScPostgres implements SchoolClass {
     @Override
     public String name() {
         return this.datasource
-            .select(ScPostgres.SCHOOL_CLASS.NAME)
+            .select(
+                DSL.concat(
+                    ScPostgres.SCHOOL_CLASS.GRADE.cast(String.class),
+                    ScPostgres.SCHOOL_CLASS.LITTER
+                )
+            )
+            .from(ScPostgres.SCHOOL_CLASS)
+            .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
+            .fetchOne(0, String.class);
+    }
+
+    @Override
+    public Integer grade() {
+        return this.datasource
+            .select(ScPostgres.SCHOOL_CLASS.GRADE)
+            .from(ScPostgres.SCHOOL_CLASS)
+            .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
+            .fetchOneInto(Integer.class);
+    }
+
+    @Override
+    public String litter() {
+        return this.datasource
+            .select(ScPostgres.SCHOOL_CLASS.LITTER)
             .from(ScPostgres.SCHOOL_CLASS)
             .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
             .fetchOneInto(String.class);
@@ -47,14 +71,19 @@ public final class ScPostgres implements SchoolClass {
     @Override
     public ObjectNode json() {
         return this.datasource
-            .select(ScPostgres.SCHOOL_CLASS.ID, ScPostgres.SCHOOL_CLASS.NAME)
+            .select(
+                ScPostgres.SCHOOL_CLASS.ID,
+                ScPostgres.SCHOOL_CLASS.LITTER,
+                ScPostgres.SCHOOL_CLASS.GRADE
+            )
             .from(ScPostgres.SCHOOL_CLASS)
             .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
             .fetchOne(
                 clazz ->
                     JsonNodeFactory.instance.objectNode()
                         .put("id", clazz.get(ScPostgres.SCHOOL_CLASS.ID))
-                        .put("name", clazz.get(ScPostgres.SCHOOL_CLASS.NAME))
+                        .put("grade", clazz.get(ScPostgres.SCHOOL_CLASS.GRADE))
+                        .put("litter", clazz.get(ScPostgres.SCHOOL_CLASS.LITTER))
             );
     }
 }

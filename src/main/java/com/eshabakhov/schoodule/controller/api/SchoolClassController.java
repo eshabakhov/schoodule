@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -100,7 +101,8 @@ public class SchoolClassController {
                     value = """
                         {
                             "id": 1,
-                            "name": "5F"
+                            "grade": "5",
+                            "litter": "F"
                         }"""
                 )
             }
@@ -113,11 +115,20 @@ public class SchoolClassController {
             mediaType = "application/json",
             examples = {
                 @ExampleObject(
-                    name = "Field is required and cannot be empty",
-                    summary = "Required field",
+                    name = "Grade is required and cannot be empty",
+                    summary = "Required grade field",
                     value = """
                         {
-                            "message": "Field 'name' is required and cannot be empty",
+                            "message": "Field 'grade' is required and cannot be empty",
+                            "timestamp": "2026-01-22T08:24:38.037716369Z"
+                        }"""
+                ),
+                @ExampleObject(
+                    name = "Litter is required and cannot be empty",
+                    summary = "Required litter field",
+                    value = """
+                        {
+                            "message": "Field 'litter' is required and cannot be empty",
                             "timestamp": "2026-01-22T08:24:38.037716369Z"
                         }"""
                 )
@@ -154,7 +165,8 @@ public class SchoolClassController {
                         value =
                             """
                             {
-                                "name": "5F"
+                                "grade": "5",
+                                "litter": "F"
                             }
                             """
                     )
@@ -164,16 +176,22 @@ public class SchoolClassController {
         @RequestBody final JsonNode request
     ) throws Exception {
         if (SchoolClassVersion.SIMPLE.equals(version)) {
-            final JsonNode name = request.get("name");
-            if (name == null || name.asText().isBlank()) {
+            final JsonNode litter = request.get("litter");
+            if (litter == null || litter.asText().isBlank()) {
                 throw new SchoolClassRequiredFieldException(
-                    "Field 'name' is required and cannot be empty"
+                    "Field 'litter' is required and cannot be empty"
+                );
+            }
+            final JsonNode grade = request.get("grade");
+            if (grade == null) {
+                throw new SchoolClassRequiredFieldException(
+                    "Field 'grade' is required and cannot be empty"
                 );
             }
             final SchoolClass clazz = new SlsPostgres(this.datasource)
                 .school(school)
                 .schoolClasses()
-                .add(name.asText());
+                .add(litter.asText(), grade.asInt());
             return ResponseEntity
                 .created(
                     URI.create(
@@ -211,7 +229,10 @@ public class SchoolClassController {
             .and(SchoolClassController.SCHOOL_CLASS.IS_DELETED.eq(false));
         if (namect != null && !namect.isBlank()) {
             condition = condition.and(
-                SchoolClassController.SCHOOL_CLASS.NAME.likeIgnoreCase(
+                DSL.concat(
+                    SchoolClassController.SCHOOL_CLASS.GRADE.cast(String.class),
+                    SchoolClassController.SCHOOL_CLASS.LITTER
+                ).likeIgnoreCase(
                     String.format("%%%s%%", namect)
                 )
             );
@@ -256,7 +277,8 @@ public class SchoolClassController {
                     value = """
                         {
                             "id": 1,
-                            "name": "5F"
+                            "grade": "5",
+                            "litter": "5"
                         }"""
                 )
             }
@@ -345,7 +367,8 @@ public class SchoolClassController {
                     value = """
                         {
                             "id": 1,
-                            "name": "5F"
+                            "grade": "5",
+                            "litter": "F"
                         }"""
                 )
             }
@@ -364,7 +387,8 @@ public class SchoolClassController {
                     value = """
                         {
                             "id": 1,
-                            "name": "5F"
+                            "grade": "5",
+                            "litter": "F"
                         }"""
                 )
             }
@@ -377,11 +401,20 @@ public class SchoolClassController {
             mediaType = "application/json",
             examples = {
                 @ExampleObject(
-                    name = "Field is required and cannot be empty",
-                    summary = "Required field",
+                    name = "Grade is required and cannot be empty",
+                    summary = "Required grade field",
                     value = """
                         {
-                            "message": "Field 'name' is required and cannot be empty",
+                            "message": "Field 'grade' is required and cannot be empty",
+                            "timestamp": "2026-01-22T08:24:38.037716369Z"
+                        }"""
+                ),
+                @ExampleObject(
+                    name = "Litter is required and cannot be empty",
+                    summary = "Required litter field",
+                    value = """
+                        {
+                            "message": "Field 'litter' is required and cannot be empty",
                             "timestamp": "2026-01-22T08:24:38.037716369Z"
                         }"""
                 )
@@ -419,7 +452,8 @@ public class SchoolClassController {
                         name = "Simple",
                         value = """
                             {
-                                "name": "5F"
+                                "grade": "5",
+                                "litter": "F"
                             }
                             """
                     )
@@ -429,16 +463,22 @@ public class SchoolClassController {
         @RequestBody final JsonNode request
     ) throws Exception {
         if (SchoolClassVersion.SIMPLE.equals(version)) {
-            final JsonNode name = request.get("name");
-            if (name == null || name.asText().isBlank()) {
+            final JsonNode litter = request.get("litter");
+            if (litter == null || litter.asText().isBlank()) {
                 throw new SchoolClassRequiredFieldException(
-                    "Field 'name' is required and cannot be empty"
+                    "Field 'litter' is required and cannot be empty"
+                );
+            }
+            final JsonNode grade = request.get("grade");
+            if (grade == null) {
+                throw new SchoolClassRequiredFieldException(
+                    "Field 'grade' is required and cannot be empty"
                 );
             }
             final var updated = new SlsPostgres(this.datasource)
                 .school(school)
                 .schoolClasses()
-                .put(clazz, name.asText());
+                .put(clazz, litter.asText(), grade.asInt());
             final ResponseEntity<SchoolClass> response;
             if (clazz == updated.uid()) {
                 response = ResponseEntity.ok().body(new ScBase(updated));
