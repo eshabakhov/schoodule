@@ -31,6 +31,16 @@ public final class ScBase implements SchoolClass {
     }
 
     @Override
+    public Integer grade() {
+        return this.clazz.grade();
+    }
+
+    @Override
+    public String litter() {
+        return this.clazz.litter();
+    }
+
+    @Override
     public ObjectNode json() {
         return this.clazz.json();
     }

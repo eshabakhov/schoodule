@@ -25,4 +25,18 @@ public interface SchoolClass extends Jsonable {
      * @return Name of the schoolclass
      */
     String name();
+
+    /**
+     * Returns a grade of the schoolclass.
+     *
+     * @return Grade of the schoolclass
+     */
+    Integer grade();
+
+    /**
+     * Returns a litter of the schoolclass.
+     *
+     * @return Litter of the schoolclass
+     */
+    String litter();
 }

@@ -4,10 +4,16 @@
 package com.eshabakhov.schoodule.error;
 
 import com.eshabakhov.schoodule.controller.api.CabinetController;
+import com.eshabakhov.schoodule.controller.api.ScheduleController;
+import com.eshabakhov.schoodule.controller.api.SchoolClassController;
 import com.eshabakhov.schoodule.controller.api.SchoolController;
+import com.eshabakhov.schoodule.controller.api.SubjectController;
 import com.eshabakhov.schoodule.controller.api.TeacherController;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.cabinet.CbsPostgres;
+import com.eshabakhov.schoodule.school.schedule.SdsPostgres;
+import com.eshabakhov.schoodule.school.schoolclass.ScsPostgres;
+import com.eshabakhov.schoodule.school.subject.SbsPostgres;
 import com.eshabakhov.schoodule.school.teacher.ThsPostgres;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -49,22 +55,14 @@ public final class RestResponseEntityExceptionHandler {
             .body(new SimpleError(exception.getMessage()));
     }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public static ResponseEntity<Object> handleMethodArgumentTypeMismatchException(
-        final MethodArgumentTypeMismatchException exception
-    ) {
-        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(new SimpleError(exception.getMessage()));
-    }
-
     @ExceptionHandler(
         {
-            CabinetController.CabinetRequiredFieldException.class,
-            CbsPostgres.CabinetAlreadyExistsException.class,
             SchoolController.SchoolRequiredFieldException.class,
-            TeacherController.TeacherRequiredFieldException.class,
-            ThsPostgres.TeacherAlreadyExistsException.class
+            CabinetController.CabinetRequiredFieldException.class,
+            ScheduleController.ScheduleRequiredFieldException.class,
+            SchoolClassController.SchoolClassRequiredFieldException.class,
+            SubjectController.SubjectRequiredFieldException.class,
+            TeacherController.TeacherRequiredFieldException.class
         }
     )
     public static ResponseEntity<Object> handleClientException(final Exception exception) {
@@ -85,6 +83,31 @@ public final class RestResponseEntityExceptionHandler {
     public static String handleNotFoundException(final Model model) {
         model.addAttribute("message", "Запрашиваемый объект не найден");
         return "error/404";
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public static ResponseEntity<Object> handleMethodArgumentTypeMismatchException(
+        final MethodArgumentTypeMismatchException exception
+    ) {
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(new SimpleError(exception.getMessage()));
+    }
+
+    @ExceptionHandler(
+        {
+            ScsPostgres.SchoolClassAlreadyExistsException.class,
+            CbsPostgres.CabinetAlreadyExistsException.class,
+            SdsPostgres.ScheduleAlreadyExistsException.class,
+            ScsPostgres.SchoolClassAlreadyExistsException.class,
+            SbsPostgres.SubjectAlreadyExistsException.class,
+            ThsPostgres.TeacherAlreadyExistsException.class
+        }
+    )
+    public static ResponseEntity<Object> handleConflictException(final Exception exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(new SimpleError(exception.getMessage()));
     }
 
     @ExceptionHandler(

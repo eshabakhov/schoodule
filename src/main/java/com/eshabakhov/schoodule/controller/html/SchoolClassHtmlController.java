@@ -10,6 +10,7 @@ import com.eshabakhov.schoodule.school.SchoolClass;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import java.util.Map;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -55,8 +56,10 @@ public class SchoolClassHtmlController {
             .and(SchoolClassHtmlController.SCHOOL_CLASS.SCHOOL_ID.eq(school));
         if (name != null && !name.isBlank()) {
             condition = condition.and(
-                SchoolClassHtmlController.SCHOOL_CLASS.NAME
-                    .likeIgnoreCase(String.format("%%%s%%", name))
+                DSL.concat(
+                    SchoolClassHtmlController.SCHOOL_CLASS.GRADE.cast(String.class),
+                    SchoolClassHtmlController.SCHOOL_CLASS.LITTER
+                ).likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
         final School sch = new SlsPostgres(this.datasource).school(school);
@@ -91,8 +94,10 @@ public class SchoolClassHtmlController {
             .and(SchoolClassHtmlController.SCHOOL_CLASS.SCHOOL_ID.eq(school));
         if (name != null && !name.isBlank()) {
             condition = condition.and(
-                SchoolClassHtmlController.SCHOOL_CLASS.NAME
-                    .likeIgnoreCase(String.format("%%%s%%", name))
+                DSL.concat(
+                    SchoolClassHtmlController.SCHOOL_CLASS.GRADE.cast(String.class),
+                    SchoolClassHtmlController.SCHOOL_CLASS.LITTER
+                ).likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
         final School sch = new SlsPostgres(this.datasource).school(school);
@@ -146,17 +151,20 @@ public class SchoolClassHtmlController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
-    public String create(@PathVariable final long school, @RequestParam final String name)
-        throws Exception {
+    public String create(
+        @PathVariable final long school,
+        @RequestParam final String litter,
+        @RequestParam final Integer grade
+    ) throws Exception {
         final String result;
-        if (name == null || name.isBlank()) {
+        if (litter == null || litter.isBlank()) {
             result = String.format("redirect:/schools/%d/classes/create?error=empty", school);
         } else {
             result = String.format("redirect:/schools/%d/classes", school);
             new SlsPostgres(this.datasource)
                 .school(school)
                 .schoolClasses()
-                .add(name.trim());
+                .add(litter.trim(), grade);
         }
         return result;
     }
@@ -180,13 +188,15 @@ public class SchoolClassHtmlController {
 
     @PostMapping("/{clazz}/edit")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
+    //@checkstyle ParameterNumberCheck (1 line)
     public String edit(
         @PathVariable final long school,
         @PathVariable final long clazz,
-        @RequestParam final String name
+        @RequestParam final String litter,
+        @RequestParam final Integer grade
     ) throws Exception {
         final String result;
-        if (name == null || name.isBlank()) {
+        if (litter == null || litter.isBlank()) {
             result = String.format(
                 "redirect:/schools/%d/classes/%d/edit?error=empty", school, clazz
             );
@@ -194,7 +204,7 @@ public class SchoolClassHtmlController {
             new SlsPostgres(this.datasource)
                 .school(school)
                 .schoolClasses()
-                .put(clazz, name.trim());
+                .put(clazz, litter.trim(), grade);
             result = String.format("redirect:/schools/%d/classes/%d", school, clazz);
         }
         return result;
