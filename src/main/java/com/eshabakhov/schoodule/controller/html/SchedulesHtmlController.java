@@ -138,7 +138,7 @@ public class SchedulesHtmlController {
             new SlsPostgres(this.datasource)
                 .school(school)
                 .schedules()
-                .add(name.trim());
+                .create(name.trim());
         }
         return result;
     }
@@ -176,7 +176,8 @@ public class SchedulesHtmlController {
             new SlsPostgres(this.datasource)
                 .school(school)
                 .schedules()
-                .put(schedule, name.trim());
+                .schedule(schedule)
+                .renamed(name.trim());
             result = String.format("redirect:/schools/%d/schedules/%d", school, schedule);
         }
         return result;

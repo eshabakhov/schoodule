@@ -39,7 +39,7 @@ public final class SdsPostgres implements Schedules {
     }
 
     @Override
-    public Schedule add(final String name) {
+    public Schedule create(final String name) {
         return this.datasource.transactionResult(
             config -> {
                 final DSLContext ctx = DSL.using(config);
@@ -124,41 +124,6 @@ public final class SdsPostgres implements Schedules {
             ),
             page
         );
-    }
-
-    @Override
-    public Schedule put(final Long schedid, final String name) throws Exception {
-        final ScheduleRecord select = this.datasource.selectFrom(SdsPostgres.SCHEDULE)
-            .where(
-                SdsPostgres.SCHEDULE.ID.eq(schedid)
-                    .and(SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid))
-                    .and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
-            )
-            .fetchOne();
-        final Schedule result;
-        if (select == null) {
-            final var inserted = this.datasource.insertInto(SdsPostgres.SCHEDULE)
-                .set(SdsPostgres.SCHEDULE.SCHOOL_ID, this.sid)
-                .set(SdsPostgres.SCHEDULE.NAME, name)
-                .set(SdsPostgres.SCHEDULE.IS_DELETED, false)
-                .returning()
-                .fetchOne();
-            if (inserted == null) {
-                throw new ScheduleFailedCreateException();
-            }
-            result = new SdPostgres(this.datasource, inserted.getId());
-        } else {
-            final var updated = this.datasource.update(SdsPostgres.SCHEDULE)
-                .set(SdsPostgres.SCHEDULE.NAME, name)
-                .where(SdsPostgres.SCHEDULE.ID.eq(schedid))
-                .returning()
-                .fetchOne();
-            if (updated == null) {
-                throw new ScheduleFailedUpdateException();
-            }
-            result = new SdPostgres(this.datasource, updated.getId());
-        }
-        return result;
     }
 
     @Override

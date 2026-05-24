@@ -23,9 +23,9 @@ public final class CbPostgres implements Cabinet {
     private final DSLContext ctx;
 
     /** Cabinet id. */
-    private final long id;
+    private final Long id;
 
-    public CbPostgres(final DSLContext ctx, final long id) {
+    public CbPostgres(final DSLContext ctx, final Long id) {
         this.ctx = ctx;
         this.id = id;
     }

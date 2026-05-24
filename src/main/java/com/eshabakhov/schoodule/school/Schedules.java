@@ -24,7 +24,7 @@ public interface Schedules {
      * @return The created {@link Schedule}
      * @throws Exception if creation fails
      */
-    Schedule add(String name) throws Exception;
+    Schedule create(String name) throws Exception;
 
     /**
      * Finds a schedule by its unique identifier.
@@ -53,16 +53,6 @@ public interface Schedules {
      * @throws Exception if listing fails
      */
     PageableList<Schedule> schedules(Condition condition, Page page) throws Exception;
-
-    /**
-     * Updates the name of an existing schedule.
-     *
-     * @param id Schedule ID
-     * @param name The schedule name
-     * @return The updated {@link Schedule}
-     * @throws Exception if update fails
-     */
-    Schedule put(Long id, String name) throws Exception;
 
     /**
      * Removes a schedule by its ID.

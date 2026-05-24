@@ -8,7 +8,8 @@ import com.eshabakhov.schoodule.error.VersionHeaderException;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.Schedule;
 import com.eshabakhov.schoodule.school.SlsPostgres;
-import com.eshabakhov.schoodule.school.schedule.SimpleSchedule;
+import com.eshabakhov.schoodule.school.schedule.SdBase;
+import com.eshabakhov.schoodule.school.schedule.SdsPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -56,10 +57,10 @@ public class ScheduleController {
     );
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
-    ScheduleController(final DSLContext datasource) {
-        this.datasource = datasource;
+    ScheduleController(final DSLContext ctx) {
+        this.ctx = ctx;
     }
 
     @PostMapping
@@ -169,17 +170,17 @@ public class ScheduleController {
                     "Field 'name' is required and cannot be empty"
                 );
             }
-            final Schedule schedule = new SlsPostgres(this.datasource)
+            final Schedule schedule = new SlsPostgres(this.ctx)
                 .school(school)
                 .schedules()
-                .add(name.asText());
+                .create(name.asText());
             return ResponseEntity
                 .created(
                     URI.create(
                         String.format("/api/schools/%d/schedules/%d", school, schedule.uid())
                     )
                 )
-                .body(new SimpleSchedule(schedule));
+                .body(new SdBase(schedule.uid(), schedule.name()));
         } else {
             throw new VersionHeaderException(version.name());
         }
@@ -216,7 +217,7 @@ public class ScheduleController {
         return ResponseEntity
             .ok()
             .body(
-                new SlsPostgres(this.datasource)
+                new SlsPostgres(this.ctx)
                     .school(school)
                     .schedules()
                     .schedules(condition, new PageRequest(limit, offset))
@@ -287,17 +288,14 @@ public class ScheduleController {
         @PathVariable final long schedule
     ) throws Exception {
         if (ScheduleVersion.SIMPLE.equals(version)) {
+            final var sched = new SlsPostgres(this.ctx)
+                .school(school)
+                .schedules()
+                .schedule(schedule);
             return ResponseEntity
                 .ok()
                 .contentType(ScheduleController.SIMPLE_TYPE)
-                .body(
-                    new SimpleSchedule(
-                        new SlsPostgres(this.datasource)
-                            .school(school)
-                            .schedules()
-                            .schedule(schedule)
-                    )
-                );
+                .body(new SdBase(sched.uid(), sched.name()));
         } else {
             throw new VersionHeaderException(version.name());
         }
@@ -429,21 +427,27 @@ public class ScheduleController {
                     "Field 'name' is required and cannot be empty"
                 );
             }
-            final var updated = new SlsPostgres(this.datasource)
-                .school(school)
-                .schedules()
-                .put(schedule, name.asText());
-            final ResponseEntity<Schedule> response;
-            if (schedule == updated.uid()) {
-                response = ResponseEntity.ok().body(new SimpleSchedule(updated));
-            } else {
+            ResponseEntity<Schedule> response;
+            try {
+                response = ResponseEntity.ok().body(
+                    new SlsPostgres(this.ctx)
+                        .school(school)
+                        .schedules()
+                        .schedule(schedule)
+                        .renamed(name.asText())
+                );
+            } catch (final SdsPostgres.ScheduleNotFoundException ex) {
+                final var newschedule =  new SlsPostgres(this.ctx)
+                    .school(school)
+                    .schedules()
+                    .create(name.asText());
                 response = ResponseEntity
                     .created(
                         URI.create(
-                            String.format("/api/schools/%d/schedules/%d", school, updated.uid())
+                            String.format("/api/schools/%d/schedules/%d", school, newschedule.uid())
                         )
                     )
-                    .body(new SimpleSchedule(updated));
+                    .body(new SdBase(newschedule.uid(), newschedule.name()));
             }
             return response;
         } else {
@@ -466,7 +470,7 @@ public class ScheduleController {
         @PathVariable final long school,
         @PathVariable final long schedule
     ) throws Exception {
-        new SlsPostgres(this.datasource)
+        new SlsPostgres(this.ctx)
             .school(school)
             .schedules()
             .remove(schedule);
