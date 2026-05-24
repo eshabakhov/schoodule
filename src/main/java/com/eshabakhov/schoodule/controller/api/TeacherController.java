@@ -9,6 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.Teacher;
 import com.eshabakhov.schoodule.school.teacher.ThBase;
+import com.eshabakhov.schoodule.school.teacher.ThsPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -56,10 +57,10 @@ public class TeacherController {
     );
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
-    TeacherController(final DSLContext datasource) {
-        this.datasource = datasource;
+    TeacherController(final DSLContext ctx) {
+        this.ctx = ctx;
     }
 
     @PostMapping
@@ -169,10 +170,10 @@ public class TeacherController {
                     "Field 'name' is required and cannot be empty"
                 );
             }
-            final Teacher teacher = new SlsPostgres(this.datasource)
+            final Teacher teacher = new SlsPostgres(this.ctx)
                 .school(school)
                 .teachers()
-                .create(new ThBase(name.asText()));
+                .create(name.asText());
             return ResponseEntity
                 .created(
                     URI.create(
@@ -215,7 +216,7 @@ public class TeacherController {
         return ResponseEntity
             .ok()
             .body(
-                new SlsPostgres(this.datasource)
+                new SlsPostgres(this.ctx)
                     .school(school)
                     .teachers()
                     .teachers(condition, new PageRequest(limit, offset))
@@ -286,7 +287,7 @@ public class TeacherController {
         @PathVariable final long teacher
     ) throws Exception {
         if (TeacherVersion.SIMPLE.equals(version)) {
-            final var found = new SlsPostgres(this.datasource)
+            final var found = new SlsPostgres(this.ctx)
                 .school(school)
                 .teachers()
                 .teacher(teacher);
@@ -425,22 +426,26 @@ public class TeacherController {
                     "Field 'name' is required and cannot be empty"
                 );
             }
-            final var toupdate = new ThBase(teacher, name.asText());
-            final var updated = new SlsPostgres(this.datasource)
-                .school(school)
-                .teachers()
-                .put(new ThBase(teacher, name.asText()));
-            final ResponseEntity<Teacher> response;
-            if (toupdate.equals(updated)) {
-                response = ResponseEntity.ok().body(updated);
-            } else {
+            ResponseEntity<Teacher> response;
+            try {
+                final var updated = new SlsPostgres(this.ctx)
+                    .school(school)
+                    .teachers()
+                    .teacher(teacher)
+                    .renamed(name.asText());
+                response = ResponseEntity.ok().body(new ThBase(updated.uid(), updated.name()));
+            } catch (final ThsPostgres.TeacherNotFoundException ex) {
+                final var created = new SlsPostgres(this.ctx)
+                    .school(school)
+                    .teachers()
+                    .create(name.asText());
                 response = ResponseEntity
                     .created(
                         URI.create(
-                            String.format("/api/schools/%d/teachers/%d", school, updated.uid())
+                            String.format("/api/schools/%d/teachers/%d", school, created.uid())
                         )
                     )
-                    .body(updated);
+                    .body(created);
             }
             return response;
         } else {
@@ -463,7 +468,7 @@ public class TeacherController {
         @PathVariable final long school,
         @PathVariable final long teacher
     ) throws Exception {
-        new SlsPostgres(this.datasource)
+        new SlsPostgres(this.ctx)
             .school(school)
             .teachers()
             .remove(teacher);

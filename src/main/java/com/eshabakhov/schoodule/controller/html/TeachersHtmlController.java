@@ -8,7 +8,6 @@ import com.eshabakhov.schoodule.School;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.Teacher;
-import com.eshabakhov.schoodule.school.teacher.ThBase;
 import java.util.Map;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
@@ -157,7 +156,7 @@ public class TeachersHtmlController {
             new SlsPostgres(this.ctx)
                 .school(school)
                 .teachers()
-                .create(new ThBase(name.trim()));
+                .create(name.trim());
         }
         return result;
     }
@@ -195,7 +194,8 @@ public class TeachersHtmlController {
             new SlsPostgres(this.ctx)
                 .school(school)
                 .teachers()
-                .put(new ThBase(teacher, name.trim()));
+                .teacher(teacher)
+                .renamed(name.trim());
             result = String.format("redirect:/schools/%d/teachers/%d", school, teacher);
         }
         return result;

@@ -25,4 +25,11 @@ public interface Teacher extends Jsonable {
      * @return Name of the teacher
      */
     String name();
+
+    /**
+     * Returns teacher with new name.
+     * @param name New name of the teacher
+     * @return Name of the teacher
+     */
+    Teacher renamed(String name);
 }

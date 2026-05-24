@@ -20,13 +20,13 @@ public final class ThPostgres implements Teacher {
         com.eshabakhov.schoodule.tables.Teacher.TEACHER;
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
     /** Teacher ID. */
     private final long tid;
 
-    public ThPostgres(final DSLContext datasource, final Long tid) {
-        this.datasource = datasource;
+    public ThPostgres(final DSLContext ctx, final Long tid) {
+        this.ctx = ctx;
         this.tid = tid;
     }
 
@@ -37,7 +37,7 @@ public final class ThPostgres implements Teacher {
 
     @Override
     public String name() {
-        return this.datasource
+        return this.ctx
             .select(ThPostgres.TEACHER.NAME)
             .from(ThPostgres.TEACHER)
             .where(ThPostgres.TEACHER.ID.eq(this.tid))
@@ -45,8 +45,20 @@ public final class ThPostgres implements Teacher {
     }
 
     @Override
+    public Teacher renamed(final String name) {
+        return new ThPostgres(
+            this.ctx,
+            this.ctx.update(ThPostgres.TEACHER)
+                .set(ThPostgres.TEACHER.NAME, name)
+                .where(ThPostgres.TEACHER.ID.eq(this.tid))
+                .returningResult(ThPostgres.TEACHER.ID)
+                .fetchOne(ThPostgres.TEACHER.ID)
+        );
+    }
+
+    @Override
     public ObjectNode json() {
-        return this.datasource
+        return this.ctx
             .select(ThPostgres.TEACHER.ID, ThPostgres.TEACHER.NAME)
             .from(ThPostgres.TEACHER)
             .where(ThPostgres.TEACHER.ID.eq(this.tid))
