@@ -21,13 +21,13 @@ public final class ScPostgres implements SchoolClass {
         com.eshabakhov.schoodule.tables.SchoolClass.SCHOOL_CLASS;
 
     /** Database context. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
     /** School class id. */
-    private final long clazzid;
+    private final Long clazzid;
 
-    public ScPostgres(final DSLContext datasource, final long clazzid) {
-        this.datasource = datasource;
+    public ScPostgres(final DSLContext ctx, final Long clazzid) {
+        this.ctx = ctx;
         this.clazzid = clazzid;
     }
 
@@ -38,11 +38,11 @@ public final class ScPostgres implements SchoolClass {
 
     @Override
     public String name() {
-        return this.datasource
+        return this.ctx
             .select(
                 DSL.concat(
                     ScPostgres.SCHOOL_CLASS.GRADE.cast(String.class),
-                    ScPostgres.SCHOOL_CLASS.LITTER
+                    ScPostgres.SCHOOL_CLASS.LITERA
                 )
             )
             .from(ScPostgres.SCHOOL_CLASS)
@@ -52,7 +52,7 @@ public final class ScPostgres implements SchoolClass {
 
     @Override
     public Integer grade() {
-        return this.datasource
+        return this.ctx
             .select(ScPostgres.SCHOOL_CLASS.GRADE)
             .from(ScPostgres.SCHOOL_CLASS)
             .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
@@ -60,20 +60,44 @@ public final class ScPostgres implements SchoolClass {
     }
 
     @Override
-    public String litter() {
-        return this.datasource
-            .select(ScPostgres.SCHOOL_CLASS.LITTER)
+    public String litera() {
+        return this.ctx
+            .select(ScPostgres.SCHOOL_CLASS.LITERA)
             .from(ScPostgres.SCHOOL_CLASS)
             .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
             .fetchOneInto(String.class);
     }
 
     @Override
+    public SchoolClass regraded(final Integer grade) {
+        return new ScPostgres(
+            this.ctx,
+            this.ctx.update(ScPostgres.SCHOOL_CLASS)
+                .set(ScPostgres.SCHOOL_CLASS.GRADE, grade)
+                .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
+                .returningResult(ScPostgres.SCHOOL_CLASS.ID)
+                .fetchOne(ScPostgres.SCHOOL_CLASS.ID)
+        );
+    }
+
+    @Override
+    public SchoolClass reliterated(final String litera) {
+        return new ScPostgres(
+            this.ctx,
+            this.ctx.update(ScPostgres.SCHOOL_CLASS)
+                .set(ScPostgres.SCHOOL_CLASS.LITERA, litera)
+                .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
+                .returningResult(ScPostgres.SCHOOL_CLASS.ID)
+                .fetchOne(ScPostgres.SCHOOL_CLASS.ID)
+        );
+    }
+
+    @Override
     public ObjectNode json() {
-        return this.datasource
+        return this.ctx
             .select(
                 ScPostgres.SCHOOL_CLASS.ID,
-                ScPostgres.SCHOOL_CLASS.LITTER,
+                ScPostgres.SCHOOL_CLASS.LITERA,
                 ScPostgres.SCHOOL_CLASS.GRADE
             )
             .from(ScPostgres.SCHOOL_CLASS)
@@ -83,7 +107,7 @@ public final class ScPostgres implements SchoolClass {
                     JsonNodeFactory.instance.objectNode()
                         .put("id", clazz.get(ScPostgres.SCHOOL_CLASS.ID))
                         .put("grade", clazz.get(ScPostgres.SCHOOL_CLASS.GRADE))
-                        .put("litter", clazz.get(ScPostgres.SCHOOL_CLASS.LITTER))
+                        .put("litera", clazz.get(ScPostgres.SCHOOL_CLASS.LITERA))
             );
     }
 }

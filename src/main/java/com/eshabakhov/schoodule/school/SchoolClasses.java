@@ -20,11 +20,11 @@ public interface SchoolClasses {
     /**
      * Creates a new school class with the given name.
      *
-     * @param litter The school class litter
+     * @param litera The school class litera
      * @param grade The school class grade
      * @return The created {@link SchoolClass}
      */
-    SchoolClass add(String litter, Integer grade) throws Exception;
+    SchoolClass create(String litera, Integer grade) throws Exception;
 
     /**
      * Finds a school class by its unique identifier.
@@ -42,16 +42,6 @@ public interface SchoolClasses {
      * @return List of {@link SchoolClass} instances
      */
     PageableList<SchoolClass> classes(Condition condition, Page page) throws Exception;
-
-    /**
-     * Updates the name of an existing school class.
-     *
-     * @param id ID School class
-     * @param litter The school class litter
-     * @param grade The school class grade
-     * @return The updated {@link SchoolClass}
-     */
-    SchoolClass put(Long id, String litter, Integer grade) throws Exception;
 
     /**
      * Removes a school class by its ID.

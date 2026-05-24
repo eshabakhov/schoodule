@@ -58,7 +58,7 @@ public class SchoolClassHtmlController {
             condition = condition.and(
                 DSL.concat(
                     SchoolClassHtmlController.SCHOOL_CLASS.GRADE.cast(String.class),
-                    SchoolClassHtmlController.SCHOOL_CLASS.LITTER
+                    SchoolClassHtmlController.SCHOOL_CLASS.LITERA
                 ).likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
@@ -96,7 +96,7 @@ public class SchoolClassHtmlController {
             condition = condition.and(
                 DSL.concat(
                     SchoolClassHtmlController.SCHOOL_CLASS.GRADE.cast(String.class),
-                    SchoolClassHtmlController.SCHOOL_CLASS.LITTER
+                    SchoolClassHtmlController.SCHOOL_CLASS.LITERA
                 ).likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
@@ -153,18 +153,18 @@ public class SchoolClassHtmlController {
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public String create(
         @PathVariable final long school,
-        @RequestParam final String litter,
+        @RequestParam final String litera,
         @RequestParam final Integer grade
     ) throws Exception {
         final String result;
-        if (litter == null || litter.isBlank() || grade == null) {
+        if (litera == null || litera.isBlank() || grade == null) {
             result = String.format("redirect:/schools/%d/classes/create?error=empty", school);
         } else {
             result = String.format("redirect:/schools/%d/classes", school);
             new SlsPostgres(this.datasource)
                 .school(school)
                 .schoolClasses()
-                .add(litter.trim(), grade);
+                .create(litera.trim(), grade);
         }
         return result;
     }
@@ -192,11 +192,11 @@ public class SchoolClassHtmlController {
     public String edit(
         @PathVariable final long school,
         @PathVariable final long clazz,
-        @RequestParam final String litter,
+        @RequestParam final String litera,
         @RequestParam final Integer grade
     ) throws Exception {
         final String result;
-        if (litter == null || litter.isBlank() || grade == null) {
+        if (litera == null || litera.isBlank() || grade == null) {
             result = String.format(
                 "redirect:/schools/%d/classes/%d/edit?error=empty", school, clazz
             );
@@ -204,7 +204,9 @@ public class SchoolClassHtmlController {
             new SlsPostgres(this.datasource)
                 .school(school)
                 .schoolClasses()
-                .put(clazz, litter.trim(), grade);
+                .clazz(school)
+                .regraded(grade)
+                .reliterated(litera.trim());
             result = String.format("redirect:/schools/%d/classes/%d", school, clazz);
         }
         return result;
