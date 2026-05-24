@@ -92,6 +92,9 @@ jobs:
           source .env
           set +a
           envsubst < ${{ secrets.DEPLOY_PATH }}/haproxy/haproxy.tmpl > ${{ secrets.DEPLOY_PATH }}/haproxy/haproxy.cfg
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io \
+            -u "${{ github.actor }}" \
+             --password-stdin
           docker pull \$IMAGE
           docker compose down
           docker compose up -d
