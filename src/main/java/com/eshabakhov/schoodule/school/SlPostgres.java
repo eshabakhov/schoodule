@@ -31,19 +31,19 @@ public final class SlPostgres implements School {
         com.eshabakhov.schoodule.tables.School.SCHOOL;
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
     /** School id. */
     private final Long sid;
 
-    public SlPostgres(final DSLContext datasource, final Long sid) {
-        this.datasource = datasource;
+    public SlPostgres(final DSLContext ctx, final Long sid) {
+        this.ctx = ctx;
         this.sid = sid;
     }
 
     @Override
     public Long uid() {
-        return this.datasource
+        return this.ctx
             .select(SlPostgres.SCHOOL.ID)
             .from(SlPostgres.SCHOOL)
             .where(SlPostgres.SCHOOL.ID.eq(this.sid))
@@ -52,7 +52,7 @@ public final class SlPostgres implements School {
 
     @Override
     public String name() {
-        return this.datasource
+        return this.ctx
             .select(SlPostgres.SCHOOL.NAME)
             .from(SlPostgres.SCHOOL)
             .where(SlPostgres.SCHOOL.ID.eq(this.sid))
@@ -60,13 +60,50 @@ public final class SlPostgres implements School {
     }
 
     @Override
+    public School renamed(final String name) {
+        return new SlPostgres(
+            this.ctx,
+            this.ctx.update(SlPostgres.SCHOOL)
+                .set(SlPostgres.SCHOOL.NAME, name)
+                .where(SlPostgres.SCHOOL.ID.eq(this.sid))
+                .returningResult(SlPostgres.SCHOOL.ID)
+                .fetchOne(SlPostgres.SCHOOL.ID)
+        );
+    }
+
+    @Override
     public Users users() {
-        return new UrsPostgres(this.datasource, this.sid);
+        return new UrsPostgres(this.ctx, this.sid);
+    }
+
+    @Override
+    public Cabinets cabinets() {
+        return new CbsPostgres(this.ctx, this.sid);
+    }
+
+    @Override
+    public Teachers teachers() {
+        return new ThsPostgres(this.ctx, this.sid);
+    }
+
+    @Override
+    public SchoolClasses schoolClasses() {
+        return new ScsPostgres(this.ctx, this.sid);
+    }
+
+    @Override
+    public Subjects subjects() {
+        return new SbsPostgres(this.ctx, this.sid);
+    }
+
+    @Override
+    public Schedules schedules() {
+        return new SdsPostgres(this.ctx, this.sid);
     }
 
     @Override
     public ObjectNode json() {
-        return this.datasource
+        return this.ctx
             .select(SlPostgres.SCHOOL.ID, SlPostgres.SCHOOL.NAME)
             .from(SlPostgres.SCHOOL)
             .where(SlPostgres.SCHOOL.ID.eq(this.sid))
@@ -76,30 +113,5 @@ public final class SlPostgres implements School {
                         .put("id", school.get(SlPostgres.SCHOOL.ID))
                         .put("name", school.get(SlPostgres.SCHOOL.NAME))
             );
-    }
-
-    @Override
-    public Cabinets cabinets() {
-        return new CbsPostgres(this.datasource, this.sid);
-    }
-
-    @Override
-    public Teachers teachers() {
-        return new ThsPostgres(this.datasource, this.sid);
-    }
-
-    @Override
-    public SchoolClasses schoolClasses() {
-        return new ScsPostgres(this.datasource, this.sid);
-    }
-
-    @Override
-    public Subjects subjects() {
-        return new SbsPostgres(this.datasource, this.sid);
-    }
-
-    @Override
-    public Schedules schedules() {
-        return new SdsPostgres(this.datasource, this.sid);
     }
 }

@@ -93,39 +93,6 @@ public final class SlsPostgres implements Schools {
     }
 
     @Override
-    public School put(final School school) throws Exception {
-        final SchoolRecord select = this.ctx.selectFrom(SlsPostgres.SCHOOL)
-            .where(
-                SlsPostgres.SCHOOL.ID.eq(school.uid())
-                    .and(SlsPostgres.SCHOOL.IS_DELETED.eq(false))
-            )
-            .fetchOne();
-        final School result;
-        if (select == null) {
-            final SchoolRecord inserted = this.ctx.insertInto(SlsPostgres.SCHOOL)
-                .set(SlsPostgres.SCHOOL.NAME, school.name())
-                .set(SlsPostgres.SCHOOL.IS_DELETED, false)
-                .returning()
-                .fetchOne();
-            if (inserted == null) {
-                throw new SchoolFailedCreateException();
-            }
-            result = new SlPostgres(this.ctx, inserted.getId());
-        } else {
-            final SchoolRecord update = this.ctx.update(SlsPostgres.SCHOOL)
-                .set(SlsPostgres.SCHOOL.NAME, school.name())
-                .where(SlsPostgres.SCHOOL.ID.eq(school.uid()))
-                .returning()
-                .fetchOne();
-            if (update == null) {
-                throw new SchoolFailedUpdateException();
-            }
-            result = school;
-        }
-        return result;
-    }
-
-    @Override
     public void remove(final long sid) throws Exception {
         final SchoolRecord selected = this.ctx.selectFrom(SlsPostgres.SCHOOL)
             .where(SlsPostgres.SCHOOL.ID.eq(sid).and(SlsPostgres.SCHOOL.IS_DELETED.eq(false)))

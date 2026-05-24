@@ -45,15 +45,13 @@ public final class SlBase implements School {
     }
 
     @Override
-    public Users users() {
-        return null;
+    public School renamed(final String name) {
+        return new SlBase(this.sid, name);
     }
 
     @Override
-    public ObjectNode json() {
-        return JsonNodeFactory.instance.objectNode()
-            .put("id", this.sid)
-            .put("name", this.sname);
+    public Users users() {
+        return null;
     }
 
     @Override
@@ -89,6 +87,13 @@ public final class SlBase implements School {
         throw new UnsupportedOperationException(
             "Schedules are infrastructure-dependent"
         );
+    }
+
+    @Override
+    public ObjectNode json() {
+        return JsonNodeFactory.instance.objectNode()
+            .put("id", this.sid)
+            .put("name", this.sname);
     }
 }
 
