@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{base}">
+<head><title>Новый федеральный учебный план</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="page-title-row" style="justify-content:center;">
+        <div>
+            <h1 style="margin:0;">Новый федеральный учебный план</h1>
+            <p class="page-subtitle">Заполните метаданные плана</p>
+        </div>
+    </div>
+    <div style="max-width:640px;margin:0 auto;">
+        <form th:action="@{/federal-curriculums/create}" method="post"
+              style="display:flex;flex-direction:column;gap:1rem;">
+            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                Название
+                <input type="text" name="title" required autofocus/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                Уровень образования
+                <select name="educationLevel" required>
+                    <option th:each="level : ${educationLevels}"
+                            th:value="${level}"
+                            th:text="${level}">BASIC</option>
+                </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                Учебная неделя
+                <select name="studyWeekType" required>
+                    <option th:each="week : ${studyWeeks}"
+                            th:value="${week}"
+                            th:text="${week}">FIVE_DAYS</option>
+                </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                Версия
+                <input type="text" name="version" required/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                Учебный год
+                <input type="text" name="academicYear" placeholder="2026/2027" required/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                Описание
+                <textarea name="description" rows="4"></textarea>
+            </label>
+            <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
+                <a th:href="@{/federal-curriculums}" class="btn-outline-action">Отмена</a>
+                <button type="submit" class="btn-primary">Создать</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

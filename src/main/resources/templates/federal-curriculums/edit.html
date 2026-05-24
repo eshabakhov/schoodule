@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{base}">
+<head><title>Редактировать федеральный учебный план</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="page-title-row" style="justify-content:center;">
+        <div>
+            <h1 style="margin:0;">Редактировать федеральный учебный план</h1>
+        </div>
+    </div>
+    <div style="max-width:640px;margin:0 auto;">
+        <form th:action="@{/federal-curriculums/{id}/edit(id=${curriculum.uid()})}" method="post"
+              style="display:flex;flex-direction:column;gap:1rem;">
+            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                Название
+                <input type="text" name="title" th:value="${curriculum.title()}" required autofocus/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                Уровень образования
+                <select name="educationLevel" required>
+                    <option th:each="level : ${educationLevels}"
+                            th:value="${level}"
+                            th:selected="${level == curriculum.educationLevel()}"
+                            th:text="${level}">BASIC</option>
+                </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                Учебная неделя
+                <select name="studyWeekType" required>
+                    <option th:each="week : ${studyWeeks}"
+                            th:value="${week}"
+                            th:selected="${week == curriculum.studyWeekType()}"
+                            th:text="${week}">FIVE_DAYS</option>
+                </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                Версия
+                <input type="text" name="version" th:value="${curriculum.version()}" required/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                Учебный год
+                <input type="text" name="academicYear" th:value="${curriculum.academicYear()}" required/>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                Описание
+                <textarea name="description" rows="4" th:text="${curriculum.description()}"></textarea>
+            </label>
+            <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
+                <a th:href="@{/federal-curriculums/{id}(id=${curriculum.uid()})}" class="btn-outline-action">Отмена</a>
+                <button type="submit" class="btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

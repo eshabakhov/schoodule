@@ -12,6 +12,7 @@
     <link rel="stylesheet" th:href="@{/css/shadcn.css}">
 </head>
 <body>
+
 <header class="app-header" id="app-header">
     <div class="app-header-inner">
         <a href="/" class="app-header-logo">
@@ -54,6 +55,18 @@
                 </svg>
                 <span class="sidebar-link-label">Школы</span>
             </a>
+
+            <a href="/federal-curriculums" class="sidebar-link" title="Федеральные планы" sec:authorize="hasRole('ADMIN')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                    <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/>
+                    <path d="M8 7h8"/>
+                    <path d="M8 11h8"/>
+                    <path d="M8 15h5"/>
+                </svg>
+                <span class="sidebar-link-label">Федеральные планы</span>
+            </a>
+
             <th:block th:if="${school != null && school.uid() != null}"
                       th:with="schoolSchedules=${school.schedules().schedules(T(org.jooq.impl.DSL).trueCondition(), new com.eshabakhov.schoodule.page.PageRequest(2147483647, 1)).list()}">
                 <div class="sidebar-section">
@@ -137,6 +150,7 @@
                     </div>
                 </div>
             </th:block>
+
             <th:block th:if="${schedule != null && schedule.uid() != null && school != null}">
                 <div class="sidebar-section">
                     <a th:href="@{/schools/{s}/schedules/{r}(s=${school.uid()},r=${schedule.uid()})}"
