@@ -24,7 +24,7 @@ public interface Cabinets {
      * @return The created {@link Cabinet}
      * @throws Exception if creation fails
      */
-    Cabinet add(String name) throws Exception;
+    Cabinet create(String name) throws Exception;
 
     /**
      * Finds a cabinet by its unique ID.
@@ -53,16 +53,6 @@ public interface Cabinets {
      * @throws Exception if listing fails
      */
     PageableList<Cabinet> cabinets(Condition condition, Page page) throws Exception;
-
-    /**
-     * Updates the name of a cabinet.
-     *
-     * @param id Cabinet ID
-     * @param name The name of cabinet
-     * @return The updated {@link Cabinet}
-     * @throws Exception if update fails
-     */
-    Cabinet put(Long id, String name) throws Exception;
 
     /**
      * Removes a cabinet by its ID.

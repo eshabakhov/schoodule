@@ -154,7 +154,7 @@ public class CabinetsHtmlController {
             new SlsPostgres(this.datasource)
                 .school(school)
                 .cabinets()
-                .add(name.trim());
+                .create(name.trim());
         }
         return result;
     }
@@ -192,7 +192,8 @@ public class CabinetsHtmlController {
             new SlsPostgres(this.datasource)
                 .school(school)
                 .cabinets()
-                .put(cabinet, name.trim());
+                .cabinet(cabinet)
+                .renamed(name.trim());
             result = String.format("redirect:/schools/%d/cabinets/%d", school, cabinet);
         }
         return result;
