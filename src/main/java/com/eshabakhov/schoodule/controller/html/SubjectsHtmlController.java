@@ -8,7 +8,6 @@ import com.eshabakhov.schoodule.School;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.Subject;
-import com.eshabakhov.schoodule.school.subject.SbBase;
 import java.util.Map;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
@@ -37,10 +36,10 @@ public class SubjectsHtmlController {
         com.eshabakhov.schoodule.tables.Subject.SUBJECT;
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
-    public SubjectsHtmlController(final DSLContext datasource) {
-        this.datasource = datasource;
+    public SubjectsHtmlController(final DSLContext ctx) {
+        this.ctx = ctx;
     }
 
     //@checkstyle ParameterNumberCheck (3 lines)
@@ -59,7 +58,7 @@ public class SubjectsHtmlController {
                 SubjectsHtmlController.SUBJECT.NAME.likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
-        final School sch = new SlsPostgres(this.datasource).school(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         final PageableList<Subject> subjects = sch
             .subjects()
             .subjects(condition, new PageRequest(limit, offset));
@@ -94,7 +93,7 @@ public class SubjectsHtmlController {
                 SubjectsHtmlController.SUBJECT.NAME.likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
-        final School sch = new SlsPostgres(this.datasource).school(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         final PageableList<Subject> subjects = sch
             .subjects()
             .subjects(condition, new PageRequest(limit, offset));
@@ -118,7 +117,7 @@ public class SubjectsHtmlController {
         @PathVariable final long school,
         @PathVariable final long subject
     ) throws Exception {
-        final School sch = new SlsPostgres(this.datasource).school(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         final Subject sub = sch.subjects().subject(subject);
         return new ModelAndView("subjects/details")
             .addAllObjects(
@@ -136,7 +135,7 @@ public class SubjectsHtmlController {
         return new ModelAndView("subjects/create")
             .addAllObjects(
                 Map.of(
-                    "school", new SlsPostgres(this.datasource).school(school),
+                    "school", new SlsPostgres(this.ctx).school(school),
                     "pageTitle", "Новый предмет"
                 )
             );
@@ -151,10 +150,10 @@ public class SubjectsHtmlController {
             result = String.format("redirect:/schools/%d/subjects/create?error=empty", school);
         } else {
             result = String.format("redirect:/schools/%d/subjects", school);
-            new SlsPostgres(this.datasource)
+            new SlsPostgres(this.ctx)
                 .school(school)
                 .subjects()
-                .create(new SbBase(name.trim()));
+                .create(name.trim());
         }
         return result;
     }
@@ -165,7 +164,7 @@ public class SubjectsHtmlController {
         @PathVariable final long school,
         @PathVariable final long subject
     ) throws Exception {
-        final School sch = new SlsPostgres(this.datasource).school(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         return new ModelAndView("subjects/edit")
             .addAllObjects(
                 Map.of(
@@ -189,10 +188,11 @@ public class SubjectsHtmlController {
                 "redirect:/schools/%d/subjects/%d/edit?error=empty", school, subject
             );
         } else {
-            new SlsPostgres(this.datasource)
+            new SlsPostgres(this.ctx)
                 .school(school)
                 .subjects()
-                .put(new SbBase(subject, name.trim()));
+                .subject(subject)
+                .renamed(name.trim());
             result = String.format("redirect:/schools/%d/subjects/%d", school, subject);
         }
         return result;

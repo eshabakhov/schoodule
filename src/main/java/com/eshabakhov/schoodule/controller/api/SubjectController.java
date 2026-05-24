@@ -9,6 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.Subject;
 import com.eshabakhov.schoodule.school.subject.SbBase;
+import com.eshabakhov.schoodule.school.subject.SbsPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -172,7 +173,7 @@ public class SubjectController {
             final Subject subject = new SlsPostgres(this.datasource)
                 .school(school)
                 .subjects()
-                .create(new SbBase(name.asText()));
+                .create(name.asText());
             return ResponseEntity
                 .created(
                     URI.create(
@@ -426,22 +427,26 @@ public class SubjectController {
                     "Field 'name' is required and cannot be empty"
                 );
             }
-            final var toupdate = new SbBase(school, name.asText());
-            final var updated = new SlsPostgres(this.datasource)
-                .school(school)
-                .subjects()
-                .put(new SbBase(subject, name.asText()));
-            final ResponseEntity<Subject> response;
-            if (toupdate.equals(updated)) {
-                response = ResponseEntity.ok().body(updated);
-            } else {
+            ResponseEntity<Subject> response;
+            try {
+                final var updated = new SlsPostgres(this.datasource)
+                    .school(school)
+                    .subjects()
+                    .subject(subject)
+                    .renamed(name.asText());
+                response = ResponseEntity.ok().body(new SbBase(updated.uid(), updated.name()));
+            } catch (final SbsPostgres.SubjectNotFoundException ex) {
+                final var created = new SlsPostgres(this.datasource)
+                    .school(school)
+                    .subjects()
+                    .create(name.asText());
                 response = ResponseEntity
                     .created(
                         URI.create(
-                            String.format("/api/schools/%d/subjects/%d", school, updated.uid())
+                            String.format("/api/schools/%d/subjects/%d", school, created.uid())
                         )
                     )
-                    .body(updated);
+                    .body(created);
             }
             return response;
         } else {

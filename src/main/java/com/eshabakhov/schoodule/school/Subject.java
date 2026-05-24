@@ -25,4 +25,11 @@ public interface Subject extends Jsonable {
      * @return Name of the subject
      */
     String name();
+
+    /**
+     * Returns subject with new name.
+     * @param name New name of subject
+     * @return Subject with new name
+     */
+    Subject renamed(String name);
 }

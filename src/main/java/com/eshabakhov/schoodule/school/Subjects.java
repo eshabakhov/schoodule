@@ -20,11 +20,11 @@ public interface Subjects {
     /**
      * Creates a new subject with the given name.
      *
-     * @param subject The subject
+     * @param name The name of subject
      * @return The created {@link Subject}
      * @throws Exception if creation fails
      */
-    Subject create(Subject subject) throws Exception;
+    Subject create(String name) throws Exception;
 
     /**
      * Finds a subject by its unique identifier.
@@ -53,15 +53,6 @@ public interface Subjects {
      * @throws Exception if listing fails
      */
     PageableList<Subject> subjects(Condition condition, Page page) throws Exception;
-
-    /**
-     * Updates the name of an existing subject.
-     *
-     * @param subject The subject
-     * @return The updated {@link Subject}
-     * @throws Exception if update fails
-     */
-    Subject put(Subject subject) throws Exception;
 
     /**
      * Removes a subject by its ID.

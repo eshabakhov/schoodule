@@ -20,13 +20,13 @@ public final class SbPostgres implements Subject {
         com.eshabakhov.schoodule.tables.Subject.SUBJECT;
 
     /** Subject id. */
-    private final long sid;
+    private final Long sid;
 
     /** Database connection. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
-    public SbPostgres(final DSLContext datasource, final long sid) {
-        this.datasource = datasource;
+    public SbPostgres(final DSLContext ctx, final Long sid) {
+        this.ctx = ctx;
         this.sid = sid;
     }
 
@@ -37,7 +37,7 @@ public final class SbPostgres implements Subject {
 
     @Override
     public String name() {
-        return this.datasource
+        return this.ctx
             .select(SbPostgres.SUBJECT.NAME)
             .from(SbPostgres.SUBJECT)
             .where(SbPostgres.SUBJECT.ID.eq(this.sid))
@@ -45,8 +45,20 @@ public final class SbPostgres implements Subject {
     }
 
     @Override
+    public Subject renamed(final String name) {
+        return new SbPostgres(
+            this.ctx,
+            this.ctx.update(SbPostgres.SUBJECT)
+                .set(SbPostgres.SUBJECT.NAME, name)
+                .where(SbPostgres.SUBJECT.ID.eq(this.sid))
+                .returningResult(SbPostgres.SUBJECT.ID)
+                .fetchOne(SbPostgres.SUBJECT.ID)
+        );
+    }
+
+    @Override
     public ObjectNode json() {
-        return this.datasource
+        return this.ctx
             .select(SbPostgres.SUBJECT.ID, SbPostgres.SUBJECT.NAME)
             .from(SbPostgres.SUBJECT)
             .where(SbPostgres.SUBJECT.ID.eq(this.sid))
