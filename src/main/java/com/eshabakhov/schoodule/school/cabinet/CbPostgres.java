@@ -45,6 +45,18 @@ public final class CbPostgres implements Cabinet {
     }
 
     @Override
+    public Cabinet renamed(final String name) {
+        return new CbPostgres(
+            this.ctx,
+            this.ctx.update(CbPostgres.CABINET)
+                .set(CbPostgres.CABINET.NAME, name)
+                .where(CbPostgres.CABINET.ID.eq(this.id))
+                .returningResult(CbPostgres.CABINET.ID)
+                .fetchOne(CbPostgres.CABINET.ID)
+        );
+    }
+
+    @Override
     public ObjectNode json() {
         return this.ctx
             .select(CbPostgres.CABINET.ID, CbPostgres.CABINET.NAME)

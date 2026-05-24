@@ -39,7 +39,7 @@ public final class CbsPostgres implements Cabinets {
     }
 
     @Override
-    public Cabinet add(final String name) throws Exception {
+    public Cabinet create(final String name) throws Exception {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
@@ -120,41 +120,6 @@ public final class CbsPostgres implements Cabinets {
             ),
             page
         );
-    }
-
-    @Override
-    public Cabinet put(final Long cid, final String name) throws Exception {
-        final var selected = this.ctx.selectFrom(CbsPostgres.CABINET)
-            .where(
-                CbsPostgres.CABINET.ID.eq(cid)
-                    .and(CbsPostgres.CABINET.SCHOOL_ID.eq(this.sid))
-                    .and(CbsPostgres.CABINET.IS_DELETED.eq(false))
-            )
-            .fetchOne();
-        final Cabinet result;
-        if (selected == null) {
-            final var insert = this.ctx.insertInto(CbsPostgres.CABINET)
-                .set(CbsPostgres.CABINET.SCHOOL_ID, this.sid)
-                .set(CbsPostgres.CABINET.NAME, name)
-                .set(CbsPostgres.CABINET.IS_DELETED, false)
-                .returning()
-                .fetchOne();
-            if (insert == null) {
-                throw new CabinetFailedCreateException();
-            }
-            result = new CbPostgres(this.ctx, insert.getId());
-        } else {
-            final var updated = this.ctx.update(CbsPostgres.CABINET)
-                .set(CbsPostgres.CABINET.NAME, name)
-                .where(CbsPostgres.CABINET.ID.eq(cid))
-                .returning()
-                .fetchOne();
-            if (updated == null) {
-                throw new CabinetFailedUpdateException();
-            }
-            result = new CbPostgres(this.ctx, updated.getId());
-        }
-        return result;
     }
 
     @Override

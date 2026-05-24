@@ -140,8 +140,11 @@ final class SlsPostgresTest {
             .set(School.SCHOOL.IS_DELETED, false)
             .execute();
         Assertions.assertEquals(
-            new SlBase(1L, "Simple school"),
-            new SlsPostgres(this.datasource).put(new SlBase(1L, "Simple school"))
+            "Simple school",
+            new SlsPostgres(this.datasource)
+                .school(1L)
+                .renamed("Simple school")
+                .name()
         );
     }
 

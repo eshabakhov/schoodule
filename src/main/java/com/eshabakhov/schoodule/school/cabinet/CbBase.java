@@ -4,6 +4,7 @@
 package com.eshabakhov.schoodule.school.cabinet;
 
 import com.eshabakhov.schoodule.school.Cabinet;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -13,25 +14,40 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public final class CbBase implements Cabinet {
 
-    /** Cabinet. */
-    private final Cabinet cabinet;
+    /** Cabinet id. */
+    private final long cid;
 
-    public CbBase(final Cabinet cabinet) {
-        this.cabinet = cabinet;
+    /** Cabinet name. */
+    private final String cname;
+
+    public CbBase(final String cname) {
+        this(Long.MIN_VALUE, cname);
+    }
+
+    public CbBase(final long cid, final String cname) {
+        this.cid = cid;
+        this.cname = cname;
     }
 
     @Override
     public Long uid() {
-        return this.cabinet.uid();
+        return this.cid;
     }
 
     @Override
     public String name() {
-        return this.cabinet.name();
+        return this.cname;
+    }
+
+    @Override
+    public Cabinet renamed(final String name) {
+        return new CbBase(this.cid, name);
     }
 
     @Override
     public ObjectNode json() {
-        return this.cabinet.json();
+        return JsonNodeFactory.instance.objectNode()
+            .put("id", this.cid)
+            .put("name", this.cname);
     }
 }

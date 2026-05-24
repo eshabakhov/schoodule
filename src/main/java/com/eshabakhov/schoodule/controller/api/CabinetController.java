@@ -9,6 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.Cabinet;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.cabinet.CbBase;
+import com.eshabakhov.schoodule.school.cabinet.CbsPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @since 0.0.1
  * @checkstyle DesignForExtensionCheck (1000 lines)
+ * @checkstyle ClassFanOutComplexityCheck (1000 lines)
  */
 @RestController
 @RequestMapping("/api/schools/{school}/cabinets")
@@ -49,10 +51,10 @@ public class CabinetController {
         com.eshabakhov.schoodule.tables.Cabinet.CABINET;
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
-    CabinetController(final DSLContext datasource) {
-        this.datasource = datasource;
+    CabinetController(final DSLContext ctx) {
+        this.ctx = ctx;
     }
 
     @PostMapping
@@ -162,17 +164,17 @@ public class CabinetController {
                     "Field 'name' is required and cannot be empty"
                 );
             }
-            final Cabinet cabinet = new SlsPostgres(this.datasource)
+            final Cabinet cabinet = new SlsPostgres(this.ctx)
                 .school(school)
                 .cabinets()
-                .add(name.asText());
+                .create(name.asText());
             return ResponseEntity
                 .created(
                     URI.create(
                         String.format("/api/schools/%d/cabinets/%d", school, cabinet.uid())
                     )
                 )
-                .body(new CbBase(cabinet));
+                .body(new CbBase(cabinet.uid(), cabinet.name()));
         } else {
             throw new VersionHeaderException(version.name());
         }
@@ -209,7 +211,7 @@ public class CabinetController {
         return ResponseEntity
             .ok()
             .body(
-                new SlsPostgres(this.datasource)
+                new SlsPostgres(this.ctx)
                     .school(school)
                     .cabinets()
                     .cabinets(condition, new PageRequest(limit, offset))
@@ -278,7 +280,7 @@ public class CabinetController {
         @PathVariable final long school,
         @PathVariable final long cabinet
     ) throws Exception {
-        return new SlsPostgres(this.datasource).school(school)
+        return new SlsPostgres(this.ctx).school(school)
             .cabinets().cabinet(cabinet);
     }
 
@@ -408,21 +410,28 @@ public class CabinetController {
                     "Field 'name' is required and cannot be empty"
                 );
             }
-            final var updated = new SlsPostgres(this.datasource)
-                .school(school)
-                .cabinets()
-                .put(cabinet, name.asText());
-            final ResponseEntity<Cabinet> response;
-            if (cabinet == updated.uid()) {
-                response = ResponseEntity.ok().body(updated);
-            } else {
+            ResponseEntity<Cabinet> response;
+            try {
+                response = ResponseEntity.ok()
+                    .body(
+                        new SlsPostgres(this.ctx)
+                            .school(school)
+                            .cabinets()
+                            .cabinet(cabinet)
+                            .renamed(name.asText())
+                    );
+            } catch (final CbsPostgres.CabinetNotFoundException ex) {
+                final var newcabinet = new SlsPostgres(this.ctx)
+                    .school(school)
+                    .cabinets()
+                    .create(name.asText());
                 response = ResponseEntity
                     .created(
                         URI.create(
-                            String.format("/api/schools/%d/cabinets/%d", school, updated.uid())
+                            String.format("/api/schools/%d/cabinets/%d", school, newcabinet.uid())
                         )
                     )
-                    .body(new CbBase(updated));
+                    .body(newcabinet);
             }
             return response;
         } else {
@@ -445,7 +454,7 @@ public class CabinetController {
         @PathVariable final long school,
         @PathVariable final long cabinet
     ) throws Exception {
-        new SlsPostgres(this.datasource)
+        new SlsPostgres(this.ctx)
             .school(school)
             .cabinets()
             .remove(cabinet);

@@ -25,4 +25,11 @@ public interface Cabinet extends Jsonable {
      * @return Name of the cabinet
      */
     String name();
+
+    /**
+     * Returns a name of the cabinet.
+     * @param name New name of the cabinet
+     * @return Cabinet with new name
+     */
+    Cabinet renamed(String name);
 }
