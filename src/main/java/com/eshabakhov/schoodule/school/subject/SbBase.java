@@ -40,6 +40,11 @@ public final class SbBase implements Subject {
     }
 
     @Override
+    public Subject renamed(final String name) {
+        return new SbBase(this.sid, name);
+    }
+
+    @Override
     public ObjectNode json() {
         return JsonNodeFactory.instance.objectNode()
             .put("id", this.sid)
