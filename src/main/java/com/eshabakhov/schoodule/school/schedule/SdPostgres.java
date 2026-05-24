@@ -21,13 +21,13 @@ public final class SdPostgres implements Schedule {
         com.eshabakhov.schoodule.tables.Schedule.SCHEDULE;
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
     /** Schedule id. */
     private final Long sid;
 
-    public SdPostgres(final DSLContext datasource, final Long sid) {
-        this.datasource = datasource;
+    public SdPostgres(final DSLContext ctx, final Long sid) {
+        this.ctx = ctx;
         this.sid = sid;
     }
 
@@ -38,7 +38,7 @@ public final class SdPostgres implements Schedule {
 
     @Override
     public String name() {
-        return this.datasource
+        return this.ctx
             .select(SdPostgres.SCHEDULE.NAME)
             .from(SdPostgres.SCHEDULE)
             .where(SdPostgres.SCHEDULE.ID.eq(this.sid))
@@ -46,8 +46,20 @@ public final class SdPostgres implements Schedule {
     }
 
     @Override
+    public Schedule renamed(final String name) {
+        return new SdPostgres(
+            this.ctx,
+            this.ctx.update(SdPostgres.SCHEDULE)
+                .set(SdPostgres.SCHEDULE.NAME, name)
+                .where(SdPostgres.SCHEDULE.ID.eq(this.sid))
+                .returningResult(SdPostgres.SCHEDULE.ID)
+                .fetchOne(SdPostgres.SCHEDULE.ID)
+        );
+    }
+
+    @Override
     public ObjectNode json() {
-        return this.datasource
+        return this.ctx
             .select(SdPostgres.SCHEDULE.ID, SdPostgres.SCHEDULE.NAME)
             .from(SdPostgres.SCHEDULE)
             .where(SdPostgres.SCHEDULE.ID.eq(this.sid))
@@ -61,6 +73,6 @@ public final class SdPostgres implements Schedule {
 
     @Override
     public ClassCurriculums curriculums() {
-        return new PgClassCurriculums(this.datasource, this.sid);
+        return new PgClassCurriculums(this.ctx, this.sid);
     }
 }

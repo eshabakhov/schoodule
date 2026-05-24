@@ -14,18 +14,29 @@ import com.eshabakhov.schoodule.school.schedule.ClassCurriculums;
 public interface Schedule extends Jsonable {
 
     /**
-     * Returns a Subject unique identifier.
+     * Returns a Schedule unique identifier.
      *
-     * @return Subject's ID
+     * @return Schedule's ID
      */
     Long uid();
 
     /**
-     * Returns a name of the subject.
+     * Returns a name of the schedule.
      *
-     * @return Name of the subject
+     * @return Name of the schedule
      */
     String name();
 
+    /**
+     * Returns a name of the schedule.
+     * @param name New name of schedule
+     * @return Schedule with new name
+     */
+    Schedule renamed(String name);
+
+    /**
+     * Returns class curriculums.
+     * @return Class curriculums
+     */
     ClassCurriculums curriculums();
 }
