@@ -39,13 +39,13 @@ public final class PgClassCurriculums implements ClassCurriculums {
         com.eshabakhov.schoodule.tables.Subject.SUBJECT;
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
     /** Schedule ID. */
     private final Long sid;
 
-    public PgClassCurriculums(final DSLContext datasource, final Long sid) {
-        this.datasource = datasource;
+    public PgClassCurriculums(final DSLContext ctx, final Long sid) {
+        this.ctx = ctx;
         this.sid = sid;
     }
 
@@ -55,10 +55,10 @@ public final class PgClassCurriculums implements ClassCurriculums {
         final Subject subject,
         final Integer hours
     ) throws Exception {
-        return this.datasource.transactionResult(
+        return this.ctx.transactionResult(
             config -> {
-                final DSLContext ctx = DSL.using(config);
-                final var select = ctx.selectFrom(PgClassCurriculums.CURRICULUM)
+                final DSLContext ttx = DSL.using(config);
+                final var select = ttx.selectFrom(PgClassCurriculums.CURRICULUM)
                     .where(
                         PgClassCurriculums.CURRICULUM.SCHEDULE_ID.eq(this.sid)
                             .and(
@@ -74,7 +74,7 @@ public final class PgClassCurriculums implements ClassCurriculums {
                     )
                     .fetchOne();
                 if (select == null) {
-                    final var created = ctx.insertInto(PgClassCurriculums.CURRICULUM)
+                    final var created = ttx.insertInto(PgClassCurriculums.CURRICULUM)
                         .set(PgClassCurriculums.CURRICULUM.SCHEDULE_ID, this.sid)
                         .set(
                             PgClassCurriculums.CURRICULUM.SCHOOL_CLASS_ID,
@@ -92,8 +92,8 @@ public final class PgClassCurriculums implements ClassCurriculums {
                     }
                     return new SimpleClassCurriculum(
                         created.getId(),
-                        new ScPostgres(this.datasource, created.getSchoolClassId()),
-                        new SbPostgres(this.datasource, created.getSubjectId()),
+                        new ScPostgres(this.ctx, created.getSchoolClassId()),
+                        new SbPostgres(this.ctx, created.getSubjectId()),
                         created.getHoursPerWeek()
                     );
                 } else {
@@ -105,7 +105,7 @@ public final class PgClassCurriculums implements ClassCurriculums {
 
     @Override
     public ClassCurriculum find(final long cid) throws Exception {
-        final var selected = this.datasource.selectFrom(PgClassCurriculums.CURRICULUM)
+        final var selected = this.ctx.selectFrom(PgClassCurriculums.CURRICULUM)
             .where(
                 PgClassCurriculums.CURRICULUM.ID.eq(cid)
                     .and(PgClassCurriculums.CURRICULUM.SCHEDULE_ID.eq(this.sid))
@@ -118,8 +118,8 @@ public final class PgClassCurriculums implements ClassCurriculums {
         }
         return new SimpleClassCurriculum(
             selected.getId(),
-            new ScPostgres(this.datasource, selected.getSchoolClassId()),
-            new SbPostgres(this.datasource, selected.getSubjectId()),
+            new ScPostgres(this.ctx, selected.getSchoolClassId()),
+            new SbPostgres(this.ctx, selected.getSubjectId()),
             selected.getHoursPerWeek()
         );
     }
@@ -130,7 +130,7 @@ public final class PgClassCurriculums implements ClassCurriculums {
         final Page page
     ) throws Exception {
         return new ResponsePageableList<>(
-            this.datasource
+            this.ctx
                 .select(
                     PgClassCurriculums.CURRICULUM.ID,
                     PgClassCurriculums.CLASS.ID,
@@ -155,19 +155,19 @@ public final class PgClassCurriculums implements ClassCurriculums {
                     selected -> new SimpleClassCurriculum(
                         selected.get(PgClassCurriculums.CURRICULUM.ID),
                         new ScPostgres(
-                            this.datasource,
+                            this.ctx,
                             selected.get(PgClassCurriculums.CLASS.ID)
                         ),
                         new SbPostgres(
-                            this.datasource,
+                            this.ctx,
                             selected.get(PgClassCurriculums.SUBJECT.ID)
                         ),
                         selected.get(PgClassCurriculums.CURRICULUM.HOURS_PER_WEEK)
                     )
                 ),
-            this.datasource
+            this.ctx
                 .fetchCount(
-                    this.datasource.selectFrom(PgClassCurriculums.CURRICULUM)
+                    this.ctx.selectFrom(PgClassCurriculums.CURRICULUM)
                         .where(PgClassCurriculums.CURRICULUM.SCHEDULE_ID.eq(this.sid))
                 ),
             page
@@ -181,7 +181,7 @@ public final class PgClassCurriculums implements ClassCurriculums {
         final Subject subject,
         final Integer hours
     ) throws Exception {
-        final var select = this.datasource.selectFrom(PgClassCurriculums.CURRICULUM)
+        final var select = this.ctx.selectFrom(PgClassCurriculums.CURRICULUM)
             .where(
                 PgClassCurriculums.CURRICULUM.ID.eq(cid)
                     .and(PgClassCurriculums.CURRICULUM.SCHEDULE_ID.eq(this.sid))
@@ -189,7 +189,7 @@ public final class PgClassCurriculums implements ClassCurriculums {
             .fetchOne();
         final ClassCurriculum result;
         if (select == null) {
-            final var inserted = this.datasource.insertInto(PgClassCurriculums.CURRICULUM)
+            final var inserted = this.ctx.insertInto(PgClassCurriculums.CURRICULUM)
                 .set(PgClassCurriculums.CURRICULUM.SCHEDULE_ID, this.sid)
                 .set(
                     PgClassCurriculums.CURRICULUM.SCHOOL_CLASS_ID,
@@ -204,12 +204,12 @@ public final class PgClassCurriculums implements ClassCurriculums {
             }
             result = new SimpleClassCurriculum(
                 inserted.getId(),
-                new ScPostgres(this.datasource, inserted.getSchoolClassId()),
-                new SbPostgres(this.datasource, inserted.getSubjectId()),
+                new ScPostgres(this.ctx, inserted.getSchoolClassId()),
+                new SbPostgres(this.ctx, inserted.getSubjectId()),
                 inserted.getHoursPerWeek()
             );
         } else {
-            final var updated = this.datasource.update(PgClassCurriculums.CURRICULUM)
+            final var updated = this.ctx.update(PgClassCurriculums.CURRICULUM)
                 .set(PgClassCurriculums.CURRICULUM.HOURS_PER_WEEK, hours)
                 .where(PgClassCurriculums.CURRICULUM.ID.eq(cid))
                 .returning()
@@ -219,8 +219,8 @@ public final class PgClassCurriculums implements ClassCurriculums {
             }
             result = new SimpleClassCurriculum(
                 updated.getId(),
-                new ScPostgres(this.datasource, updated.getSchoolClassId()),
-                new SbPostgres(this.datasource, updated.getSubjectId()),
+                new ScPostgres(this.ctx, updated.getSchoolClassId()),
+                new SbPostgres(this.ctx, updated.getSubjectId()),
                 updated.getHoursPerWeek()
             );
         }
@@ -229,7 +229,7 @@ public final class PgClassCurriculums implements ClassCurriculums {
 
     @Override
     public void remove(final long cid) throws Exception {
-        final ClassCurriculumRecord curriculum = this.datasource
+        final ClassCurriculumRecord curriculum = this.ctx
             .selectFrom(PgClassCurriculums.CURRICULUM)
             .where(
                 PgClassCurriculums.CURRICULUM.ID.eq(cid)
@@ -241,7 +241,7 @@ public final class PgClassCurriculums implements ClassCurriculums {
                 String.format("ClassCurriculum with id=%d not found", cid)
             );
         }
-        this.datasource.transactionResult(
+        this.ctx.transactionResult(
             config ->
                 DSL.using(config).deleteFrom(PgClassCurriculums.CURRICULUM)
                     .where(PgClassCurriculums.CURRICULUM.ID.eq(cid))

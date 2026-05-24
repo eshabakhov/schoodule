@@ -47,10 +47,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class ClassCurriculumController {
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
-    ClassCurriculumController(final DSLContext datasource) {
-        this.datasource = datasource;
+    ClassCurriculumController(final DSLContext ctx) {
+        this.ctx = ctx;
     }
 
     @PostMapping
@@ -132,14 +132,14 @@ public class ClassCurriculumController {
                     "Fields 'schoolClassId', 'subjectId', 'hoursPerWeek' are required"
                 );
             }
-            final ClassCurriculum curriculum = new SlsPostgres(this.datasource)
+            final ClassCurriculum curriculum = new SlsPostgres(this.ctx)
                 .school(school)
                 .schedules()
                 .schedule(schedule)
                 .curriculums()
                 .add(
-                    new ScPostgres(this.datasource, classid.asLong()),
-                    new SbPostgres(this.datasource, subjectid.asLong()),
+                    new ScPostgres(this.ctx, classid.asLong()),
+                    new SbPostgres(this.ctx, subjectid.asLong()),
                     hours.asInt()
                 );
             return ResponseEntity
@@ -172,7 +172,7 @@ public class ClassCurriculumController {
         return ResponseEntity
             .ok()
             .body(
-                new SlsPostgres(this.datasource)
+                new SlsPostgres(this.ctx)
                     .school(school)
                     .schedules()
                     .schedule(schedule)
@@ -189,7 +189,7 @@ public class ClassCurriculumController {
         @PathVariable final long schedule,
         @PathVariable final long curriculum
     ) throws Exception {
-        return new SlsPostgres(this.datasource)
+        return new SlsPostgres(this.ctx)
             .school(school)
             .schedules()
             .schedule(schedule)
@@ -242,15 +242,15 @@ public class ClassCurriculumController {
                     "Fields 'schoolClassId', 'subjectId', 'hoursPerWeek' are required"
                 );
             }
-            final var updated = new SlsPostgres(this.datasource)
+            final var updated = new SlsPostgres(this.ctx)
                 .school(school)
                 .schedules()
                 .schedule(schedule)
                 .curriculums()
                 .put(
                     curriculum,
-                    new ScPostgres(this.datasource, classid.asLong()),
-                    new SbPostgres(this.datasource, subjectid.asLong()),
+                    new ScPostgres(this.ctx, classid.asLong()),
+                    new SbPostgres(this.ctx, subjectid.asLong()),
                     hours.asInt()
                 );
             final ResponseEntity<ClassCurriculum> response;
@@ -292,7 +292,7 @@ public class ClassCurriculumController {
         @PathVariable final long schedule,
         @PathVariable final long curriculum
     ) throws Exception {
-        new SlsPostgres(this.datasource)
+        new SlsPostgres(this.ctx)
             .school(school)
             .schedules()
             .schedule(schedule)

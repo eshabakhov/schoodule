@@ -57,10 +57,10 @@ public class SubjectController {
     );
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
-    SubjectController(final DSLContext datasource) {
-        this.datasource = datasource;
+    SubjectController(final DSLContext ctx) {
+        this.ctx = ctx;
     }
 
     @PostMapping
@@ -170,7 +170,7 @@ public class SubjectController {
                     "Field 'name' is required and cannot be empty"
                 );
             }
-            final Subject subject = new SlsPostgres(this.datasource)
+            final Subject subject = new SlsPostgres(this.ctx)
                 .school(school)
                 .subjects()
                 .create(name.asText());
@@ -217,7 +217,7 @@ public class SubjectController {
         return ResponseEntity
             .ok()
             .body(
-                new SlsPostgres(this.datasource)
+                new SlsPostgres(this.ctx)
                     .school(school)
                     .subjects()
                     .subjects(condition, new PageRequest(limit, offset))
@@ -288,7 +288,7 @@ public class SubjectController {
         @PathVariable final long subject
     ) throws Exception {
         if (SubjectVersion.SIMPLE.equals(version)) {
-            final var found = new SlsPostgres(this.datasource)
+            final var found = new SlsPostgres(this.ctx)
                 .school(school)
                 .subjects()
                 .subject(subject);
@@ -429,14 +429,14 @@ public class SubjectController {
             }
             ResponseEntity<Subject> response;
             try {
-                final var updated = new SlsPostgres(this.datasource)
+                final var updated = new SlsPostgres(this.ctx)
                     .school(school)
                     .subjects()
                     .subject(subject)
                     .renamed(name.asText());
                 response = ResponseEntity.ok().body(new SbBase(updated.uid(), updated.name()));
             } catch (final SbsPostgres.SubjectNotFoundException ex) {
-                final var created = new SlsPostgres(this.datasource)
+                final var created = new SlsPostgres(this.ctx)
                     .school(school)
                     .subjects()
                     .create(name.asText());
@@ -469,7 +469,7 @@ public class SubjectController {
         @PathVariable final long school,
         @PathVariable final long subject
     ) throws Exception {
-        new SlsPostgres(this.datasource)
+        new SlsPostgres(this.ctx)
             .school(school)
             .subjects()
             .remove(subject);

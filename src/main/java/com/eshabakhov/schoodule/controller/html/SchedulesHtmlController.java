@@ -38,10 +38,10 @@ public class SchedulesHtmlController {
         com.eshabakhov.schoodule.tables.Schedule.SCHEDULE;
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
-    public SchedulesHtmlController(final DSLContext datasource) {
-        this.datasource = datasource;
+    public SchedulesHtmlController(final DSLContext ctx) {
+        this.ctx = ctx;
     }
 
     //@checkstyle ParameterNumberCheck (3 lines)
@@ -60,7 +60,7 @@ public class SchedulesHtmlController {
                 SchedulesHtmlController.SCHEDULE.NAME.likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
-        final School sch = new SlsPostgres(this.datasource).school(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         final PageableList<Schedule> schedules = sch
             .schedules()
             .schedules(condition, new PageRequest(limit, offset));
@@ -95,7 +95,7 @@ public class SchedulesHtmlController {
                 SchedulesHtmlController.SCHEDULE.NAME.likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
-        final School sch = new SlsPostgres(this.datasource).school(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         final PageableList<Schedule> schedules = sch
             .schedules()
             .schedules(condition, new PageRequest(limit, offset));
@@ -120,7 +120,7 @@ public class SchedulesHtmlController {
         return new ModelAndView("schedules/create")
             .addAllObjects(
                 Map.of(
-                    "school", new SlsPostgres(this.datasource).school(school),
+                    "school", new SlsPostgres(this.ctx).school(school),
                     "pageTitle", "Новое расписание"
                 )
             );
@@ -135,7 +135,7 @@ public class SchedulesHtmlController {
             result = String.format("redirect:/schools/%d/schedules/create?error=empty", school);
         } else {
             result = String.format("redirect:/schools/%d/schedules", school);
-            new SlsPostgres(this.datasource)
+            new SlsPostgres(this.ctx)
                 .school(school)
                 .schedules()
                 .create(name.trim());
@@ -149,7 +149,7 @@ public class SchedulesHtmlController {
         @PathVariable final long school,
         @PathVariable final long schedule
     ) throws Exception {
-        final School sch = new SlsPostgres(this.datasource).school(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         return new ModelAndView("schedules/edit")
             .addAllObjects(
                 Map.of(
@@ -173,7 +173,7 @@ public class SchedulesHtmlController {
                 "redirect:/schools/%d/schedules/%d/edit?error=empty", school, schedule
             );
         } else {
-            new SlsPostgres(this.datasource)
+            new SlsPostgres(this.ctx)
                 .school(school)
                 .schedules()
                 .schedule(schedule)
@@ -189,7 +189,7 @@ public class SchedulesHtmlController {
         @PathVariable final long school,
         @PathVariable final long schedule
     ) throws Exception {
-        final School sch = new SlsPostgres(this.datasource).school(school);
+        final School sch = new SlsPostgres(this.ctx).school(school);
         final var sched = sch.schedules().schedule(schedule);
         return new ModelAndView("schedules/details")
             .addAllObjects(
@@ -199,7 +199,7 @@ public class SchedulesHtmlController {
                     "classCount", sch.schoolClasses()
                         .classes(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
                         .total(),
-                    "subjectCount", this.datasource
+                    "subjectCount", this.ctx
                         .select(DSL.countDistinct(ClassCurriculum.CLASS_CURRICULUM.SUBJECT_ID))
                         .from(ClassCurriculum.CLASS_CURRICULUM)
                         .where(ClassCurriculum.CLASS_CURRICULUM.SCHEDULE_ID.eq(schedule))
