@@ -89,8 +89,8 @@
             CREATE TABLE public.school_class(
                 id bigserial PRIMARY KEY,
                 school_id bigint NOT NULL,
-                litter varchar NOT NULL,
                 grade integer NOT NULL,
+                litera varchar NOT NULL,
                 is_deleted boolean DEFAULT FALSE,
                 CONSTRAINT fk_school_school_class_id
                     FOREIGN KEY (school_id)

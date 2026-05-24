@@ -4,6 +4,7 @@
 package com.eshabakhov.schoodule.school.schoolclass;
 
 import com.eshabakhov.schoodule.school.SchoolClass;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -13,35 +14,57 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public final class ScBase implements SchoolClass {
 
-    /** School class. */
-    private final SchoolClass clazz;
+    /** School class id. */
+    private final long sid;
 
-    public ScBase(final SchoolClass clazz) {
-        this.clazz = clazz;
+    /** School class grade. */
+    private final Integer grd;
+
+    /** School class litera. */
+    private final String ltr;
+
+    public ScBase(final long sid, final Integer grd, final String ltr) {
+        this.sid = sid;
+        this.grd = grd;
+        this.ltr = ltr;
     }
 
     @Override
     public Long uid() {
-        return this.clazz.uid();
+        return this.sid;
     }
 
     @Override
     public String name() {
-        return this.clazz.name();
+        return String.format("%d%s", this.grd, this.ltr);
     }
 
     @Override
     public Integer grade() {
-        return this.clazz.grade();
+        return this.grd;
     }
 
     @Override
-    public String litter() {
-        return this.clazz.litter();
+    public String litera() {
+        return this.ltr;
+    }
+
+    @Override
+    public SchoolClass regraded(final Integer grade) {
+        return new ScBase(this.sid, grade, this.ltr);
+    }
+
+    @Override
+    public SchoolClass reliterated(final String litera) {
+        return new ScBase(this.sid, this.grd, litera);
     }
 
     @Override
     public ObjectNode json() {
-        return this.clazz.json();
+        return JsonNodeFactory.instance.objectNode()
+            .put("id", this.sid)
+            .put("name", String.format("%d%s", this.grd, this.ltr))
+            .put("grade", this.grd)
+            .put("litera", this.ltr);
     }
 }

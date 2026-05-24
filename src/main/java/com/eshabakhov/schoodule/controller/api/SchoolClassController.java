@@ -9,6 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SchoolClass;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.schoolclass.ScBase;
+import com.eshabakhov.schoodule.school.schoolclass.ScsPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -57,10 +58,10 @@ public class SchoolClassController {
     );
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
-    SchoolClassController(final DSLContext datasource) {
-        this.datasource = datasource;
+    SchoolClassController(final DSLContext ctx) {
+        this.ctx = ctx;
     }
 
     @PostMapping
@@ -102,7 +103,7 @@ public class SchoolClassController {
                         {
                             "id": 1,
                             "grade": "5",
-                            "litter": "F"
+                            "litera": "F"
                         }"""
                 )
             }
@@ -124,11 +125,11 @@ public class SchoolClassController {
                         }"""
                 ),
                 @ExampleObject(
-                    name = "Litter is required and cannot be empty",
-                    summary = "Required litter field",
+                    name = "Litera is required and cannot be empty",
+                    summary = "Required litera field",
                     value = """
                         {
-                            "message": "Field 'litter' is required and cannot be empty",
+                            "message": "Field 'litera' is required and cannot be empty",
                             "timestamp": "2026-01-22T08:24:38.037716369Z"
                         }"""
                 )
@@ -166,7 +167,7 @@ public class SchoolClassController {
                             """
                             {
                                 "grade": "5",
-                                "litter": "F"
+                                "litera": "F"
                             }
                             """
                     )
@@ -176,10 +177,10 @@ public class SchoolClassController {
         @RequestBody final JsonNode request
     ) throws Exception {
         if (SchoolClassVersion.SIMPLE.equals(version)) {
-            final JsonNode litter = request.get("litter");
-            if (litter == null || litter.asText().isBlank()) {
+            final JsonNode litera = request.get("litera");
+            if (litera == null || litera.asText().isBlank()) {
                 throw new SchoolClassRequiredFieldException(
-                    "Field 'litter' is required and cannot be empty"
+                    "Field 'litera' is required and cannot be empty"
                 );
             }
             final JsonNode grade = request.get("grade");
@@ -188,17 +189,17 @@ public class SchoolClassController {
                     "Field 'grade' is required and cannot be empty"
                 );
             }
-            final SchoolClass clazz = new SlsPostgres(this.datasource)
+            final SchoolClass clazz = new SlsPostgres(this.ctx)
                 .school(school)
                 .schoolClasses()
-                .add(litter.asText(), grade.asInt());
+                .create(litera.asText(), grade.asInt());
             return ResponseEntity
                 .created(
                     URI.create(
                         String.format("/api/schools/%d/classes/%d", school, clazz.uid())
                     )
                 )
-                .body(new ScBase(clazz));
+                .body(new ScBase(clazz.uid(), clazz.grade(), clazz.litera()));
         } else {
             throw new VersionHeaderException(version.name());
         }
@@ -231,7 +232,7 @@ public class SchoolClassController {
             condition = condition.and(
                 DSL.concat(
                     SchoolClassController.SCHOOL_CLASS.GRADE.cast(String.class),
-                    SchoolClassController.SCHOOL_CLASS.LITTER
+                    SchoolClassController.SCHOOL_CLASS.LITERA
                 ).likeIgnoreCase(
                     String.format("%%%s%%", namect)
                 )
@@ -240,7 +241,7 @@ public class SchoolClassController {
         return ResponseEntity
             .ok()
             .body(
-                new SlsPostgres(this.datasource)
+                new SlsPostgres(this.ctx)
                     .school(school)
                     .schoolClasses()
                     .classes(condition, new PageRequest(limit, offset))
@@ -278,7 +279,7 @@ public class SchoolClassController {
                         {
                             "id": 1,
                             "grade": "5",
-                            "litter": "5"
+                            "litera": "5"
                         }"""
                 )
             }
@@ -313,16 +314,15 @@ public class SchoolClassController {
         @PathVariable final long clazz
     ) throws Exception {
         if (SchoolClassVersion.SIMPLE.equals(version)) {
+            final var cls = new SlsPostgres(this.ctx)
+                .school(school)
+                .schoolClasses()
+                .clazz(clazz);
             return ResponseEntity
                 .ok()
                 .contentType(SchoolClassController.SIMPLE_TYPE)
                 .body(
-                    new ScBase(
-                        new SlsPostgres(this.datasource)
-                            .school(school)
-                            .schoolClasses()
-                            .clazz(clazz)
-                    )
+                    new ScBase(cls.uid(), cls.grade(), cls.litera())
                 );
         } else {
             throw new VersionHeaderException(version.name());
@@ -368,7 +368,7 @@ public class SchoolClassController {
                         {
                             "id": 1,
                             "grade": "5",
-                            "litter": "F"
+                            "litera": "F"
                         }"""
                 )
             }
@@ -388,7 +388,7 @@ public class SchoolClassController {
                         {
                             "id": 1,
                             "grade": "5",
-                            "litter": "F"
+                            "litera": "F"
                         }"""
                 )
             }
@@ -410,11 +410,11 @@ public class SchoolClassController {
                         }"""
                 ),
                 @ExampleObject(
-                    name = "Litter is required and cannot be empty",
-                    summary = "Required litter field",
+                    name = "Litera is required and cannot be empty",
+                    summary = "Required litera field",
                     value = """
                         {
-                            "message": "Field 'litter' is required and cannot be empty",
+                            "message": "Field 'litera' is required and cannot be empty",
                             "timestamp": "2026-01-22T08:24:38.037716369Z"
                         }"""
                 )
@@ -453,7 +453,7 @@ public class SchoolClassController {
                         value = """
                             {
                                 "grade": "5",
-                                "litter": "F"
+                                "litera": "F"
                             }
                             """
                     )
@@ -463,10 +463,10 @@ public class SchoolClassController {
         @RequestBody final JsonNode request
     ) throws Exception {
         if (SchoolClassVersion.SIMPLE.equals(version)) {
-            final JsonNode litter = request.get("litter");
-            if (litter == null || litter.asText().isBlank()) {
+            final JsonNode litera = request.get("litera");
+            if (litera == null || litera.asText().isBlank()) {
                 throw new SchoolClassRequiredFieldException(
-                    "Field 'litter' is required and cannot be empty"
+                    "Field 'litera' is required and cannot be empty"
                 );
             }
             final JsonNode grade = request.get("grade");
@@ -475,21 +475,29 @@ public class SchoolClassController {
                     "Field 'grade' is required and cannot be empty"
                 );
             }
-            final var updated = new SlsPostgres(this.datasource)
-                .school(school)
-                .schoolClasses()
-                .put(clazz, litter.asText(), grade.asInt());
-            final ResponseEntity<SchoolClass> response;
-            if (clazz == updated.uid()) {
-                response = ResponseEntity.ok().body(new ScBase(updated));
-            } else {
+            ResponseEntity<SchoolClass> response;
+            try {
+                final var updated = new SlsPostgres(this.ctx)
+                    .school(school)
+                    .schoolClasses()
+                    .clazz(clazz)
+                    .regraded(grade.asInt())
+                    .reliterated(litera.asText());
+                response = ResponseEntity.ok().body(
+                    new ScBase(updated.uid(), updated.grade(), updated.litera())
+                );
+            } catch (final ScsPostgres.SchoolClassNotFoundException ex) {
+                final var newclass = new SlsPostgres(this.ctx)
+                    .school(school)
+                    .schoolClasses()
+                    .create(litera.asText(), grade.asInt());
                 response = ResponseEntity
                     .created(
                         URI.create(
-                            String.format("/api/schools/%d/classes/%d", school, updated.uid())
+                            String.format("/api/schools/%d/classes/%d", school, newclass.uid())
                         )
                     )
-                    .body(new ScBase(updated));
+                    .body(new ScBase(newclass.uid(), newclass.grade(), newclass.litera()));
             }
             return response;
         } else {
@@ -512,7 +520,7 @@ public class SchoolClassController {
         @PathVariable final long school,
         @PathVariable final long clazz
     ) throws Exception {
-        new SlsPostgres(this.datasource)
+        new SlsPostgres(this.ctx)
             .school(school)
             .schoolClasses()
             .remove(clazz);

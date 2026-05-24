@@ -34,9 +34,23 @@ public interface SchoolClass extends Jsonable {
     Integer grade();
 
     /**
-     * Returns a litter of the schoolclass.
+     * Returns a litera of the schoolclass.
      *
-     * @return Litter of the schoolclass
+     * @return Litera of the schoolclass
      */
-    String litter();
+    String litera();
+
+    /**
+     * Returns schoolclass with new grade.
+     * @param grade New grade of schoolclass
+     * @return Schoolclass with new grade
+     */
+    SchoolClass regraded(Integer grade);
+
+    /**
+     * Returns schoolclass with new litera.
+     * @param litera New litera of schoolclass
+     * @return Schoolclass with new litera.
+     */
+    SchoolClass reliterated(String litera);
 }

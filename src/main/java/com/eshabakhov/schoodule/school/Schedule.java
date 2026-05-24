@@ -28,7 +28,7 @@ public interface Schedule extends Jsonable {
     String name();
 
     /**
-     * Returns a name of the schedule.
+     * Returns schedule with new name.
      * @param name New name of schedule
      * @return Schedule with new name
      */

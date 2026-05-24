@@ -39,7 +39,7 @@ public final class ScsPostgres implements SchoolClasses {
     }
 
     @Override
-    public SchoolClass add(final String litter, final Integer grade) throws Exception {
+    public SchoolClass create(final String litera, final Integer grade) throws Exception {
         try {
             return this.datasource.transactionResult(
                 config -> {
@@ -47,16 +47,16 @@ public final class ScsPostgres implements SchoolClasses {
                     final var rec = this.datasource.selectFrom(ScsPostgres.SCHOOL_CLASS)
                         .where(
                             ScsPostgres.SCHOOL_CLASS.SCHOOL_ID.eq(this.sid)
-                                .and(ScsPostgres.SCHOOL_CLASS.LITTER.eq(litter))
                                 .and(ScsPostgres.SCHOOL_CLASS.GRADE.eq(grade))
+                                .and(ScsPostgres.SCHOOL_CLASS.LITERA.eq(litera))
                                 .and(ScsPostgres.SCHOOL_CLASS.IS_DELETED.eq(false))
                         )
                         .fetchOne();
                     if (rec == null) {
                         final var created = ctx.insertInto(ScsPostgres.SCHOOL_CLASS)
                             .set(ScsPostgres.SCHOOL_CLASS.SCHOOL_ID, this.sid)
-                            .set(ScsPostgres.SCHOOL_CLASS.LITTER, litter)
                             .set(ScsPostgres.SCHOOL_CLASS.GRADE, grade)
+                            .set(ScsPostgres.SCHOOL_CLASS.LITERA, litera)
                             .set(ScsPostgres.SCHOOL_CLASS.IS_DELETED, false)
                             .returning()
                             .fetchOne();
@@ -65,7 +65,7 @@ public final class ScsPostgres implements SchoolClasses {
                         }
                         return new ScPostgres(this.datasource, created.getId());
                     } else {
-                        throw new SchoolClassAlreadyExistsException(litter, grade);
+                        throw new SchoolClassAlreadyExistsException(litera, grade);
                     }
                 }
             );
@@ -106,7 +106,7 @@ public final class ScsPostgres implements SchoolClasses {
                 .where(condition.and(ScsPostgres.SCHOOL_CLASS.SCHOOL_ID.eq(this.sid)))
                 .orderBy(
                     ScsPostgres.SCHOOL_CLASS.GRADE.asc(),
-                    ScsPostgres.SCHOOL_CLASS.LITTER.asc()
+                    ScsPostgres.SCHOOL_CLASS.LITERA.asc()
                 )
                 .limit(page.limit())
                 .offset((page.offset() - 1) * page.limit())
@@ -119,44 +119,6 @@ public final class ScsPostgres implements SchoolClasses {
             ),
             page
         );
-    }
-
-    @Override
-    public SchoolClass put(final Long cid, final String litter, final Integer grade)
-        throws Exception {
-        final var selected = this.datasource.selectFrom(ScsPostgres.SCHOOL_CLASS)
-            .where(
-                ScsPostgres.SCHOOL_CLASS.ID.eq(cid)
-                    .and(ScsPostgres.SCHOOL_CLASS.SCHOOL_ID.eq(this.sid))
-                    .and(ScsPostgres.SCHOOL_CLASS.IS_DELETED.eq(false))
-            )
-            .fetchOne();
-        final SchoolClass result;
-        if (selected == null) {
-            final var insert = this.datasource.insertInto(ScsPostgres.SCHOOL_CLASS)
-                .set(ScsPostgres.SCHOOL_CLASS.SCHOOL_ID, this.sid)
-                .set(ScsPostgres.SCHOOL_CLASS.LITTER, litter)
-                .set(ScsPostgres.SCHOOL_CLASS.GRADE, grade)
-                .set(ScsPostgres.SCHOOL_CLASS.IS_DELETED, false)
-                .returning()
-                .fetchOne();
-            if (insert == null) {
-                throw new SchoolClassFailedCreateException();
-            }
-            result = new ScPostgres(this.datasource, selected.getId());
-        } else {
-            final var updated = this.datasource.update(ScsPostgres.SCHOOL_CLASS)
-                .set(ScsPostgres.SCHOOL_CLASS.LITTER, litter)
-                .set(ScsPostgres.SCHOOL_CLASS.GRADE, grade)
-                .where(ScsPostgres.SCHOOL_CLASS.ID.eq(cid))
-                .returning()
-                .fetchOne();
-            if (updated == null) {
-                throw new SchoolClassFailedUpdateException();
-            }
-            result = new ScPostgres(this.datasource, updated.getId());
-        }
-        return result;
     }
 
     @Override
@@ -189,11 +151,11 @@ public final class ScsPostgres implements SchoolClasses {
     }
 
     public static class SchoolClassAlreadyExistsException extends Exception {
-        public SchoolClassAlreadyExistsException(final String litter, final Integer grade) {
+        public SchoolClassAlreadyExistsException(final String litera, final Integer grade) {
             super(
                 String.format(
                     "SchoolClass with `%d%s` already exists",
-                    grade, litter
+                    grade, litera
                 )
             );
         }
