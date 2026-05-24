@@ -28,23 +28,23 @@ public final class ScsPostgres implements SchoolClasses {
         com.eshabakhov.schoodule.tables.SchoolClass.SCHOOL_CLASS;
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
     /** School ID. */
     private final Long sid;
 
-    public ScsPostgres(final DSLContext datasource, final Long sid) {
-        this.datasource = datasource;
+    public ScsPostgres(final DSLContext ctx, final Long sid) {
+        this.ctx = ctx;
         this.sid = sid;
     }
 
     @Override
     public SchoolClass create(final String litera, final Integer grade) throws Exception {
         try {
-            return this.datasource.transactionResult(
+            return this.ctx.transactionResult(
                 config -> {
-                    final DSLContext ctx = DSL.using(config);
-                    final var rec = this.datasource.selectFrom(ScsPostgres.SCHOOL_CLASS)
+                    final DSLContext ttx = DSL.using(config);
+                    final var rec = ttx.selectFrom(ScsPostgres.SCHOOL_CLASS)
                         .where(
                             ScsPostgres.SCHOOL_CLASS.SCHOOL_ID.eq(this.sid)
                                 .and(ScsPostgres.SCHOOL_CLASS.GRADE.eq(grade))
@@ -53,7 +53,7 @@ public final class ScsPostgres implements SchoolClasses {
                         )
                         .fetchOne();
                     if (rec == null) {
-                        final var created = ctx.insertInto(ScsPostgres.SCHOOL_CLASS)
+                        final var created = ttx.insertInto(ScsPostgres.SCHOOL_CLASS)
                             .set(ScsPostgres.SCHOOL_CLASS.SCHOOL_ID, this.sid)
                             .set(ScsPostgres.SCHOOL_CLASS.GRADE, grade)
                             .set(ScsPostgres.SCHOOL_CLASS.LITERA, litera)
@@ -63,7 +63,7 @@ public final class ScsPostgres implements SchoolClasses {
                         if (created == null) {
                             throw new SchoolClassFailedCreateException();
                         }
-                        return new ScPostgres(this.datasource, created.getId());
+                        return new ScPostgres(this.ctx, created.getId());
                     } else {
                         throw new SchoolClassAlreadyExistsException(litera, grade);
                     }
@@ -81,7 +81,7 @@ public final class ScsPostgres implements SchoolClasses {
 
     @Override
     public SchoolClass clazz(final long clazzid) throws Exception {
-        final SchoolClassRecord selected = this.datasource.selectFrom(ScsPostgres.SCHOOL_CLASS)
+        final SchoolClassRecord selected = this.ctx.selectFrom(ScsPostgres.SCHOOL_CLASS)
             .where(
                 ScsPostgres.SCHOOL_CLASS.ID.eq(clazzid)
                     .and(ScsPostgres.SCHOOL_CLASS.SCHOOL_ID.eq(this.sid))
@@ -93,7 +93,7 @@ public final class ScsPostgres implements SchoolClasses {
                 String.format("SchoolClass `%s` not found", clazzid)
             );
         }
-        return new ScPostgres(this.datasource, selected.getId());
+        return new ScPostgres(this.ctx, selected.getId());
     }
 
     @Override
@@ -102,7 +102,7 @@ public final class ScsPostgres implements SchoolClasses {
         final Page page
     ) throws Exception {
         return new ResponsePageableList<>(
-            this.datasource.selectFrom(ScsPostgres.SCHOOL_CLASS)
+            this.ctx.selectFrom(ScsPostgres.SCHOOL_CLASS)
                 .where(condition.and(ScsPostgres.SCHOOL_CLASS.SCHOOL_ID.eq(this.sid)))
                 .orderBy(
                     ScsPostgres.SCHOOL_CLASS.GRADE.asc(),
@@ -112,10 +112,10 @@ public final class ScsPostgres implements SchoolClasses {
                 .offset((page.offset() - 1) * page.limit())
                 .fetch(
                     selected ->
-                        new ScPostgres(this.datasource, selected.getId())
+                        new ScPostgres(this.ctx, selected.getId())
                 ),
-            this.datasource.fetchCount(
-                this.datasource.selectFrom(ScsPostgres.SCHOOL_CLASS).where(condition)
+            this.ctx.fetchCount(
+                this.ctx.selectFrom(ScsPostgres.SCHOOL_CLASS).where(condition)
             ),
             page
         );
@@ -123,7 +123,7 @@ public final class ScsPostgres implements SchoolClasses {
 
     @Override
     public void remove(final long clazzid) throws Exception {
-        final SchoolClassRecord clazz = this.datasource.selectFrom(ScsPostgres.SCHOOL_CLASS)
+        final SchoolClassRecord clazz = this.ctx.selectFrom(ScsPostgres.SCHOOL_CLASS)
             .where(
                 ScsPostgres.SCHOOL_CLASS.ID.eq(clazzid)
                     .and(ScsPostgres.SCHOOL_CLASS.SCHOOL_ID.eq(this.sid))
@@ -135,7 +135,7 @@ public final class ScsPostgres implements SchoolClasses {
                 String.format("SchoolClass with id=%d not found", clazzid)
             );
         }
-        this.datasource.transactionResult(
+        this.ctx.transactionResult(
             config ->
                 DSL.using(config).update(ScsPostgres.SCHOOL_CLASS)
                     .set(ScsPostgres.SCHOOL_CLASS.IS_DELETED, true)

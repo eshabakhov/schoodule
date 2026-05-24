@@ -28,22 +28,22 @@ public final class SdsPostgres implements Schedules {
         com.eshabakhov.schoodule.tables.Schedule.SCHEDULE;
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
     /** School ID. */
     private final Long sid;
 
-    public SdsPostgres(final DSLContext datasource, final Long sid) {
-        this.datasource = datasource;
+    public SdsPostgres(final DSLContext ctx, final Long sid) {
+        this.ctx = ctx;
         this.sid = sid;
     }
 
     @Override
     public Schedule create(final String name) {
-        return this.datasource.transactionResult(
+        return this.ctx.transactionResult(
             config -> {
-                final DSLContext ctx = DSL.using(config);
-                final var select = ctx.selectFrom(SdsPostgres.SCHEDULE)
+                final DSLContext ttx = DSL.using(config);
+                final var select = ttx.selectFrom(SdsPostgres.SCHEDULE)
                     .where(
                         SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid)
                             .and(SdsPostgres.SCHEDULE.NAME.eq(name))
@@ -51,7 +51,7 @@ public final class SdsPostgres implements Schedules {
                     )
                     .fetchOne();
                 if (select == null) {
-                    final var created = ctx.insertInto(SdsPostgres.SCHEDULE)
+                    final var created = ttx.insertInto(SdsPostgres.SCHEDULE)
                         .set(SdsPostgres.SCHEDULE.SCHOOL_ID, this.sid)
                         .set(SdsPostgres.SCHEDULE.NAME, name)
                         .set(SdsPostgres.SCHEDULE.IS_DELETED, false)
@@ -60,7 +60,7 @@ public final class SdsPostgres implements Schedules {
                     if (created == null) {
                         throw new ScheduleFailedCreateException();
                     }
-                    return new SdPostgres(this.datasource, created.getId());
+                    return new SdPostgres(this.ctx, created.getId());
                 } else {
                     throw new ScheduleAlreadyExistsException(name);
                 }
@@ -70,7 +70,7 @@ public final class SdsPostgres implements Schedules {
 
     @Override
     public Schedule schedule(final long scheduleid) throws Exception {
-        final ScheduleRecord selected = this.datasource.selectFrom(SdsPostgres.SCHEDULE)
+        final ScheduleRecord selected = this.ctx.selectFrom(SdsPostgres.SCHEDULE)
             .where(
                 SdsPostgres.SCHEDULE.ID.eq(scheduleid)
                     .and(SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid))
@@ -82,12 +82,12 @@ public final class SdsPostgres implements Schedules {
                 String.format("Schedule with id=%d not found", scheduleid)
             );
         }
-        return new SdPostgres(this.datasource, selected.getId());
+        return new SdPostgres(this.ctx, selected.getId());
     }
 
     @Override
     public Schedule schedule(final String name) throws Exception {
-        final ScheduleRecord selected = this.datasource.selectFrom(SdsPostgres.SCHEDULE)
+        final ScheduleRecord selected = this.ctx.selectFrom(SdsPostgres.SCHEDULE)
             .where(
                 SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid)
                     .and(SdsPostgres.SCHEDULE.NAME.eq(name))
@@ -99,7 +99,7 @@ public final class SdsPostgres implements Schedules {
                 String.format("Schedule with name='%s' not found", name)
             );
         }
-        return new SdPostgres(this.datasource, selected.getId());
+        return new SdPostgres(this.ctx, selected.getId());
     }
 
     @Override
@@ -108,19 +108,19 @@ public final class SdsPostgres implements Schedules {
         final Page page
     ) throws Exception {
         return new ResponsePageableList<>(
-            this.datasource.selectFrom(SdsPostgres.SCHEDULE)
+            this.ctx.selectFrom(SdsPostgres.SCHEDULE)
                 .where(condition.and(SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid)))
                 .orderBy(SdsPostgres.SCHEDULE.NAME.asc())
                 .limit(page.limit())
                 .offset((page.offset() - 1) * page.limit())
                 .fetch(
                     selected -> new SdPostgres(
-                        this.datasource,
+                        this.ctx,
                         selected.getId()
                     )
                 ),
-            this.datasource.fetchCount(
-                this.datasource.selectFrom(SdsPostgres.SCHEDULE).where(condition)
+            this.ctx.fetchCount(
+                this.ctx.selectFrom(SdsPostgres.SCHEDULE).where(condition)
             ),
             page
         );
@@ -128,7 +128,7 @@ public final class SdsPostgres implements Schedules {
 
     @Override
     public void remove(final long scheduleid) throws Exception {
-        final var selected = this.datasource.selectFrom(SdsPostgres.SCHEDULE)
+        final var selected = this.ctx.selectFrom(SdsPostgres.SCHEDULE)
             .where(
                 SdsPostgres.SCHEDULE.ID.eq(scheduleid)
                     .and(SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid))
@@ -140,7 +140,7 @@ public final class SdsPostgres implements Schedules {
                 String.format("Schedule with id=%d not found", scheduleid)
             );
         }
-        this.datasource.transactionResult(
+        this.ctx.transactionResult(
             config ->
                 DSL.using(config).update(SdsPostgres.SCHEDULE)
                     .set(SdsPostgres.SCHEDULE.IS_DELETED, true)

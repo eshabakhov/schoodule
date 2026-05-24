@@ -39,27 +39,27 @@ final class SlsPostgresTest {
             .withPassword("test");
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
     @Autowired
-    SlsPostgresTest(final DSLContext datasource) {
-        this.datasource = datasource;
+    SlsPostgresTest(final DSLContext ctx) {
+        this.ctx = ctx;
     }
 
     @AfterEach
     void truncateSchool() {
-        this.datasource.truncate(School.SCHOOL).cascade().execute();
+        this.ctx.truncate(School.SCHOOL).cascade().execute();
     }
 
     @Test
     void createsSchool() throws Exception {
-        final var created = new SlsPostgres(this.datasource).create("Awesome school");
-        final var rec = this.datasource.selectFrom(School.SCHOOL)
+        final var created = new SlsPostgres(this.ctx).create("Awesome school");
+        final var rec = this.ctx.selectFrom(School.SCHOOL)
             .where(School.SCHOOL.NAME.eq("Awesome school").and(School.SCHOOL.IS_DELETED.eq(false)))
             .fetchOne();
         Assertions.assertEquals(
             new SlPostgres(
-                this.datasource,
+                this.ctx,
                 rec.getId()
             ),
             created
@@ -68,44 +68,44 @@ final class SlsPostgresTest {
 
     @Test
     void findsSchoolById() throws Exception {
-        this.datasource.insertInto(School.SCHOOL)
+        this.ctx.insertInto(School.SCHOOL)
             .set(School.SCHOOL.ID, 1L)
             .set(School.SCHOOL.NAME, "Boring school")
             .set(School.SCHOOL.IS_DELETED, false)
             .execute();
         Assertions.assertEquals(
             new SlPostgres(
-                this.datasource,
+                this.ctx,
                 1L
             ),
-            new SlsPostgres(this.datasource).school(1L)
+            new SlsPostgres(this.ctx).school(1L)
         );
     }
 
     @Test
     void findsSchoolByName() throws Exception {
-        this.datasource.insertInto(School.SCHOOL)
+        this.ctx.insertInto(School.SCHOOL)
             .set(School.SCHOOL.ID, 1L)
             .set(School.SCHOOL.NAME, "Cool school")
             .set(School.SCHOOL.IS_DELETED, false)
             .execute();
         Assertions.assertEquals(
             new SlPostgres(
-                this.datasource,
+                this.ctx,
                 1L
             ),
-            new SlsPostgres(this.datasource).school("Cool school")
+            new SlsPostgres(this.ctx).school("Cool school")
         );
     }
 
     @Test
     void findsSchools() throws Exception {
-        this.datasource.insertInto(School.SCHOOL)
+        this.ctx.insertInto(School.SCHOOL)
             .set(School.SCHOOL.ID, 1L)
             .set(School.SCHOOL.NAME, "Big school")
             .set(School.SCHOOL.IS_DELETED, false)
             .execute();
-        this.datasource.insertInto(School.SCHOOL)
+        this.ctx.insertInto(School.SCHOOL)
             .set(School.SCHOOL.ID, 2L)
             .set(School.SCHOOL.NAME, "Small school")
             .set(School.SCHOOL.IS_DELETED, false)
@@ -114,18 +114,18 @@ final class SlsPostgresTest {
             new ResponsePageableList<>(
                 List.of(
                     new SlPostgres(
-                        this.datasource,
+                        this.ctx,
                         1L
                     ),
                     new SlPostgres(
-                        this.datasource,
+                        this.ctx,
                         2L
                     )
                 ),
                 2,
                 new PageRequest(10, 1)
             ),
-            new SlsPostgres(this.datasource).schools(
+            new SlsPostgres(this.ctx).schools(
                 DSL.trueCondition(),
                 new PageRequest(10, 1)
             )
@@ -134,14 +134,14 @@ final class SlsPostgresTest {
 
     @Test
     void updatesSchool() throws Exception {
-        this.datasource.insertInto(School.SCHOOL)
+        this.ctx.insertInto(School.SCHOOL)
             .set(School.SCHOOL.ID, 1L)
             .set(School.SCHOOL.NAME, "Math school")
             .set(School.SCHOOL.IS_DELETED, false)
             .execute();
         Assertions.assertEquals(
             "Simple school",
-            new SlsPostgres(this.datasource)
+            new SlsPostgres(this.ctx)
                 .school(1L)
                 .renamed("Simple school")
                 .name()
@@ -150,29 +150,29 @@ final class SlsPostgresTest {
 
     @Test
     void removesSchool() throws Exception {
-        this.datasource.insertInto(School.SCHOOL)
+        this.ctx.insertInto(School.SCHOOL)
             .set(School.SCHOOL.ID, 1L)
             .set(School.SCHOOL.NAME, "Bad school")
             .set(School.SCHOOL.IS_DELETED, false)
             .execute();
-        this.datasource.insertInto(School.SCHOOL)
+        this.ctx.insertInto(School.SCHOOL)
             .set(School.SCHOOL.ID, 2L)
             .set(School.SCHOOL.NAME, "Good school")
             .set(School.SCHOOL.IS_DELETED, false)
             .execute();
-        new SlsPostgres(this.datasource).remove(1L);
+        new SlsPostgres(this.ctx).remove(1L);
         Assertions.assertEquals(
             new ResponsePageableList<>(
                 List.of(
                     new SlPostgres(
-                        this.datasource,
+                        this.ctx,
                         2L
                     )
                 ),
                 1,
                 new PageRequest(10, 1)
             ),
-            new SlsPostgres(this.datasource).schools(
+            new SlsPostgres(this.ctx).schools(
                 School.SCHOOL.IS_DELETED.eq(false),
                 new PageRequest(10, 1)
             )
@@ -181,10 +181,10 @@ final class SlsPostgresTest {
 
     @DynamicPropertySource
     private static void properties(final DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
-        registry.add("spring.datasource.url", SlsPostgresTest.POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", SlsPostgresTest.POSTGRES::getUsername);
-        registry.add("spring.datasource.password", SlsPostgresTest.POSTGRES::getPassword);
+        registry.add("spring.ctx.driver-class-name", () -> "org.postgresql.Driver");
+        registry.add("spring.ctx.url", SlsPostgresTest.POSTGRES::getJdbcUrl);
+        registry.add("spring.ctx.username", SlsPostgresTest.POSTGRES::getUsername);
+        registry.add("spring.ctx.password", SlsPostgresTest.POSTGRES::getPassword);
         registry.add("spring.liquibase.enabled", () -> true);
     }
 }

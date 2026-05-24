@@ -34,7 +34,7 @@ public class CurriculumHtmlController {
     /**
      * Database context.
      */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
     /**
      * Constructor.
@@ -42,7 +42,7 @@ public class CurriculumHtmlController {
      * @param dsl Database context
      */
     public CurriculumHtmlController(final DSLContext dsl) {
-        this.datasource = dsl;
+        this.ctx = dsl;
     }
 
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
@@ -52,7 +52,7 @@ public class CurriculumHtmlController {
         @PathVariable final long schedule,
         final Model model
     ) throws Exception {
-        final var sch = new SlsPostgres(this.datasource).school(school);
+        final var sch = new SlsPostgres(this.ctx).school(school);
         final var sched = sch.schedules().schedule(schedule);
         final var curriculums = sched
             .curriculums()
@@ -87,14 +87,14 @@ public class CurriculumHtmlController {
     ) {
         String response;
         try {
-            new SlsPostgres(this.datasource)
+            new SlsPostgres(this.ctx)
                 .school(school)
                 .schedules()
                 .schedule(schedule)
                 .curriculums()
                 .add(
-                    new ScPostgres(this.datasource, clazz),
-                    new SbPostgres(this.datasource, subject),
+                    new ScPostgres(this.ctx, clazz),
+                    new SbPostgres(this.ctx, subject),
                     hours
                 );
             response = String.format(
@@ -121,7 +121,7 @@ public class CurriculumHtmlController {
         @PathVariable final long schedule,
         @PathVariable final long curriculum
     ) throws Exception {
-        new SlsPostgres(this.datasource)
+        new SlsPostgres(this.ctx)
             .school(school)
             .schedules()
             .schedule(schedule)
