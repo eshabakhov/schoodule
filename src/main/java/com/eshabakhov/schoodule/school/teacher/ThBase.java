@@ -40,6 +40,11 @@ public final class ThBase implements Teacher {
     }
 
     @Override
+    public Teacher renamed(final String name) {
+        return new ThBase(this.tid, name);
+    }
+
+    @Override
     public ObjectNode json() {
         return JsonNodeFactory.instance.objectNode()
             .put("id", this.tid)

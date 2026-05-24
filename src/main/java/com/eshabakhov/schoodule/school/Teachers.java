@@ -20,10 +20,10 @@ public interface Teachers {
     /**
      * Creates a new teacher.
      *
-     * @param teacher The teacher
+     * @param name The name of teacher
      * @return The created {@link Teacher}
      */
-    Teacher create(Teacher teacher) throws Exception;
+    Teacher create(String name) throws Exception;
 
     /**
      * Finds a teacher by its unique identifier.
@@ -49,14 +49,6 @@ public interface Teachers {
      * @return List of {@link Teacher} instances
      */
     PageableList<Teacher> teachers(Condition condition, Page page) throws Exception;
-
-    /**
-     * Updates the name of an existing teacher.
-     *
-     * @param teacher The teacher
-     * @return The updated {@link Teacher}
-     */
-    Teacher put(Teacher teacher) throws Exception;
 
     /**
      * Removes a teacher by its ID.
