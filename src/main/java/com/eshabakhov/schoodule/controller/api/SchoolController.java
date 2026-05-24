@@ -55,10 +55,10 @@ public class SchoolController {
         MediaType.valueOf("application/com.eshabakhov.schoodule.school.simpleschool+json");
 
     /** JOOQ DSL context for executing database queries. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
-    SchoolController(final DSLContext datasource) {
-        this.datasource = datasource;
+    SchoolController(final DSLContext ctx) {
+        this.ctx = ctx;
     }
 
     /**
@@ -167,7 +167,7 @@ public class SchoolController {
                     "Field 'name' is required and cannot be empty"
                 );
             }
-            final School school = new SlsPostgres(this.datasource).create(name.asText());
+            final School school = new SlsPostgres(this.ctx).create(name.asText());
             return ResponseEntity
                 .created(URI.create(String.format("/api/schools/%d", school.uid())))
                 .contentType(SchoolController.SIMPLE_TYPE)
@@ -214,7 +214,7 @@ public class SchoolController {
         return ResponseEntity
             .ok()
             .body(
-                new SlsPostgres(this.datasource)
+                new SlsPostgres(this.ctx)
                     .schools(condition, new PageRequest(limit, offset))
             );
     }
@@ -267,7 +267,7 @@ public class SchoolController {
         @PathVariable final long school
     ) throws Exception {
         if (SchoolVersion.SIMPLE.equals(version)) {
-            final var found = new SlsPostgres(this.datasource).school(school);
+            final var found = new SlsPostgres(this.ctx).school(school);
             return ResponseEntity
                 .ok()
                 .contentType(SchoolController.SIMPLE_TYPE)
@@ -408,19 +408,18 @@ public class SchoolController {
                     "Field 'name' is required and cannot be empty"
                 );
             }
-            final var toupdate = new SlBase(school, name.asText());
-            final var updated = new SlsPostgres(this.datasource).put(toupdate);
-            final ResponseEntity<School> response;
-            if (toupdate.equals(updated)) {
+            ResponseEntity<School> response;
+            try {
                 response = ResponseEntity
                     .ok()
                     .contentType(SchoolController.SIMPLE_TYPE)
-                    .body(updated);
-            } else {
+                    .body(new SlsPostgres(this.ctx).school(school).renamed(name.asText()));
+            } catch (final SlsPostgres.SchoolNotFoundException ex) {
+                final var newschool = new SlsPostgres(this.ctx).create(name.asText());
                 response = ResponseEntity
-                    .created(URI.create(String.format("/api/schools/%d", updated.uid())))
+                    .created(URI.create(String.format("/api/schools/%d", newschool.uid())))
                     .contentType(SchoolController.SIMPLE_TYPE)
-                    .body(updated);
+                    .body(newschool);
             }
             return response;
         } else {
@@ -445,7 +444,7 @@ public class SchoolController {
     )
     @Operation(summary = "Remove school")
     public ResponseEntity<Void> delete(@PathVariable final long school) throws Exception {
-        new SlsPostgres(this.datasource).remove(school);
+        new SlsPostgres(this.ctx).remove(school);
         return ResponseEntity.noContent().build();
     }
 

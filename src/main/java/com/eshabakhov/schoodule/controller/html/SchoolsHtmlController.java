@@ -6,7 +6,6 @@ package com.eshabakhov.schoodule.controller.html;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.School;
 import com.eshabakhov.schoodule.page.PageRequest;
-import com.eshabakhov.schoodule.school.SlBase;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.user.AuthUser;
 import org.jooq.DSLContext;
@@ -167,7 +166,7 @@ public final class SchoolsHtmlController {
         if (name == null || name.isBlank()) {
             response = String.format("redirect:/schools/%d/edit?error=empty", id);
         } else {
-            new SlsPostgres(this.ctx).put(new SlBase(id, name.trim()));
+            new SlsPostgres(this.ctx).school(id).renamed(name.trim());
             response = "redirect:/schools";
         }
         return response;

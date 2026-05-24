@@ -46,14 +46,6 @@ public interface Schools {
     PageableList<School> schools(Condition condition, Page page)  throws Exception;
 
     /**
-     * Updates an existing school or creates a new one with specified ID.
-     *
-     * @param school Updated school with unchanged ID
-     * @return Updated or newly created school
-     */
-    School put(School school) throws Exception;
-
-    /**
      * Removes a school from the collection.
      *
      * @param school ID of the school to remove

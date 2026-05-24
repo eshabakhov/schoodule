@@ -35,6 +35,13 @@ public interface School extends Jsonable {
     String name();
 
     /**
+     * Returns renamed school.
+     * @param name New name of school
+     * @return New name of the school
+     */
+    School renamed(String name);
+
+    /**
      * Return users.
      * @return Users
      */
