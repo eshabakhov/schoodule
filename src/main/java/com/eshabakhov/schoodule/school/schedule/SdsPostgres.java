@@ -161,12 +161,6 @@ public final class SdsPostgres implements Schedules {
         }
     }
 
-    public static class ScheduleFailedUpdateException extends Exception {
-        public ScheduleFailedUpdateException() {
-            super("Failed to update Schedule");
-        }
-    }
-
     public static class ScheduleNotFoundException extends Exception {
         public ScheduleNotFoundException(final String message) {
             super(message);

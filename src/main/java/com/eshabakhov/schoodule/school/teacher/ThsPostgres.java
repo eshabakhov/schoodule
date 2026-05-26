@@ -156,12 +156,6 @@ public final class ThsPostgres implements Teachers {
         }
     }
 
-    public static class TeacherFailedUpdateException extends Exception {
-        public TeacherFailedUpdateException() {
-            super("Failed to update Teacher");
-        }
-    }
-
     public static class TeacherNotFoundException extends Exception {
         public TeacherNotFoundException(final String message) {
             super(message);

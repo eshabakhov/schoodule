@@ -28,7 +28,7 @@ public interface ClassCurriculums {
      * @return The created {@link ClassCurriculum}
      * @throws Exception if creation fails
      */
-    ClassCurriculum add(SchoolClass clazz, Subject subject, Integer hours) throws Exception;
+    ClassCurriculum create(SchoolClass clazz, Subject subject, Integer hours) throws Exception;
 
     /**
      * Finds a class curriculum by its unique ID.
@@ -37,7 +37,7 @@ public interface ClassCurriculums {
      * @return The found {@link ClassCurriculum}
      * @throws Exception if not found
      */
-    ClassCurriculum find(long id) throws Exception;
+    ClassCurriculum curriculum(long id) throws Exception;
 
     /**
      * Lists class curriculums filtered by a condition.
@@ -48,24 +48,6 @@ public interface ClassCurriculums {
      * @throws Exception if listing fails
      */
     PageableList<ClassCurriculum> list(Condition condition, Page page) throws Exception;
-
-    /**
-     * Updates a class curriculum.
-     *
-     * @param id ID curriculum
-     * @param clazz The School class,
-     * @param subject The subject,
-     * @param hours The hours,
-     * @return The updated {@link ClassCurriculum}
-     * @throws Exception if update fails
-     * @checkstyle ParameterNumberCheck (2 lines)
-     */
-    ClassCurriculum put(
-        Long id,
-        SchoolClass clazz,
-        Subject subject,
-        Integer hours
-    ) throws Exception;
 
     /**
      * Removes a class curriculum by its ID.

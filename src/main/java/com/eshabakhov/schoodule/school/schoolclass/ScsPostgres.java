@@ -161,12 +161,6 @@ public final class ScsPostgres implements SchoolClasses {
         }
     }
 
-    public static class SchoolClassFailedUpdateException extends Exception {
-        public SchoolClassFailedUpdateException() {
-            super("Failed to update SchoolClass");
-        }
-    }
-
     public static class SchoolClassNotFoundException extends Exception {
         public SchoolClassNotFoundException(final String message) {
             super(message);

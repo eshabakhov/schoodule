@@ -92,7 +92,7 @@ public class CurriculumHtmlController {
                 .schedules()
                 .schedule(schedule)
                 .curriculums()
-                .add(
+                .create(
                     new ScPostgres(this.ctx, clazz),
                     new SbPostgres(this.ctx, subject),
                     hours

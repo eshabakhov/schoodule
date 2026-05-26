@@ -14,31 +14,31 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  *
  * @since 0.0.1
  */
-public final class SimpleClassCurriculum implements ClassCurriculum {
+public final class CsCrSimple implements ClassCurriculum {
 
     /** Curriculum ID. */
     private final Long cid;
 
     /** School class. */
-    private final SchoolClass clazz;
+    private final SchoolClass cls;
 
     /** Subject. */
-    private final Subject subj;
+    private final Subject sbj;
 
     /** School class. */
-    private final Integer hours;
+    private final Integer hrs;
 
     // @checkstyle ParameterNumberCheck (2 lines)
-    public SimpleClassCurriculum(
+    public CsCrSimple(
         final Long cid,
         final SchoolClass clazz,
         final Subject subject,
         final Integer hours
     ) {
         this.cid = cid;
-        this.clazz = clazz;
-        this.subj = subject;
-        this.hours = hours;
+        this.cls = clazz;
+        this.sbj = subject;
+        this.hrs = hours;
     }
 
     @Override
@@ -48,26 +48,41 @@ public final class SimpleClassCurriculum implements ClassCurriculum {
 
     @Override
     public SchoolClass schoolClass() {
-        return this.clazz;
+        return this.cls;
     }
 
     @Override
     public Subject subject() {
-        return this.subj;
+        return this.sbj;
     }
 
     @Override
     public Integer hoursPerWeek() {
-        return this.hours;
+        return this.hrs;
+    }
+
+    @Override
+    public ClassCurriculum teach(final Subject subject) {
+        return new CsCrSimple(this.cid, this.cls, subject, this.hrs);
+    }
+
+    @Override
+    public ClassCurriculum target(final SchoolClass clazz) {
+        return new CsCrSimple(this.cid, clazz, this.sbj, this.hrs);
+    }
+
+    @Override
+    public ClassCurriculum allocate(final Integer hours) {
+        return new CsCrSimple(this.cid, this.cls, this.sbj, hours);
     }
 
     @Override
     public ObjectNode json() {
         final var node = JsonNodeFactory.instance.objectNode();
         node.put("id", this.cid);
-        node.set("schoolClass", this.clazz.json());
-        node.set("subject", this.subj.json());
-        node.put("hoursPerWeek", this.hours);
+        node.set("schoolClass", this.cls.json());
+        node.set("subject", this.sbj.json());
+        node.put("hoursPerWeek", this.hrs);
         return node;
     }
 }

@@ -44,4 +44,28 @@ public interface ClassCurriculum extends Jsonable {
      * @return Hours per week
      */
     Integer hoursPerWeek();
+
+    /**
+     * Returns a new curriculum taught as the specified subject.
+     *
+     * @param subject New subject
+     * @return New curriculum with changed subject
+     */
+    ClassCurriculum teach(Subject subject);
+
+    /**
+     * Returns a new curriculum targeted to the specified school class.
+     *
+     * @param clazz New school class
+     * @return New curriculum with changed school class
+     */
+    ClassCurriculum target(SchoolClass clazz);
+
+    /**
+     * Returns a new curriculum with allocated weekly hours.
+     *
+     * @param hours New amount of hours per week
+     * @return New curriculum with changed weekly hours
+     */
+    ClassCurriculum allocate(Integer hours);
 }
