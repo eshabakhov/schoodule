@@ -115,12 +115,6 @@ public final class SlsPostgres implements Schools {
         }
     }
 
-    public static class SchoolFailedUpdateException extends Exception {
-        public SchoolFailedUpdateException() {
-            super("Failed to update School");
-        }
-    }
-
     public static class SchoolNotFoundException extends Exception {
         public SchoolNotFoundException(final String message) {
             super(message);

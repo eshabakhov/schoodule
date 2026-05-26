@@ -113,11 +113,8 @@ public final class RestResponseEntityExceptionHandler {
     @ExceptionHandler(
         {
             CbsPostgres.CabinetFailedCreateException.class,
-            CbsPostgres.CabinetFailedUpdateException.class,
             SlsPostgres.SchoolFailedCreateException.class,
-            SlsPostgres.SchoolFailedUpdateException.class,
-            ThsPostgres.TeacherFailedCreateException.class,
-            ThsPostgres.TeacherFailedUpdateException.class
+            ThsPostgres.TeacherFailedCreateException.class
         }
     )
     public static ResponseEntity<Object> handleServerException(final Exception exception) {

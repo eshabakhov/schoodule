@@ -154,12 +154,6 @@ public final class SbsPostgres implements Subjects {
         }
     }
 
-    public static class SubjectFailedUpdateException extends Exception {
-        public SubjectFailedUpdateException() {
-            super("Failed to update Subject");
-        }
-    }
-
     public static class SubjectNotFoundException extends Exception {
         public SubjectNotFoundException(final String message) {
             super(message);

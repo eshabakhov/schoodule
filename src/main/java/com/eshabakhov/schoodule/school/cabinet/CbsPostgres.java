@@ -151,12 +151,6 @@ public final class CbsPostgres implements Cabinets {
         }
     }
 
-    public static class CabinetFailedUpdateException extends Exception {
-        public CabinetFailedUpdateException() {
-            super("Failed to update Subject");
-        }
-    }
-
     public static class CabinetNotFoundException extends Exception {
         public CabinetNotFoundException(final String message) {
             super(message);

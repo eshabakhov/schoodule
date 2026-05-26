@@ -8,6 +8,8 @@ import com.eshabakhov.schoodule.error.VersionHeaderException;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.schedule.ClassCurriculum;
+import com.eshabakhov.schoodule.school.schedule.curriculum.CsCrSimple;
+import com.eshabakhov.schoodule.school.schedule.curriculum.CsCrsPostgres;
 import com.eshabakhov.schoodule.school.schoolclass.ScPostgres;
 import com.eshabakhov.schoodule.school.subject.SbPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @since 0.0.1
  * @checkstyle DesignForExtensionCheck (1000 lines)
+ * @checkstyle ClassFanOutComplexityCheck (1000 lines)
  */
 @RestController
 @RequestMapping("/api/schools/{school}/schedules/{schedule}/curriculum")
@@ -137,7 +140,7 @@ public class ClassCurriculumController {
                 .schedules()
                 .schedule(schedule)
                 .curriculums()
-                .add(
+                .create(
                     new ScPostgres(this.ctx, classid.asLong()),
                     new SbPostgres(this.ctx, subjectid.asLong()),
                     hours.asInt()
@@ -194,7 +197,7 @@ public class ClassCurriculumController {
             .schedules()
             .schedule(schedule)
             .curriculums()
-            .find(curriculum);
+            .curriculum(curriculum);
     }
 
     @PutMapping("/{curriculum}")
@@ -242,21 +245,36 @@ public class ClassCurriculumController {
                     "Fields 'schoolClassId', 'subjectId', 'hoursPerWeek' are required"
                 );
             }
-            final var updated = new SlsPostgres(this.ctx)
-                .school(school)
-                .schedules()
-                .schedule(schedule)
-                .curriculums()
-                .put(
-                    curriculum,
-                    new ScPostgres(this.ctx, classid.asLong()),
-                    new SbPostgres(this.ctx, subjectid.asLong()),
-                    hours.asInt()
+            ResponseEntity<ClassCurriculum> response;
+            try {
+                final var updated = new SlsPostgres(this.ctx)
+                    .school(school)
+                    .schedules()
+                    .schedule(schedule)
+                    .curriculums()
+                    .curriculum(curriculum)
+                    .allocate(hours.asInt())
+                    .teach(new SbPostgres(this.ctx, subjectid.asLong()))
+                    .target(new ScPostgres(this.ctx, classid.asLong()));
+                response = ResponseEntity.ok().body(
+                    new CsCrSimple(
+                        updated.uid(),
+                        updated.schoolClass(),
+                        updated.subject(),
+                        updated.hoursPerWeek()
+                    )
                 );
-            final ResponseEntity<ClassCurriculum> response;
-            if (curriculum == updated.uid()) {
-                response = ResponseEntity.ok().body(updated);
-            } else {
+            } catch (final CsCrsPostgres.CurriculumNotFoundException ex) {
+                final var created = new SlsPostgres(this.ctx)
+                    .school(school)
+                    .schedules()
+                    .schedule(schedule)
+                    .curriculums()
+                    .create(
+                        new ScPostgres(this.ctx, classid.asLong()),
+                        new SbPostgres(this.ctx, subjectid.asLong()),
+                        hours.asInt()
+                    );
                 response = ResponseEntity
                     .created(
                         URI.create(
@@ -264,11 +282,11 @@ public class ClassCurriculumController {
                                 "/api/schools/%d/schedules/%d/curriculum/%d",
                                 school,
                                 schedule,
-                                updated.uid()
+                                created.uid()
                             )
                         )
                     )
-                    .body(updated);
+                    .body(created);
             }
             return response;
         } else {
