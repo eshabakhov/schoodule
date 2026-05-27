@@ -181,10 +181,10 @@ final class SlsPostgresTest {
 
     @DynamicPropertySource
     private static void properties(final DynamicPropertyRegistry registry) {
-        registry.add("spring.ctx.driver-class-name", () -> "org.postgresql.Driver");
-        registry.add("spring.ctx.url", SlsPostgresTest.POSTGRES::getJdbcUrl);
-        registry.add("spring.ctx.username", SlsPostgresTest.POSTGRES::getUsername);
-        registry.add("spring.ctx.password", SlsPostgresTest.POSTGRES::getPassword);
+        registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+        registry.add("spring.datasource.url", SlsPostgresTest.POSTGRES::getJdbcUrl);
+        registry.add("spring.datasource.username", SlsPostgresTest.POSTGRES::getUsername);
+        registry.add("spring.datasource.password", SlsPostgresTest.POSTGRES::getPassword);
         registry.add("spring.liquibase.enabled", () -> true);
     }
 }

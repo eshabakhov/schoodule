@@ -1,9 +1,9 @@
 /*
  * © 2025-2026 Eset Shabakhov. Schoodule
  */
-package com.eshabakhov.schoodule.school.cabinet;
+package com.eshabakhov.schoodule.school.building.cabinet;
 
-import com.eshabakhov.schoodule.school.Cabinet;
+import com.eshabakhov.schoodule.school.building.Cabinet;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 

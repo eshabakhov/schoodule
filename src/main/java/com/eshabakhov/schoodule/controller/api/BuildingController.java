@@ -6,10 +6,10 @@ package com.eshabakhov.schoodule.controller.api;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.error.VersionHeaderException;
 import com.eshabakhov.schoodule.page.PageRequest;
+import com.eshabakhov.schoodule.school.Building;
 import com.eshabakhov.schoodule.school.SlsPostgres;
-import com.eshabakhov.schoodule.school.building.Cabinet;
-import com.eshabakhov.schoodule.school.building.cabinet.CbBase;
-import com.eshabakhov.schoodule.school.building.cabinet.CbsPostgres;
+import com.eshabakhov.schoodule.school.building.BdBase;
+import com.eshabakhov.schoodule.school.building.BdsPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Cabinet's client controller.
+ * Building's client controller.
  *
  * @since 0.0.1
  * @checkstyle DesignForExtensionCheck (1000 lines)
@@ -43,18 +43,18 @@ import org.springframework.web.bind.annotation.RestController;
  * @checkstyle ParameterNumberCheck (1000 lines)
  */
 @RestController
-@RequestMapping("/api/schools/{school}/buildings/{building}/cabinets/")
-@Tag(name = "Cabinets")
-public class CabinetController {
+@RequestMapping("/api/schools/{school}/buildings/")
+@Tag(name = "Buildings")
+public class BuildingController {
 
-    /** JOOQ Table for Cabinet. */
-    private static final com.eshabakhov.schoodule.tables.Cabinet CABINET =
-        com.eshabakhov.schoodule.tables.Cabinet.CABINET;
+    /** JOOQ Table for Building. */
+    private static final com.eshabakhov.schoodule.tables.Building BUILDING =
+        com.eshabakhov.schoodule.tables.Building.BUILDING;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
 
-    CabinetController(final DSLContext ctx) {
+    BuildingController(final DSLContext ctx) {
         this.ctx = ctx;
     }
 
@@ -69,12 +69,12 @@ public class CabinetController {
         """
     )
     @Operation(
-        summary = "Create cabinet",
+        summary = "Create building",
         parameters = {
             @Parameter(
                 name = "version",
                 in = ParameterIn.HEADER,
-                description = "Version for representing Cabinet",
+                description = "Version for representing Building",
                 required = true,
                 schema = @Schema(
                     type = "string",
@@ -85,17 +85,17 @@ public class CabinetController {
     )
     @ApiResponse(
         responseCode = "201",
-        description = "Cabinet created",
+        description = "Building created",
         content = @Content(
-            mediaType = "application/com.eshabakhov.schoodule.school.cabinet.simplecabinet+json",
+            mediaType = "application/com.eshabakhov.schoodule.school.building.simplebuilding+json",
             examples = {
                 @ExampleObject(
-                    name = "Simple cabinet",
+                    name = "Simple building",
                     summary = "Simple",
                     value = """
                         {
                             "id": 1,
-                            "name": "Cool cabinet"
+                            "name": "Cool building"
                         }"""
                 )
             }
@@ -103,7 +103,7 @@ public class CabinetController {
     )
     @ApiResponse(
         responseCode = "400",
-        description = "Cabinet creation failed",
+        description = "Building creation failed",
         content = @Content(
             mediaType = "application/json",
             examples = {
@@ -137,12 +137,11 @@ public class CabinetController {
             }
         )
     )
-    public ResponseEntity<Cabinet> create(
-        @RequestHeader("version") final CabinetVersion version,
+    public ResponseEntity<Building> create(
+        @RequestHeader("version") final BuildingVersion version,
         @PathVariable final long school,
-        @PathVariable final long building,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Simple request cabinet",
+            description = "Simple request building",
             content = @Content(
                 examples = {
                     @ExampleObject(
@@ -150,7 +149,7 @@ public class CabinetController {
                         value =
                             """
                             {
-                                "name": "Cool cabinet"
+                                "name": "Cool building"
                             }
                             """
                     )
@@ -159,29 +158,24 @@ public class CabinetController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (CabinetVersion.SIMPLE.equals(version)) {
+        if (BuildingVersion.SIMPLE.equals(version)) {
             final JsonNode name = request.get("name");
             if (name == null || name.asText().isBlank()) {
-                throw new CabinetRequiredFieldException(
+                throw new BuildingRequiredFieldException(
                     "Field 'name' is required and cannot be empty"
                 );
             }
-            final Cabinet cabinet = new SlsPostgres(this.ctx)
+            final Building building = new SlsPostgres(this.ctx)
                 .school(school)
                 .buildings()
-                .building(building)
-                .cabinets()
                 .create(name.asText());
             return ResponseEntity
                 .created(
                     URI.create(
-                        String.format(
-                            "/api/schools/%d/buildings/%d/cabinets/%d",
-                            school, building, cabinet.uid()
-                        )
+                        String.format("/api/schools/%d/buildings/%d", school, building.uid())
                     )
                 )
-                .body(new CbBase(cabinet.uid(), cabinet.name()));
+                .body(new BdBase(building.uid(), building.name()));
         } else {
             throw new VersionHeaderException(version.name());
         }
@@ -189,10 +183,9 @@ public class CabinetController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
-    @Operation(summary = "Fetch list of cabinets")
-    public ResponseEntity<PageableList<Cabinet>> list(
+    @Operation(summary = "Fetch list of buildings")
+    public ResponseEntity<PageableList<Building>> list(
         @PathVariable final long school,
-        @PathVariable final long building,
         @RequestParam(
             name = "limit",
             required = false,
@@ -208,11 +201,11 @@ public class CabinetController {
             required = false
         ) final String namect
     ) throws Exception {
-        var condition = CabinetController.CABINET.BUILDING_ID.eq(building)
-            .and(CabinetController.CABINET.IS_DELETED.eq(false));
+        var condition = BuildingController.BUILDING.SCHOOL_ID.eq(school)
+            .and(BuildingController.BUILDING.IS_DELETED.eq(false));
         if (namect != null && !namect.isBlank()) {
             condition = condition.and(
-                CabinetController.CABINET.NAME.likeIgnoreCase(String.format("%%%s%%", namect))
+                BuildingController.BUILDING.NAME.likeIgnoreCase(String.format("%%%s%%", namect))
             );
         }
         return ResponseEntity
@@ -221,21 +214,19 @@ public class CabinetController {
                 new SlsPostgres(this.ctx)
                     .school(school)
                     .buildings()
-                    .building(building)
-                    .cabinets()
-                    .cabinets(condition, new PageRequest(limit, offset))
+                    .buildings(condition, new PageRequest(limit, offset))
             );
     }
 
-    @GetMapping("/{cabinet}")
+    @GetMapping("/{building}")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(
-        summary = "Fetch cabinet",
+        summary = "Fetch building",
         parameters = {
             @Parameter(
                 name = "version",
                 in = ParameterIn.HEADER,
-                description = "Version for representing Cabinet",
+                description = "Version for representing Building",
                 required = true,
                 schema = @Schema(
                     type = "string",
@@ -246,17 +237,17 @@ public class CabinetController {
     )
     @ApiResponse(
         responseCode = "200",
-        description = "Cabinet fetched",
+        description = "Building fetched",
         content = @Content(
-            mediaType = "application/com.eshabakhov.schoodule.school.cabinet.simplecabinet+json",
+            mediaType = "application/com.eshabakhov.schoodule.school.building.simplebuilding+json",
             examples = {
                 @ExampleObject(
-                    name = "Simple cabinet",
+                    name = "Simple building",
                     summary = "Simple",
                     value = """
                         {
                             "id": 1,
-                            "name": "Cool cabinet"
+                            "name": "Cool building"
                         }"""
                 )
             }
@@ -264,7 +255,7 @@ public class CabinetController {
     )
     @ApiResponse(
         responseCode = "404",
-        description = "Cabinet not found",
+        description = "Building not found",
         content = @Content(mediaType = "application/json")
     )
     @ApiResponse(
@@ -285,20 +276,17 @@ public class CabinetController {
             }
         )
     )
-    public Cabinet get(
+    public Building get(
         @PathVariable final long school,
-        @PathVariable final long building,
-        @PathVariable final long cabinet
+        @PathVariable final long building
     ) throws Exception {
         return new SlsPostgres(this.ctx)
             .school(school)
             .buildings()
-            .building(building)
-            .cabinets()
-            .cabinet(cabinet);
+            .building(building);
     }
 
-    @PutMapping("/{cabinet}")
+    @PutMapping("/{building}")
     @PreAuthorize(
         """
         (hasAnyRole(
@@ -309,12 +297,12 @@ public class CabinetController {
         """
     )
     @Operation(
-        summary = "Update cabinet",
+        summary = "Update building",
         parameters = {
             @Parameter(
                 name = "version",
                 in = ParameterIn.HEADER,
-                description = "Version for representing Cabinet",
+                description = "Version for representing Building",
                 required = true,
                 schema = @Schema(
                     type = "string",
@@ -325,17 +313,17 @@ public class CabinetController {
     )
     @ApiResponse(
         responseCode = "200",
-        description = "Cabinet updated",
+        description = "Building updated",
         content = @Content(
-            mediaType = "application/com.eshabakhov.schoodule.school.cabinet.simplecabinet+json",
+            mediaType = "application/com.eshabakhov.schoodule.school.building.simplebuilding+json",
             examples = {
                 @ExampleObject(
-                    name = "Simple cabinet",
+                    name = "Simple building",
                     summary = "Simple",
                     value = """
                         {
                             "id": 1,
-                            "name": "Cool cabinet"
+                            "name": "Cool building"
                         }"""
                 )
             }
@@ -343,17 +331,17 @@ public class CabinetController {
     )
     @ApiResponse(
         responseCode = "201",
-        description = "Cabinet created",
+        description = "Building created",
         content = @Content(
-            mediaType = "application/com.eshabakhov.schoodule.school.cabinet.simplecabinet+json",
+            mediaType = "application/com.eshabakhov.schoodule.school.building.simplebuilding+json",
             examples = {
                 @ExampleObject(
-                    name = "Simple cabinet",
+                    name = "Simple building",
                     summary = "Simple",
                     value = """
                         {
                             "id": 1,
-                            "name": "Cool cabinet"
+                            "name": "Cool building"
                         }"""
                 )
             }
@@ -361,7 +349,7 @@ public class CabinetController {
     )
     @ApiResponse(
         responseCode = "400",
-        description = "Cabinet update failed",
+        description = "Building update failed",
         content = @Content(
             mediaType = "application/json",
             examples = {
@@ -395,20 +383,19 @@ public class CabinetController {
             }
         )
     )
-    public ResponseEntity<Cabinet> put(
-        @RequestHeader("version") final CabinetVersion version,
+    public ResponseEntity<Building> put(
+        @RequestHeader("version") final BuildingVersion version,
         @PathVariable final long school,
         @PathVariable final long building,
-        @PathVariable final long cabinet,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Simple request cabinet",
+            description = "Simple request building",
             content = @Content(
                 examples = {
                     @ExampleObject(
                         name = "Simple",
                         value = """
                             {
-                                "name": "Cool cabinet"
+                                "name": "Cool building"
                             }
                             """
                     )
@@ -417,14 +404,14 @@ public class CabinetController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (CabinetVersion.SIMPLE.equals(version)) {
+        if (BuildingVersion.SIMPLE.equals(version)) {
             final JsonNode name = request.get("name");
             if (name == null || name.asText().isBlank()) {
-                throw new CabinetRequiredFieldException(
+                throw new BuildingRequiredFieldException(
                     "Field 'name' is required and cannot be empty"
                 );
             }
-            ResponseEntity<Cabinet> response;
+            ResponseEntity<Building> response;
             try {
                 response = ResponseEntity.ok()
                     .body(
@@ -432,27 +419,20 @@ public class CabinetController {
                             .school(school)
                             .buildings()
                             .building(building)
-                            .cabinets()
-                            .cabinet(cabinet)
                             .renamed(name.asText())
                     );
-            } catch (final CbsPostgres.CabinetNotFoundException ex) {
-                final var newcabinet = new SlsPostgres(this.ctx)
+            } catch (final BdsPostgres.BuildingNotFoundException ex) {
+                final var created = new SlsPostgres(this.ctx)
                     .school(school)
                     .buildings()
-                    .building(building)
-                    .cabinets()
                     .create(name.asText());
                 response = ResponseEntity
                     .created(
                         URI.create(
-                            String.format(
-                                "/api/schools/%d/buildings/%d/cabinets/%d",
-                                school, building, newcabinet.uid()
-                            )
+                            String.format("/api/schools/%d/buildings/%d", school, created.uid())
                         )
                     )
-                    .body(newcabinet);
+                    .body(created);
             }
             return response;
         } else {
@@ -460,7 +440,7 @@ public class CabinetController {
         }
     }
 
-    @DeleteMapping("/{cabinet}")
+    @DeleteMapping("/{building}")
     @PreAuthorize(
         """
         (hasAnyRole(
@@ -470,31 +450,28 @@ public class CabinetController {
         and (hasRole('ADMIN') or #school == authentication.principal.info().school())
         """
     )
-    @Operation(summary = "Remove cabinet")
+    @Operation(summary = "Remove building")
     public ResponseEntity<Void> delete(
         @PathVariable final long school,
-        @PathVariable final long building,
-        @PathVariable final long cabinet
+        @PathVariable final long building
     ) throws Exception {
         new SlsPostgres(this.ctx)
             .school(school)
             .buildings()
-            .building(building)
-            .cabinets()
-            .remove(cabinet);
+            .remove(building);
         return ResponseEntity.noContent().build();
     }
 
-    public static class CabinetRequiredFieldException extends Exception {
-        public CabinetRequiredFieldException(final String message) {
+    public static class BuildingRequiredFieldException extends Exception {
+        public BuildingRequiredFieldException(final String message) {
             super(message);
         }
     }
 
-    /** Cabinet accept version. */
-    public enum CabinetVersion {
+    /** Building accept version. */
+    public enum BuildingVersion {
 
-        /** Version of simple cabinet. */
+        /** Version of simple building. */
         SIMPLE
     }
 }

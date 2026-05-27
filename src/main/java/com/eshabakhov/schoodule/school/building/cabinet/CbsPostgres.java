@@ -1,13 +1,13 @@
 /*
  * © 2025-2026 Eset Shabakhov. Schoodule
  */
-package com.eshabakhov.schoodule.school.cabinet;
+package com.eshabakhov.schoodule.school.building.cabinet;
 
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.page.ResponsePageableList;
-import com.eshabakhov.schoodule.school.Cabinet;
-import com.eshabakhov.schoodule.school.Cabinets;
+import com.eshabakhov.schoodule.school.building.Cabinet;
+import com.eshabakhov.schoodule.school.building.Cabinets;
 import com.eshabakhov.schoodule.tables.records.CabinetRecord;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
@@ -30,12 +30,12 @@ public final class CbsPostgres implements Cabinets {
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
 
-    /** School. */
-    private final Long sid;
+    /** Building id. */
+    private final Long bid;
 
-    public CbsPostgres(final DSLContext ctx, final Long sid) {
+    public CbsPostgres(final DSLContext ctx, final Long bid) {
         this.ctx = ctx;
-        this.sid = sid;
+        this.bid = bid;
     }
 
     @Override
@@ -45,14 +45,14 @@ public final class CbsPostgres implements Cabinets {
                 final DSLContext ttx = DSL.using(config);
                 final var select = ttx.selectFrom(CbsPostgres.CABINET)
                     .where(
-                        CbsPostgres.CABINET.SCHOOL_ID.eq(this.sid)
+                        CbsPostgres.CABINET.BUILDING_ID.eq(this.bid)
                             .and(CbsPostgres.CABINET.NAME.eq(name))
                             .and(CbsPostgres.CABINET.IS_DELETED.eq(false))
                     )
                     .fetchOne();
                 if (select == null) {
                     final var created = ttx.insertInto(CbsPostgres.CABINET)
-                        .set(CbsPostgres.CABINET.SCHOOL_ID, this.sid)
+                        .set(CbsPostgres.CABINET.BUILDING_ID, this.bid)
                         .set(CbsPostgres.CABINET.NAME, name)
                         .set(CbsPostgres.CABINET.IS_DELETED, false)
                         .returning()
@@ -73,7 +73,7 @@ public final class CbsPostgres implements Cabinets {
         final var selected = this.ctx.selectFrom(CbsPostgres.CABINET)
             .where(
                 CbsPostgres.CABINET.ID.eq(cid)
-                    .and(CbsPostgres.CABINET.SCHOOL_ID.eq(this.sid))
+                    .and(CbsPostgres.CABINET.BUILDING_ID.eq(this.bid))
                     .and(CbsPostgres.CABINET.IS_DELETED.eq(false))
             )
             .fetchOne();
@@ -89,7 +89,7 @@ public final class CbsPostgres implements Cabinets {
     public Cabinet cabinet(final String name) throws Exception {
         final CabinetRecord selected = this.ctx.selectFrom(CbsPostgres.CABINET)
             .where(
-                CbsPostgres.CABINET.SCHOOL_ID.eq(this.sid)
+                CbsPostgres.CABINET.BUILDING_ID.eq(this.bid)
                     .and(CbsPostgres.CABINET.NAME.eq(name))
                     .and(CbsPostgres.CABINET.IS_DELETED.eq(false))
             )
@@ -105,7 +105,7 @@ public final class CbsPostgres implements Cabinets {
     @Override
     public PageableList<Cabinet> cabinets(final Condition condition, final Page page)
         throws Exception {
-        final var cnd = condition.and(CbsPostgres.CABINET.SCHOOL_ID.eq(this.sid));
+        final var cnd = condition.and(CbsPostgres.CABINET.BUILDING_ID.eq(this.bid));
         return new ResponsePageableList<>(
             this.ctx.selectFrom(CbsPostgres.CABINET)
                 .where(cnd)
@@ -126,7 +126,7 @@ public final class CbsPostgres implements Cabinets {
     public void remove(final long cid) throws Exception {
         final CabinetRecord cabinet = this.ctx.selectFrom(CbsPostgres.CABINET)
             .where(CbsPostgres.CABINET.ID.eq(cid)
-                .and(CbsPostgres.CABINET.SCHOOL_ID.eq(this.sid))
+                .and(CbsPostgres.CABINET.BUILDING_ID.eq(this.bid))
                 .and(CbsPostgres.CABINET.IS_DELETED.eq(false))
             )
             .fetchOne();

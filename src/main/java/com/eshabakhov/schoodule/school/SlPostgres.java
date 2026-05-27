@@ -5,7 +5,7 @@ package com.eshabakhov.schoodule.school;
 
 import com.eshabakhov.schoodule.School;
 import com.eshabakhov.schoodule.Users;
-import com.eshabakhov.schoodule.school.cabinet.CbsPostgres;
+import com.eshabakhov.schoodule.school.building.BdsPostgres;
 import com.eshabakhov.schoodule.school.schedule.SdsPostgres;
 import com.eshabakhov.schoodule.school.schoolclass.ScsPostgres;
 import com.eshabakhov.schoodule.school.subject.SbsPostgres;
@@ -77,8 +77,8 @@ public final class SlPostgres implements School {
     }
 
     @Override
-    public Cabinets cabinets() {
-        return new CbsPostgres(this.ctx, this.sid);
+    public Buildings buildings() {
+        return new BdsPostgres(this.ctx, this.sid);
     }
 
     @Override

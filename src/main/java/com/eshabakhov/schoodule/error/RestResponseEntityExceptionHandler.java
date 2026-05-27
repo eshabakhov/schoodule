@@ -10,7 +10,7 @@ import com.eshabakhov.schoodule.controller.api.SchoolController;
 import com.eshabakhov.schoodule.controller.api.SubjectController;
 import com.eshabakhov.schoodule.controller.api.TeacherController;
 import com.eshabakhov.schoodule.school.SlsPostgres;
-import com.eshabakhov.schoodule.school.cabinet.CbsPostgres;
+import com.eshabakhov.schoodule.school.building.cabinet.CbsPostgres;
 import com.eshabakhov.schoodule.school.schedule.SdsPostgres;
 import com.eshabakhov.schoodule.school.schoolclass.ScsPostgres;
 import com.eshabakhov.schoodule.school.subject.SbsPostgres;

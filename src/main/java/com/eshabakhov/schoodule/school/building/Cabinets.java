@@ -1,7 +1,7 @@
 /*
  * © 2025-2026 Eset Shabakhov. Schoodule
  */
-package com.eshabakhov.schoodule.school;
+package com.eshabakhov.schoodule.school.building;
 
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
