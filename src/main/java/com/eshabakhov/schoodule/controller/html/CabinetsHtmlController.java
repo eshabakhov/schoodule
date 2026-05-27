@@ -28,7 +28,7 @@ import org.springframework.web.servlet.ModelAndView;
  * @checkstyle ParameterNumberCheck (1000 lines)
  */
 @Controller
-@RequestMapping("/schools/{school}/buildings/{building}/cabinets/")
+@RequestMapping("/schools/{school}/buildings/{building}/cabinets")
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class CabinetsHtmlController {
 
