@@ -55,9 +55,9 @@ public final class SlBase implements School {
     }
 
     @Override
-    public Cabinets cabinets() {
+    public Buildings buildings() {
         throw new UnsupportedOperationException(
-            "Cabinets are infrastructure-dependent"
+            "Buildings are infrastructure-dependent"
         );
     }
 

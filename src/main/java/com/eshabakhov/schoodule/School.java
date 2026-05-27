@@ -3,7 +3,7 @@
  */
 package com.eshabakhov.schoodule;
 
-import com.eshabakhov.schoodule.school.Cabinets;
+import com.eshabakhov.schoodule.school.Buildings;
 import com.eshabakhov.schoodule.school.Schedules;
 import com.eshabakhov.schoodule.school.SchoolClasses;
 import com.eshabakhov.schoodule.school.Subjects;
@@ -48,11 +48,11 @@ public interface School extends Jsonable {
     Users users();
 
     /**
-     * Returns collection of school's cabinets.
+     * Returns collection of school's buildings.
      *
-     * @return Cabinets collection
+     * @return Buildings collection
      */
-    Cabinets cabinets();
+    Buildings buildings();
 
     /**
      * Returns collection of school's teachers.

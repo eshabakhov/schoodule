@@ -15,7 +15,7 @@
             ]]>
         </sql>
     </changeSet>
-    <changeSet id="schoodule-tables/v1/01-06-2025/4" author="Shabakhov_Eset">
+    <changeSet id="schoodule-tables/v1/01-06-2025/2" author="Shabakhov_Eset">
         <sql>
             <![CDATA[
             CREATE TABLE public.schedule(
@@ -32,15 +32,15 @@
             ]]>
         </sql>
     </changeSet>
-    <changeSet id="schoodule-tables/v1/01-06-2025/5" author="Shabakhov_Eset">
+    <changeSet id="schoodule-tables/v1/01-06-2025/3" author="Shabakhov_Eset">
         <sql>
             <![CDATA[
-            CREATE TABLE public.cabinet(
+            CREATE TABLE public.building(
                id bigserial PRIMARY KEY,
                school_id bigint NOT NULL,
                name varchar NOT NULL,
                is_deleted boolean NOT NULL DEFAULT FALSE,
-               CONSTRAINT fk_school_cabinet_id
+               CONSTRAINT fk_school_building_id
                    FOREIGN KEY (school_id)
                        REFERENCES public.school(id)
                        ON DELETE RESTRICT
@@ -49,7 +49,24 @@
             ]]>
         </sql>
     </changeSet>
-    <changeSet id="schoodule-tables/v1/01-06-2025/6" author="Shabakhov_Eset">
+    <changeSet id="schoodule-tables/v1/01-06-2025/4" author="Shabakhov_Eset">
+        <sql>
+            <![CDATA[
+            CREATE TABLE public.cabinet(
+               id bigserial PRIMARY KEY,
+               building_id bigint NOT NULL,
+               name varchar NOT NULL,
+               is_deleted boolean NOT NULL DEFAULT FALSE,
+               CONSTRAINT fk_building_cabinet_id
+                   FOREIGN KEY (building_id)
+                       REFERENCES public.building(id)
+                       ON DELETE RESTRICT
+                       ON UPDATE CASCADE
+            );
+            ]]>
+        </sql>
+    </changeSet>
+    <changeSet id="schoodule-tables/v1/01-06-2025/5" author="Shabakhov_Eset">
         <sql>
             <![CDATA[
             CREATE TABLE public.teacher(
@@ -66,7 +83,7 @@
             ]]>
         </sql>
     </changeSet>
-    <changeSet id="schoodule-tables/v1/01-06-2025/7" author="Shabakhov_Eset">
+    <changeSet id="schoodule-tables/v1/01-06-2025/6" author="Shabakhov_Eset">
         <sql>
             <![CDATA[
             CREATE TABLE public.subject(
@@ -83,7 +100,7 @@
             ]]>
         </sql>
     </changeSet>
-    <changeSet id="schoodule-tables/v1/01-06-2025/8" author="Shabakhov_Eset">
+    <changeSet id="schoodule-tables/v1/01-06-2025/7" author="Shabakhov_Eset">
         <sql>
             <![CDATA[
             CREATE TABLE public.school_class(

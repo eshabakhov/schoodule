@@ -3,7 +3,7 @@
  */
 package com.eshabakhov.schoodule.school;
 
-import com.eshabakhov.schoodule.school.cabinet.CbsPostgres;
+import com.eshabakhov.schoodule.school.building.BdsPostgres;
 import com.eshabakhov.schoodule.school.schedule.SdsPostgres;
 import com.eshabakhov.schoodule.school.schoolclass.ScsPostgres;
 import com.eshabakhov.schoodule.school.subject.SbsPostgres;
@@ -53,21 +53,21 @@ final class SlPostgresTest {
     }
 
     @Test
-    void fetchCabinets() {
+    void fetchBuildings() {
         this.ctx.insertInto(School.SCHOOL)
             .set(School.SCHOOL.ID, 1L)
             .set(School.SCHOOL.NAME, "Cab school")
             .set(School.SCHOOL.IS_DELETED, false)
             .execute();
         Assertions.assertEquals(
-            new CbsPostgres(
+            new BdsPostgres(
                 this.ctx,
                 1L
             ),
             new SlPostgres(
                 this.ctx,
                 1L
-            ).cabinets()
+            ).buildings()
         );
     }
 
@@ -149,10 +149,10 @@ final class SlPostgresTest {
 
     @DynamicPropertySource
     private static void properties(final DynamicPropertyRegistry registry) {
-        registry.add("spring.ctx.driver-class-name", () -> "org.postgresql.Driver");
-        registry.add("spring.ctx.url", SlPostgresTest.POSTGRES::getJdbcUrl);
-        registry.add("spring.ctx.username", SlPostgresTest.POSTGRES::getUsername);
-        registry.add("spring.ctx.password", SlPostgresTest.POSTGRES::getPassword);
+        registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+        registry.add("spring.datasource.url", SlPostgresTest.POSTGRES::getJdbcUrl);
+        registry.add("spring.datasource.username", SlPostgresTest.POSTGRES::getUsername);
+        registry.add("spring.datasource.password", SlPostgresTest.POSTGRES::getPassword);
         registry.add("spring.liquibase.enabled", () -> true);
     }
 }
