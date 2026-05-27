@@ -17,7 +17,7 @@
         Название не может быть пустым
     </div>
     <div style="max-width:480px; margin: 0 auto;">
-        <form th:action="@{/schools/{id}/cabinets/create(id=${school.uid()})}" method="post"
+        <form th:action="@{/schools/{s}/buildings/{b}/cabinets/create(s=${school.uid()},b=${building.uid()})}" method="post"
               style="display:flex;flex-direction:column;gap:1rem;">
             <label style="display:flex;flex-direction:column;gap:.375rem;
                           font-size:.875rem;font-weight:500;">
@@ -29,7 +29,7 @@
                        required />
             </label>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
-                <a th:href="@{/schools/{id}/cabinets(id=${school.uid()})}" class="btn-outline-action">Отмена</a>
+                <a th:href="@{/schools/{s}/buildings/{b}/cabinets(s=${school.uid()},b=${building.uid()})}" class="btn-outline-action">Отмена</a>
                 <button type="submit" class="btn-primary">Создать</button>
             </div>
         </form>
