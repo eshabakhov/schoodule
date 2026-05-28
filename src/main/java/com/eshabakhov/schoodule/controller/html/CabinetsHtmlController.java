@@ -6,6 +6,7 @@ package com.eshabakhov.schoodule.controller.html;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.School;
 import com.eshabakhov.schoodule.page.PageRequest;
+import com.eshabakhov.schoodule.school.Building;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.building.Cabinet;
 import java.util.Map;
@@ -60,15 +61,15 @@ public class CabinetsHtmlController {
             );
         }
         final School sch = new SlsPostgres(this.ctx).school(school);
-        final PageableList<Cabinet> cabinets = sch
-            .buildings()
-            .building(building)
+        final Building build = sch.buildings().building(building);
+        final PageableList<Cabinet> cabinets = build
             .cabinets()
             .cabinets(condition, new PageRequest(limit, offset));
         return new ModelAndView("cabinets/list")
             .addAllObjects(
                 Map.of(
                     "school", sch,
+                    "building", build,
                     "pageTitle", String.format("%s — кабинеты", sch.name()),
                     "cabinets", cabinets.list(),
                     "page", offset,
@@ -97,15 +98,15 @@ public class CabinetsHtmlController {
             );
         }
         final School sch = new SlsPostgres(this.ctx).school(school);
-        final PageableList<Cabinet> cabinets = sch
-            .buildings()
-            .building(building)
+        final Building build = sch.buildings().building(building);
+        final PageableList<Cabinet> cabinets = build
             .cabinets()
             .cabinets(condition, new PageRequest(limit, offset));
         return new ModelAndView("cabinets/list :: cabinets-grid")
             .addAllObjects(
                 Map.of(
                     "school", sch,
+                    "building", build,
                     "cabinets", cabinets.list(),
                     "page", offset,
                     "limit", limit,
@@ -124,11 +125,13 @@ public class CabinetsHtmlController {
         @PathVariable final long cabinet
     ) throws Exception {
         final School sch = new SlsPostgres(this.ctx).school(school);
-        final Cabinet cab = sch.buildings().building(building).cabinets().cabinet(cabinet);
+        final Building build = sch.buildings().building(building);
+        final Cabinet cab = build.cabinets().cabinet(cabinet);
         return new ModelAndView("cabinets/details")
             .addAllObjects(
                 Map.of(
                     "school", sch,
+                    "building", build,
                     "cabinet", cab,
                     "pageTitle", cab.name()
                 )
@@ -137,12 +140,17 @@ public class CabinetsHtmlController {
 
     @GetMapping(value = "/create", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
-    public ModelAndView createForm(@PathVariable final long school)
+    public ModelAndView createForm(
+        @PathVariable final long school,
+        @PathVariable final long building
+    )
         throws Exception {
+        final School sch = new SlsPostgres(this.ctx).school(school);
         return new ModelAndView("cabinets/create")
             .addAllObjects(
                 Map.of(
-                    "school", new SlsPostgres(this.ctx).school(school),
+                    "school", sch,
+                    "building", sch.buildings().building(building),
                     "pageTitle", "Новый кабинет"
                 )
             );
@@ -182,11 +190,13 @@ public class CabinetsHtmlController {
         @PathVariable final long cabinet
     ) throws Exception {
         final School sch = new SlsPostgres(this.ctx).school(school);
+        final Building build = sch.buildings().building(building);
         return new ModelAndView("cabinets/edit")
             .addAllObjects(
                 Map.of(
                     "school", sch,
-                    "cabinet", sch.buildings().building(building).cabinets().cabinet(cabinet),
+                    "building", build,
+                    "cabinet", build.cabinets().cabinet(cabinet),
                     "pageTitle", "Редактировать кабинет"
                 )
             );

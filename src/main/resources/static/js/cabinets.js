@@ -1,11 +1,12 @@
 $(() => {
     const pathParts = window.location.pathname.split('/').filter(Boolean);
     const schoolId = pathParts[pathParts.indexOf('schools') + 1];
+    const buildingId = pathParts[pathParts.indexOf('buildings') + 1];
 
     $(document).on('click', '#cabinets-container .cabinet-row', function(e) {
         if ($(e.target).closest('.card-item-actions').length) return;
         const id = $(this).data('id');
-        window.location.href = `/schools/${schoolId}/cabinets/${id}`;
+        window.location.href = `/schools/${schoolId}/buildings/${buildingId}/cabinets/${id}`;
     });
 
     function getParam(key, fallback) {

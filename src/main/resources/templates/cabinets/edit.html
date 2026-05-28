@@ -16,7 +16,7 @@
         Название не может быть пустым
     </div>
     <div style="max-width:480px; margin: 0 auto;">
-        <form th:action="@{/schools/{s}/cabinets/{c}/edit(s=${school.uid()},c=${cabinet.uid()})}" method="post"
+        <form th:action="@{/schools/{s}/buildings/{b}/cabinets/{c}/edit(s=${school.uid()},b=${building.uid()},c=${cabinet.uid()})}" method="post"
               style="display:flex;flex-direction:column;gap:1rem;">
             <label style="display:flex;flex-direction:column;gap:.375rem;
                           font-size:.875rem;font-weight:500;">

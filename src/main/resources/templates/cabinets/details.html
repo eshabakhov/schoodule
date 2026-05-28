@@ -24,7 +24,7 @@
         </div>
     </div>
     <div class="actions">
-        <a th:href="@{/schools/{s}/cabinets/{c}/edit(s=${school.uid()},c=${cabinet.uid()})}"
+        <a th:href="@{/schools/{s}/buildings/{b}/cabinets/{c}/edit(s=${school.uid()},b=${building.uid()},c=${cabinet.uid()})}"
            class="btn-outline-action">
             Редактировать
         </a>
@@ -39,6 +39,7 @@
 <th:block layout:fragment="page-scripts">
     <script th:inline="javascript">
         const schoolId = /*[[${school.uid()}]]*/ 0;
+        const buildingId = /*[[${building.uid()}]]*/ 0;
     </script>
     <script>
         $(() => {
@@ -47,12 +48,12 @@
                 const name = $(this).data('name');
                 if (!confirm(`Удалить «${name}»? Это действие нельзя отменить.`)) return;
                 $.ajax({
-                    url: `/api/schools/${schoolId}/cabinets/${id}`,
+                    url: `/api/schools/${schoolId}/buildings/${buildingId}/cabinets/${id}`,
                     method: 'DELETE',
                     headers: { version: 'SIMPLE' }
                 })
                     .done(() => {
-                        window.location.href = `/schools/${schoolId}/cabinets`;
+                        window.location.href = `/schools/${schoolId}/buildings/${buildingId}/cabinets`;
                     })
                     .fail(() => alert('Не удалось удалить кабинет'));
             });

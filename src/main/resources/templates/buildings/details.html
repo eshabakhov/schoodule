@@ -24,6 +24,10 @@
         </div>
     </div>
     <div class="actions">
+        <a th:href="@{/schools/{s}/buildings/{b}/cabinets(s=${school.uid()},b=${building.uid()})}"
+           class="btn-outline-action">
+            Кабинеты
+        </a>
         <a th:href="@{/schools/{s}/buildings/{c}/edit(s=${school.uid()},c=${building.uid()})}"
            class="btn-outline-action">
             Редактировать

@@ -12,7 +12,7 @@
             <h1>Кабинеты</h1>
             <p class="page-subtitle">Управление кабинетами школы</p>
         </div>
-        <a th:href="@{/schools/{id}/cabinets/create(id=${school.uid()})}"
+        <a th:href="@{/schools/{s}/buildings/{b}/cabinets/create(s=${school.uid()},b=${building.uid()})}"
            class="btn-primary"
            style="display:inline-flex;align-items:center;gap:.5rem;
                   padding:.5rem 1rem;border-radius:var(--radius-sm);
@@ -42,7 +42,7 @@
                 <div th:if="${#lists.isEmpty(cabinets)}"
                      style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted-fg);">
                     Кабинеты не найдены.
-                    <a th:href="@{/schools/{id}/cabinets/create(id=${school.uid()})}"
+                    <a th:href="@{/schools/{s}/buildings/{b}/cabinets/create(s=${school.uid()},b=${building.uid()})}"
                        style="color:var(--primary);font-weight:600;
                               text-decoration:underline;margin-left:.25rem;">
                         Добавить первый
