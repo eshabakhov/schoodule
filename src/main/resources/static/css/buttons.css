@@ -101,6 +101,38 @@ button:focus-visible, .btn:focus-visible {
     height: 14px;
 }
 
+/* ── Details edit icon ── */
+.btn-icon-edit {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--muted-fg);
+    flex-shrink: 0;
+    line-height: 0;
+    text-decoration: none;
+    transition: background var(--ease), color var(--ease);
+}
+
+.btn-icon-edit:hover {
+    background: var(--accent);
+    color: var(--fg);
+}
+
+.btn-icon-edit svg {
+    width: 15px;
+    height: 15px;
+    max-width: 15px;
+    max-height: 15px;
+    flex-shrink: 0;
+}
+
 /* ── Back icon button ── */
 .btn-icon-back {
     width: 36px;

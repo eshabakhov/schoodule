@@ -159,6 +159,14 @@
     gap: 1rem;
 }
 
+.details-footer-actions {
+    display: flex;
+    justify-content: flex-start;
+    padding-top: 1rem;
+    margin-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
 /* ── Stat grid ── */
 .stat-grid {
     display: grid;

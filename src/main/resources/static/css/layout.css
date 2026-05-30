@@ -206,7 +206,8 @@ body {
     margin: .125rem 0 .375rem 1.75rem;
 }
 
-.sidebar-schedule-link {
+.sidebar-schedule-link,
+.sidebar-subnav-link {
     display: block;
     padding: .3125rem .5rem;
     border-radius: var(--radius-sm);
@@ -218,7 +219,8 @@ body {
     transition: background var(--ease), color var(--ease);
 }
 
-.sidebar-schedule-link span {
+.sidebar-schedule-link span,
+.sidebar-subnav-link span {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -226,7 +228,9 @@ body {
 }
 
 .sidebar-schedule-link:hover,
-.sidebar-schedule-link.active {
+.sidebar-schedule-link.active,
+.sidebar-subnav-link:hover,
+.sidebar-subnav-link.active {
     background: var(--accent);
     color: var(--fg);
 }
@@ -283,6 +287,22 @@ body {
     justify-content: space-between;
     margin-bottom: 1.5rem;
     gap: 1rem;
+}
+
+.title-with-action {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    max-width: 100%;
+    flex-wrap: nowrap;
+    margin-bottom: .375rem;
+}
+
+.title-with-action span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .page-subtitle {
