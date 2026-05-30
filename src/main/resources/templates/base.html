@@ -12,7 +12,6 @@
     <link rel="stylesheet" th:href="@{/css/shadcn.css}">
 </head>
 <body>
-
 <header class="app-header" id="app-header">
     <div class="app-header-inner">
         <a href="/" class="app-header-logo">
@@ -44,12 +43,9 @@
         </a>
     </div>
 </header>
-
 <div class="layout-wrap">
-
     <aside class="sidebar" id="sidebar">
         <nav class="sidebar-nav">
-
             <div class="sidebar-section" sec:authorize="hasRole('ADMIN')">Общее</div>
             <a href="/schools" class="sidebar-link" title="Школы" sec:authorize="hasRole('ADMIN')">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -58,7 +54,6 @@
                 </svg>
                 <span class="sidebar-link-label">Школы</span>
             </a>
-
             <th:block th:if="${school != null && school.uid() != null}"
                       th:with="schoolSchedules=${school.schedules().schedules(T(org.jooq.impl.DSL).trueCondition(), new com.eshabakhov.schoodule.page.PageRequest(2147483647, 1)).list()}">
                 <div class="sidebar-section">
@@ -114,8 +109,34 @@
                     </svg>
                     <span class="sidebar-link-label">Корпусы</span>
                 </a>
+                <div th:if="${building != null && building.uid() != null}"
+                     class="sidebar-subnav">
+                    <a th:href="@{/schools/{s}/buildings/{b}(s=${school.uid()},b=${building.uid()})}"
+                       th:title="${building.name()}"
+                       class="sidebar-subnav-link active">
+                        <span th:text="${building.name()}">Корпус</span>
+                    </a>
+                    <a th:href="@{/schools/{s}/buildings/{r}/cabinets(s=${school.uid()},r=${building.uid()})}" class="sidebar-link" title="Кабинеты">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke="currentColor"
+                             stroke-width="2">
+                            <rect x="6" y="3" width="12" height="18" rx="1"/>
+                            <circle cx="15" cy="12" r="0.8" fill="currentColor"/>
+                        </svg>
+                        <span class="sidebar-link-label">Кабинеты</span>
+                    </a>
+                    <div th:if="${cabinet != null && cabinet.uid() != null}"
+                         class="sidebar-subnav">
+                        <a th:href="@{/schools/{s}/buildings/{b}/cabinets/{c}(s=${school.uid()},b=${building.uid()},c=${cabinet.uid()})}"
+                           th:title="${cabinet.name()}"
+                           class="sidebar-subnav-link active">
+                            <span th:text="${cabinet.name()}">Кабинет</span>
+                        </a>
+                    </div>
+                </div>
             </th:block>
-
             <th:block th:if="${schedule != null && schedule.uid() != null && school != null}">
                 <div class="sidebar-section">
                     <a th:href="@{/schools/{s}/schedules/{r}(s=${school.uid()},r=${schedule.uid()})}"
@@ -129,14 +150,11 @@
                     <span class="sidebar-link-label">План классов</span>
                 </a>
             </th:block>
-
         </nav>
     </aside>
-
     <div class="app-content" id="app-content">
         <main class="page-body" layout:fragment="content"></main>
     </div>
-
 </div>
 <div th:replace="~{footer}"></div>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
