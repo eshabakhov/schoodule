@@ -3,6 +3,7 @@
  */
 package com.eshabakhov.schoodule.curriculum;
 
+import com.eshabakhov.schoodule.enums.CurriculumPartType;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
@@ -12,6 +13,7 @@ import org.jooq.DSLContext;
  *
  * @since 0.0.1
  */
+@SuppressWarnings("PMD.TooManyMethods")
 public final class FcrPostgres implements FederalCurriculumRequirement {
 
     /** JOOQ Table for FederalCurriculumRequirement. */
@@ -19,13 +21,13 @@ public final class FcrPostgres implements FederalCurriculumRequirement {
         com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
 
     /** Federal curriculum requirement id. */
-    private final long rid;
+    private final Long rid;
 
     /** Database connection. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
-    public FcrPostgres(final DSLContext datasource, final long rid) {
-        this.datasource = datasource;
+    public FcrPostgres(final DSLContext ctx, final Long rid) {
+        this.ctx = ctx;
         this.rid = rid;
     }
 
@@ -37,9 +39,8 @@ public final class FcrPostgres implements FederalCurriculumRequirement {
     @Override
     public FederalCurriculum curriculum() {
         return new FcPostgres(
-            this.datasource,
-            this.datasource
-                .select(FcrPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID)
+            this.ctx,
+            this.ctx.select(FcrPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID)
                 .from(FcrPostgres.REQUIREMENT)
                 .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
                 .fetchOneInto(Long.class)
@@ -48,8 +49,7 @@ public final class FcrPostgres implements FederalCurriculumRequirement {
 
     @Override
     public Integer grade() {
-        return this.datasource
-            .select(FcrPostgres.REQUIREMENT.GRADE)
+        return this.ctx.select(FcrPostgres.REQUIREMENT.GRADE)
             .from(FcrPostgres.REQUIREMENT)
             .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
             .fetchOneInto(Integer.class);
@@ -57,8 +57,7 @@ public final class FcrPostgres implements FederalCurriculumRequirement {
 
     @Override
     public String subjectName() {
-        return this.datasource
-            .select(FcrPostgres.REQUIREMENT.SUBJECT_NAME)
+        return this.ctx.select(FcrPostgres.REQUIREMENT.SUBJECT_NAME)
             .from(FcrPostgres.REQUIREMENT)
             .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
             .fetchOneInto(String.class);
@@ -66,8 +65,7 @@ public final class FcrPostgres implements FederalCurriculumRequirement {
 
     @Override
     public Integer weeklyHours() {
-        return this.datasource
-            .select(FcrPostgres.REQUIREMENT.WEEKLY_HOURS)
+        return this.ctx.select(FcrPostgres.REQUIREMENT.WEEKLY_HOURS)
             .from(FcrPostgres.REQUIREMENT)
             .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
             .fetchOneInto(Integer.class);
@@ -76,8 +74,7 @@ public final class FcrPostgres implements FederalCurriculumRequirement {
     @Override
     public PartType partType() {
         return PartType.valueOf(
-            this.datasource
-                .select(FcrPostgres.REQUIREMENT.PART_TYPE)
+            this.ctx.select(FcrPostgres.REQUIREMENT.PART_TYPE)
                 .from(FcrPostgres.REQUIREMENT)
                 .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
                 .fetchOneInto(String.class)
@@ -85,9 +82,56 @@ public final class FcrPostgres implements FederalCurriculumRequirement {
     }
 
     @Override
+    public FederalCurriculumRequirement regraded(final Integer grade) {
+        return new FcrPostgres(
+            this.ctx,
+            this.ctx.update(FcrPostgres.REQUIREMENT)
+                .set(FcrPostgres.REQUIREMENT.GRADE, grade)
+                .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
+                .returningResult(FcrPostgres.REQUIREMENT.ID)
+                .fetchOne(FcrPostgres.REQUIREMENT.ID)
+        );
+    }
+
+    @Override
+    public FederalCurriculumRequirement resubjected(final String subject) {
+        return new FcrPostgres(
+            this.ctx,
+            this.ctx.update(FcrPostgres.REQUIREMENT)
+                .set(FcrPostgres.REQUIREMENT.SUBJECT_NAME, subject)
+                .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
+                .returningResult(FcrPostgres.REQUIREMENT.ID)
+                .fetchOne(FcrPostgres.REQUIREMENT.ID)
+        );
+    }
+
+    @Override
+    public FederalCurriculumRequirement reweekled(final Integer hours) {
+        return new FcrPostgres(
+            this.ctx,
+            this.ctx.update(FcrPostgres.REQUIREMENT)
+                .set(FcrPostgres.REQUIREMENT.WEEKLY_HOURS, hours)
+                .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
+                .returningResult(FcrPostgres.REQUIREMENT.ID)
+                .fetchOne(FcrPostgres.REQUIREMENT.ID)
+        );
+    }
+
+    @Override
+    public FederalCurriculumRequirement reparted(final PartType part) {
+        return new FcrPostgres(
+            this.ctx,
+            this.ctx.update(FcrPostgres.REQUIREMENT)
+                .set(FcrPostgres.REQUIREMENT.PART_TYPE, CurriculumPartType.valueOf(part.name()))
+                .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
+                .returningResult(FcrPostgres.REQUIREMENT.ID)
+                .fetchOne(FcrPostgres.REQUIREMENT.ID)
+        );
+    }
+
+    @Override
     public ObjectNode json() {
-        return this.datasource
-            .selectFrom(FcrPostgres.REQUIREMENT)
+        return this.ctx.selectFrom(FcrPostgres.REQUIREMENT)
             .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
             .fetchOne(
                 selected ->

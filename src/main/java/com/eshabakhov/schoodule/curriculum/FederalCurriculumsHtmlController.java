@@ -1,14 +1,9 @@
 /*
  * Р’В© 2025-2026 Eset Shabakhov. Schoodule
  */
-package com.eshabakhov.schoodule.controller.html;
+package com.eshabakhov.schoodule.curriculum;
 
 import com.eshabakhov.schoodule.PageableList;
-import com.eshabakhov.schoodule.curriculum.FcBase;
-import com.eshabakhov.schoodule.curriculum.FcrBase;
-import com.eshabakhov.schoodule.curriculum.FcsPostgres;
-import com.eshabakhov.schoodule.curriculum.FederalCurriculum;
-import com.eshabakhov.schoodule.curriculum.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.page.PageRequest;
 import java.util.Map;
 import org.jooq.Condition;
@@ -114,8 +109,8 @@ public class FederalCurriculumsHtmlController {
             .addAllObjects(
                 Map.of(
                     "pageTitle", "Новый федеральный учебный план",
-                    "educationLevels", FederalCurriculum.EducationLevel.values(),
-                    "studyWeeks", FederalCurriculum.StudyWeek.values()
+                    "levels", FederalCurriculum.Level.values(),
+                    "studyWeeks", FederalCurriculum.Week.values()
                 )
             );
     }
@@ -123,10 +118,10 @@ public class FederalCurriculumsHtmlController {
     @PostMapping("/create")
     public String create(
         @RequestParam final String title,
-        @RequestParam(name = "educationLevel") final FederalCurriculum.EducationLevel level,
-        @RequestParam(name = "studyWeekType") final FederalCurriculum.StudyWeek week,
+        @RequestParam(name = "level") final FederalCurriculum.Level level,
+        @RequestParam(name = "week") final FederalCurriculum.Week week,
         @RequestParam final String version,
-        @RequestParam(name = "academicYear") final String year,
+        @RequestParam(name = "year") final String year,
         @RequestParam(required = false) final String description
     ) throws Exception {
         final String desc;
@@ -135,32 +130,33 @@ public class FederalCurriculumsHtmlController {
         } else {
             desc = description.trim();
         }
-        final FederalCurriculum created = new FcsPostgres(this.ctx)
-            .create(
-                new FcBase(
+        return String.format(
+            "redirect:/federal-curriculums/%d",
+            new FcsPostgres(this.ctx)
+                .create(
                     title.trim(),
                     level,
                     week,
                     version.trim(),
                     year.trim(),
                     desc
-                )
-            );
-        return String.format("redirect:/federal-curriculums/%d", created.uid());
+                ).uid()
+        );
     }
 
     @GetMapping(value = "/{curriculum}", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView details(@PathVariable final long curriculum) throws Exception {
         final FederalCurriculum found = new FcsPostgres(this.ctx).curriculum(curriculum);
-        final PageableList<FederalCurriculumRequirement> requirements = found
-            .requirements()
-            .requirements(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1));
         return new ModelAndView("federal-curriculums/details")
             .addAllObjects(
                 Map.of(
                     "pageTitle", found.title(),
                     "curriculum", found,
-                    "requirements", requirements.list(),
+                    "requirements", found.requirements()
+                        .requirements(
+                            DSL.trueCondition(),
+                            new PageRequest(Integer.MAX_VALUE, 1)
+                        ).list(),
                     "partTypes", FederalCurriculumRequirement.PartType.values()
                 )
             );
@@ -168,14 +164,13 @@ public class FederalCurriculumsHtmlController {
 
     @GetMapping(value = "/{curriculum}/edit", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView editForm(@PathVariable final long curriculum) throws Exception {
-        final FederalCurriculum found = new FcsPostgres(this.ctx).curriculum(curriculum);
         return new ModelAndView("federal-curriculums/edit")
             .addAllObjects(
                 Map.of(
                     "pageTitle", "Редактировать федеральный учебный план",
-                    "curriculum", found,
-                    "educationLevels", FederalCurriculum.EducationLevel.values(),
-                    "studyWeeks", FederalCurriculum.StudyWeek.values()
+                    "curriculum",  new FcsPostgres(this.ctx).curriculum(curriculum),
+                    "levels", FederalCurriculum.Level.values(),
+                    "studyWeeks", FederalCurriculum.Week.values()
                 )
             );
     }
@@ -184,10 +179,10 @@ public class FederalCurriculumsHtmlController {
     public String edit(
         @PathVariable final long curriculum,
         @RequestParam final String title,
-        @RequestParam(name = "educationLevel") final FederalCurriculum.EducationLevel level,
-        @RequestParam(name = "studyWeekType") final FederalCurriculum.StudyWeek week,
+        @RequestParam(name = "level") final FederalCurriculum.Level level,
+        @RequestParam(name = "week") final FederalCurriculum.Week week,
         @RequestParam final String version,
-        @RequestParam(name = "academicYear") final String year,
+        @RequestParam(name = "year") final String year,
         @RequestParam(required = false) final String description
     ) throws Exception {
         final String desc;
@@ -196,17 +191,14 @@ public class FederalCurriculumsHtmlController {
         } else {
             desc = description.trim();
         }
-        new FcsPostgres(this.ctx).put(
-            new FcBase(
-                curriculum,
-                title.trim(),
-                level,
-                week,
-                version.trim(),
-                year.trim(),
-                desc
-            )
-        );
+        new FcsPostgres(this.ctx)
+            .curriculum(curriculum)
+            .retitled(title.trim())
+            .releveled(level)
+            .reweeked(week)
+            .reversioned(version.trim())
+            .reyeared(year.trim())
+            .redescriptioned(desc);
         return String.format("redirect:/federal-curriculums/%d", curriculum);
     }
 
@@ -221,7 +213,7 @@ public class FederalCurriculumsHtmlController {
         new FcsPostgres(this.ctx)
             .curriculum(curriculum)
             .requirements()
-            .create(new FcrBase(grade, subject.trim(), hours, part));
+            .create(grade, subject.trim(), hours, part);
         return String.format("redirect:/federal-curriculums/%d", curriculum);
     }
 
@@ -237,7 +229,11 @@ public class FederalCurriculumsHtmlController {
         new FcsPostgres(this.ctx)
             .curriculum(curriculum)
             .requirements()
-            .put(new FcrBase(requirement, null, grade, subject.trim(), hours, part));
+            .requirement(requirement)
+            .regraded(grade)
+            .resubjected(subject.trim())
+            .reweekled(hours)
+            .reparted(part);
         return String.format("redirect:/federal-curriculums/%d", curriculum);
     }
 }

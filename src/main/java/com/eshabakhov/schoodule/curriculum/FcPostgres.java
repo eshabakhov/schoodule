@@ -3,6 +3,8 @@
  */
 package com.eshabakhov.schoodule.curriculum;
 
+import com.eshabakhov.schoodule.enums.EducationLevelType;
+import com.eshabakhov.schoodule.enums.StudyWeekType;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
@@ -12,6 +14,7 @@ import org.jooq.DSLContext;
  *
  * @since 0.0.1
  */
+@SuppressWarnings("PMD.TooManyMethods")
 public final class FcPostgres implements FederalCurriculum {
 
     /** JOOQ Table for FederalCurriculum. */
@@ -19,13 +22,13 @@ public final class FcPostgres implements FederalCurriculum {
         com.eshabakhov.schoodule.tables.FederalCurriculum.FEDERAL_CURRICULUM;
 
     /** Federal curriculum id. */
-    private final long fid;
+    private final Long fid;
 
     /** Database connection. */
-    private final DSLContext datasource;
+    private final DSLContext ctx;
 
-    public FcPostgres(final DSLContext datasource, final long fid) {
-        this.datasource = datasource;
+    public FcPostgres(final DSLContext ctx, final Long fid) {
+        this.ctx = ctx;
         this.fid = fid;
     }
 
@@ -36,18 +39,16 @@ public final class FcPostgres implements FederalCurriculum {
 
     @Override
     public String title() {
-        return this.datasource
-            .select(FcPostgres.CURRICULUM.TITLE)
+        return this.ctx.select(FcPostgres.CURRICULUM.TITLE)
             .from(FcPostgres.CURRICULUM)
             .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
             .fetchOneInto(String.class);
     }
 
     @Override
-    public EducationLevel educationLevel() {
-        return EducationLevel.valueOf(
-            this.datasource
-                .select(FcPostgres.CURRICULUM.EDUCATION_LEVEL)
+    public Level level() {
+        return Level.valueOf(
+            this.ctx.select(FcPostgres.CURRICULUM.EDUCATION_LEVEL)
                 .from(FcPostgres.CURRICULUM)
                 .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
                 .fetchOneInto(String.class)
@@ -55,10 +56,9 @@ public final class FcPostgres implements FederalCurriculum {
     }
 
     @Override
-    public StudyWeek studyWeekType() {
-        return StudyWeek.valueOf(
-            this.datasource
-                .select(FcPostgres.CURRICULUM.STUDY_WEEK_TYPE)
+    public Week week() {
+        return Week.valueOf(
+            this.ctx.select(FcPostgres.CURRICULUM.STUDY_WEEK_TYPE)
                 .from(FcPostgres.CURRICULUM)
                 .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
                 .fetchOneInto(String.class)
@@ -67,17 +67,15 @@ public final class FcPostgres implements FederalCurriculum {
 
     @Override
     public String version() {
-        return this.datasource
-            .select(FcPostgres.CURRICULUM.VERSION)
+        return this.ctx.select(FcPostgres.CURRICULUM.VERSION)
             .from(FcPostgres.CURRICULUM)
             .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
             .fetchOneInto(String.class);
     }
 
     @Override
-    public String academicYear() {
-        return this.datasource
-            .select(FcPostgres.CURRICULUM.ACADEMIC_YEAR)
+    public String year() {
+        return this.ctx.select(FcPostgres.CURRICULUM.ACADEMIC_YEAR)
             .from(FcPostgres.CURRICULUM)
             .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
             .fetchOneInto(String.class);
@@ -85,32 +83,105 @@ public final class FcPostgres implements FederalCurriculum {
 
     @Override
     public String description() {
-        return this.datasource
-            .select(FcPostgres.CURRICULUM.DESCRIPTION)
+        return this.ctx.select(FcPostgres.CURRICULUM.DESCRIPTION)
             .from(FcPostgres.CURRICULUM)
             .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
             .fetchOneInto(String.class);
     }
 
     @Override
+    public FederalCurriculum retitled(final String title) {
+        return new FcPostgres(
+            this.ctx,
+            this.ctx.update(FcPostgres.CURRICULUM)
+                .set(FcPostgres.CURRICULUM.TITLE, title)
+                .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
+                .returningResult(FcPostgres.CURRICULUM.ID)
+                .fetchOne(FcPostgres.CURRICULUM.ID)
+        );
+    }
+
+    @Override
+    public FederalCurriculum releveled(final Level level) {
+        return new FcPostgres(
+            this.ctx,
+            this.ctx.update(FcPostgres.CURRICULUM)
+                .set(
+                    FcPostgres.CURRICULUM.EDUCATION_LEVEL,
+                    EducationLevelType.valueOf(level.name())
+                )
+                .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
+                .returningResult(FcPostgres.CURRICULUM.ID)
+                .fetchOne(FcPostgres.CURRICULUM.ID)
+        );
+    }
+
+    @Override
+    public FederalCurriculum reweeked(final Week week) {
+        return new FcPostgres(
+            this.ctx,
+            this.ctx.update(FcPostgres.CURRICULUM)
+                .set(FcPostgres.CURRICULUM.STUDY_WEEK_TYPE, StudyWeekType.valueOf(week.name()))
+                .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
+                .returningResult(FcPostgres.CURRICULUM.ID)
+                .fetchOne(FcPostgres.CURRICULUM.ID)
+        );
+    }
+
+    @Override
+    public FederalCurriculum reversioned(final String version) {
+        return new FcPostgres(
+            this.ctx,
+            this.ctx.update(FcPostgres.CURRICULUM)
+                .set(FcPostgres.CURRICULUM.VERSION, version)
+                .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
+                .returningResult(FcPostgres.CURRICULUM.ID)
+                .fetchOne(FcPostgres.CURRICULUM.ID)
+        );
+    }
+
+    @Override
+    public FederalCurriculum reyeared(final String year) {
+        return new FcPostgres(
+            this.ctx,
+            this.ctx.update(FcPostgres.CURRICULUM)
+                .set(FcPostgres.CURRICULUM.ACADEMIC_YEAR, year)
+                .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
+                .returningResult(FcPostgres.CURRICULUM.ID)
+                .fetchOne(FcPostgres.CURRICULUM.ID)
+        );
+    }
+
+    @Override
+    public FederalCurriculum redescriptioned(final String description) {
+        return new FcPostgres(
+            this.ctx,
+            this.ctx.update(FcPostgres.CURRICULUM)
+                .set(FcPostgres.CURRICULUM.DESCRIPTION, description)
+                .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
+                .returningResult(FcPostgres.CURRICULUM.ID)
+                .fetchOne(FcPostgres.CURRICULUM.ID)
+        );
+    }
+
+    @Override
     public FederalCurriculumRequirements requirements() {
-        return new FcrsPostgres(this.datasource, this.fid);
+        return new FcrsPostgres(this.ctx, this.fid);
     }
 
     @Override
     public ObjectNode json() {
-        return this.datasource
-            .selectFrom(FcPostgres.CURRICULUM)
+        return this.ctx.selectFrom(FcPostgres.CURRICULUM)
             .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
             .fetchOne(
                 selected ->
                     JsonNodeFactory.instance.objectNode()
                         .put("id", selected.getId())
                         .put("title", selected.getTitle())
-                        .put("educationLevel", selected.getEducationLevel().name())
-                        .put("studyWeekType", selected.getStudyWeekType().name())
+                        .put("level", selected.getEducationLevel().name())
+                        .put("week", selected.getStudyWeekType().name())
                         .put("version", selected.getVersion())
-                        .put("academicYear", selected.getAcademicYear())
+                        .put("year", selected.getAcademicYear())
                         .put("description", selected.getDescription())
             );
     }

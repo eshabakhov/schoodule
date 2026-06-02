@@ -35,47 +35,44 @@ public final class FcsPostgres implements FederalCurriculums {
     }
 
     @Override
-    public FederalCurriculum create(final FederalCurriculum curriculum)
-        throws Exception {
+    public FederalCurriculum create(
+        final String title,
+        final FederalCurriculum.Level level,
+        final FederalCurriculum.Week week,
+        final String version,
+        final String year,
+        final String description
+    ) throws Exception {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
                 final var existing = ttx.selectFrom(FcsPostgres.CURRICULUM)
                     .where(
                         FcsPostgres.CURRICULUM.EDUCATION_LEVEL.eq(
-                            EducationLevelType.valueOf(curriculum.educationLevel().name())
+                            EducationLevelType.valueOf(level.name())
                         ).and(
                             FcsPostgres.CURRICULUM.STUDY_WEEK_TYPE.eq(
-                                StudyWeekType.valueOf(curriculum.studyWeekType().name())
+                                StudyWeekType.valueOf(week.name())
                             )
-                        ).and(FcsPostgres.CURRICULUM.VERSION.eq(curriculum.version()))
-                            .and(FcsPostgres.CURRICULUM.ACADEMIC_YEAR.eq(curriculum.academicYear()))
+                        ).and(FcsPostgres.CURRICULUM.VERSION.eq(version))
+                            .and(FcsPostgres.CURRICULUM.ACADEMIC_YEAR.eq(year))
                             .and(FcsPostgres.CURRICULUM.IS_DELETED.eq(false))
                     )
                     .fetchOne();
                 if (existing != null) {
-                    throw new CurriculumAlreadyExistsException(curriculum);
+                    throw new CurriculumAlreadyExistsException(title);
                 }
                 final FederalCurriculumRecord created = ttx
                     .insertInto(FcsPostgres.CURRICULUM)
-                    .set(FcsPostgres.CURRICULUM.TITLE, curriculum.title())
+                    .set(FcsPostgres.CURRICULUM.TITLE, title)
                     .set(
                         FcsPostgres.CURRICULUM.EDUCATION_LEVEL,
-                        EducationLevelType.valueOf(curriculum.educationLevel().name())
+                        EducationLevelType.valueOf(level.name())
                     )
-                    .set(
-                        FcsPostgres.CURRICULUM.STUDY_WEEK_TYPE,
-                        StudyWeekType.valueOf(curriculum.studyWeekType().name())
-                    )
-                    .set(FcsPostgres.CURRICULUM.VERSION, curriculum.version())
-                    .set(
-                        FcsPostgres.CURRICULUM.ACADEMIC_YEAR,
-                        curriculum.academicYear()
-                    )
-                    .set(
-                        FcsPostgres.CURRICULUM.DESCRIPTION,
-                        curriculum.description()
-                    )
+                    .set(FcsPostgres.CURRICULUM.STUDY_WEEK_TYPE, StudyWeekType.valueOf(week.name()))
+                    .set(FcsPostgres.CURRICULUM.VERSION, version)
+                    .set(FcsPostgres.CURRICULUM.ACADEMIC_YEAR, year)
+                    .set(FcsPostgres.CURRICULUM.DESCRIPTION, description)
                     .set(FcsPostgres.CURRICULUM.IS_DELETED, false)
                     .returning()
                     .fetchOne();
@@ -105,10 +102,8 @@ public final class FcsPostgres implements FederalCurriculums {
     }
 
     @Override
-    public PageableList<FederalCurriculum> curriculums(
-        final Condition condition,
-        final Page page
-    ) throws Exception {
+    public PageableList<FederalCurriculum> curriculums(final Condition condition, final Page page)
+        throws Exception {
         final Condition scoped = condition.and(
             FcsPostgres.CURRICULUM.IS_DELETED.eq(false)
         );
@@ -122,62 +117,12 @@ public final class FcsPostgres implements FederalCurriculums {
                 )
                 .limit(page.limit())
                 .offset((page.offset() - 1) * page.limit())
-                .fetch(
-                    selected ->
-                        new FcPostgres(this.ctx, selected.getId())
-                ),
+                .fetch(selected -> new FcPostgres(this.ctx, selected.getId())),
             this.ctx.fetchCount(
-                this.ctx.selectFrom(FcsPostgres.CURRICULUM)
-                    .where(scoped)
+                this.ctx.selectFrom(FcsPostgres.CURRICULUM).where(scoped)
             ),
             page
         );
-    }
-
-    @Override
-    public FederalCurriculum put(final FederalCurriculum curriculum)
-        throws Exception {
-        final FederalCurriculumRecord selected = this.ctx
-            .selectFrom(FcsPostgres.CURRICULUM)
-            .where(
-                FcsPostgres.CURRICULUM.ID.eq(curriculum.uid())
-                    .and(FcsPostgres.CURRICULUM.IS_DELETED.eq(false))
-            )
-            .fetchOne();
-        final FederalCurriculum result;
-        if (selected == null) {
-            result = this.create(curriculum);
-        } else {
-            final FederalCurriculumRecord updated = this.ctx
-                .update(FcsPostgres.CURRICULUM)
-                .set(FcsPostgres.CURRICULUM.TITLE, curriculum.title())
-                .set(
-                    FcsPostgres.CURRICULUM.EDUCATION_LEVEL,
-                    EducationLevelType.valueOf(curriculum.educationLevel().name())
-                )
-                .set(
-                    FcsPostgres.CURRICULUM.STUDY_WEEK_TYPE,
-                    StudyWeekType.valueOf(curriculum.studyWeekType().name())
-                )
-                .set(FcsPostgres.CURRICULUM.VERSION, curriculum.version())
-                .set(
-                    FcsPostgres.CURRICULUM.ACADEMIC_YEAR,
-                    curriculum.academicYear()
-                )
-                .set(
-                    FcsPostgres.CURRICULUM.DESCRIPTION,
-                    curriculum.description()
-                )
-                .set(FcsPostgres.CURRICULUM.UPDATED_AT, DSL.currentOffsetDateTime())
-                .where(FcsPostgres.CURRICULUM.ID.eq(curriculum.uid()))
-                .returning()
-                .fetchOne();
-            if (updated == null) {
-                throw new CurriculumFailedUpdateException();
-            }
-            result = new FcPostgres(this.ctx, updated.getId());
-        }
-        return result;
     }
 
     @Override
@@ -215,14 +160,8 @@ public final class FcsPostgres implements FederalCurriculums {
     }
 
     public static class CurriculumAlreadyExistsException extends Exception {
-        public CurriculumAlreadyExistsException(final FederalCurriculum curriculum) {
-            super(String.format("FederalCurriculum `%s` already exists", curriculum.json()));
-        }
-    }
-
-    public static class CurriculumFailedUpdateException extends Exception {
-        public CurriculumFailedUpdateException() {
-            super("Failed to update FederalCurriculum");
+        public CurriculumAlreadyExistsException(final String name) {
+            super(String.format("FederalCurriculum `%s` already exists", name));
         }
     }
 

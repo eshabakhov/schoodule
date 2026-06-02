@@ -17,11 +17,20 @@ public interface FederalCurriculumRequirements {
     /**
      * Creates a new federal curriculum requirement.
      *
-     * @param requirement The federal curriculum requirement
+     * @param grade The federal curriculum requirement grade
+     * @param subject The federal curriculum requirement subject
+     * @param hours The federal curriculum requirement hours
+     * @param part The federal curriculum requirement part
      * @return The created {@link FederalCurriculumRequirement}
      * @throws Exception if creation fails
+     * @checkstyle ParameterNumberCheck (2 lines)
      */
-    FederalCurriculumRequirement create(FederalCurriculumRequirement requirement) throws Exception;
+    FederalCurriculumRequirement create(
+        Integer grade,
+        String subject,
+        Integer hours,
+        FederalCurriculumRequirement.PartType part
+    ) throws Exception;
 
     /**
      * Finds a federal curriculum requirement by its unique identifier.
@@ -42,15 +51,6 @@ public interface FederalCurriculumRequirements {
      */
     PageableList<FederalCurriculumRequirement> requirements(Condition condition, Page page)
         throws Exception;
-
-    /**
-     * Updates an existing federal curriculum requirement.
-     *
-     * @param requirement The federal curriculum requirement
-     * @return The updated {@link FederalCurriculumRequirement}
-     * @throws Exception if update fails
-     */
-    FederalCurriculumRequirement put(FederalCurriculumRequirement requirement) throws Exception;
 
     /**
      * Removes a federal curriculum requirement by its ID.

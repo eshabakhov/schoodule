@@ -17,11 +17,24 @@ public interface FederalCurriculums {
     /**
      * Creates a new federal curriculum.
      *
-     * @param curriculum The federal curriculum
+     * @param title The federal curriculum title
+     * @param level The federal curriculum level
+     * @param week The federal curriculum week
+     * @param version The federal curriculum version
+     * @param year The federal curriculum year
+     * @param description The federal curriculum description
      * @return The created {@link FederalCurriculum}
      * @throws Exception if creation fails
+     * @checkstyle ParameterNumberCheck (2 lines)
      */
-    FederalCurriculum create(FederalCurriculum curriculum) throws Exception;
+    FederalCurriculum create(
+        String title,
+        FederalCurriculum.Level level,
+        FederalCurriculum.Week week,
+        String version,
+        String year,
+        String description
+    ) throws Exception;
 
     /**
      * Finds a federal curriculum by its unique identifier.
@@ -41,15 +54,6 @@ public interface FederalCurriculums {
      * @throws Exception if listing fails
      */
     PageableList<FederalCurriculum> curriculums(Condition condition, Page page) throws Exception;
-
-    /**
-     * Updates an existing federal curriculum.
-     *
-     * @param curriculum The federal curriculum
-     * @return The updated {@link FederalCurriculum}
-     * @throws Exception if update fails
-     */
-    FederalCurriculum put(FederalCurriculum curriculum) throws Exception;
 
     /**
      * Removes a federal curriculum by its ID.

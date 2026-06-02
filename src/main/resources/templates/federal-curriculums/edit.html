@@ -19,19 +19,19 @@
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Уровень образования
-                <select name="educationLevel" required>
-                    <option th:each="level : ${educationLevels}"
+                <select name="level" required>
+                    <option th:each="level : ${levels}"
                             th:value="${level}"
-                            th:selected="${level == curriculum.educationLevel()}"
+                            th:selected="${level == curriculum.level()}"
                             th:text="${level}">BASIC</option>
                 </select>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Учебная неделя
-                <select name="studyWeekType" required>
+                <select name="week" required>
                     <option th:each="week : ${studyWeeks}"
                             th:value="${week}"
-                            th:selected="${week == curriculum.studyWeekType()}"
+                            th:selected="${week == curriculum.week()}"
                             th:text="${week}">FIVE_DAYS</option>
                 </select>
             </label>
@@ -41,7 +41,7 @@
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Учебный год
-                <input type="text" name="academicYear" th:value="${curriculum.academicYear()}" required/>
+                <input type="text" name="year" th:value="${curriculum.year()}" required/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Описание

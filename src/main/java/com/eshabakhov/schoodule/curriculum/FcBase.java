@@ -15,6 +15,7 @@ import lombok.ToString;
  */
 @ToString(of = {"fid", "ttl"})
 @EqualsAndHashCode
+@SuppressWarnings("PMD.TooManyMethods")
 public final class FcBase implements FederalCurriculum {
 
     /** Federal curriculum id. */
@@ -24,57 +25,32 @@ public final class FcBase implements FederalCurriculum {
     private final String ttl;
 
     /** Education level. */
-    private final EducationLevel lvl;
+    private final Level lvl;
 
     /** Study week type. */
-    private final StudyWeek week;
+    private final Week wwk;
 
     /** Version. */
     private final String ver;
 
     /** Academic year. */
-    private final String year;
-
-    /** Description. */
-    private final String desc;
-
-    // @checkstyle ParameterNumberCheck (2 lines)
-    public FcBase(
-        final String title,
-        final EducationLevel level,
-        final StudyWeek week,
-        final String version,
-        final String year,
-        final String description
-    ) {
-        this(
-            Long.MIN_VALUE,
-            title,
-            level,
-            week,
-            version,
-            year,
-            description
-        );
-    }
+    private final String yar;
 
     // @checkstyle ParameterNumberCheck (2 lines)
     public FcBase(
         final long fid,
         final String title,
-        final EducationLevel level,
-        final StudyWeek week,
+        final Level level,
+        final Week week,
         final String version,
-        final String year,
-        final String description
+        final String year
     ) {
         this.fid = fid;
         this.ttl = title;
         this.lvl = level;
-        this.week = week;
+        this.wwk = week;
         this.ver = version;
-        this.year = year;
-        this.desc = description;
+        this.yar = year;
     }
 
     @Override
@@ -88,13 +64,13 @@ public final class FcBase implements FederalCurriculum {
     }
 
     @Override
-    public EducationLevel educationLevel() {
+    public Level level() {
         return this.lvl;
     }
 
     @Override
-    public StudyWeek studyWeekType() {
-        return this.week;
+    public Week week() {
+        return this.wwk;
     }
 
     @Override
@@ -103,13 +79,43 @@ public final class FcBase implements FederalCurriculum {
     }
 
     @Override
-    public String academicYear() {
-        return this.year;
+    public String year() {
+        return this.yar;
     }
 
     @Override
     public String description() {
-        return this.desc;
+        return "";
+    }
+
+    @Override
+    public FederalCurriculum retitled(final String title) {
+        return new FcBase(this.fid, title, this.lvl, this.wwk, this.ver, this.yar);
+    }
+
+    @Override
+    public FederalCurriculum releveled(final Level level) {
+        return new FcBase(this.fid, this.ttl, level, this.wwk, this.ver, this.yar);
+    }
+
+    @Override
+    public FederalCurriculum reweeked(final Week week) {
+        return new FcBase(this.fid, this.ttl, this.lvl, week, this.ver, this.yar);
+    }
+
+    @Override
+    public FederalCurriculum reversioned(final String version) {
+        return new FcBase(this.fid, this.ttl, this.lvl, this.wwk, version, this.yar);
+    }
+
+    @Override
+    public FederalCurriculum reyeared(final String year) {
+        return new FcBase(this.fid, this.ttl, this.lvl, this.wwk, this.ver, year);
+    }
+
+    @Override
+    public FederalCurriculum redescriptioned(final String description) {
+        return new FcDescription(this, description);
     }
 
     @Override
@@ -124,10 +130,10 @@ public final class FcBase implements FederalCurriculum {
         return JsonNodeFactory.instance.objectNode()
             .put("id", this.fid)
             .put("title", this.ttl)
-            .put("educationLevel", this.lvl.name())
-            .put("studyWeekType", this.week.name())
+            .put("level", this.lvl.name())
+            .put("week", this.wwk.name())
             .put("version", this.ver)
-            .put("academicYear", this.year)
-            .put("description", this.desc);
+            .put("year", this.yar)
+            .put("description", "");
     }
 }

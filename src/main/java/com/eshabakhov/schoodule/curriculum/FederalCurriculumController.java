@@ -1,14 +1,9 @@
 /*
  * Р’В© 2025-2026 Eset Shabakhov. Schoodule
  */
-package com.eshabakhov.schoodule.controller.api;
+package com.eshabakhov.schoodule.curriculum;
 
 import com.eshabakhov.schoodule.PageableList;
-import com.eshabakhov.schoodule.curriculum.FcBase;
-import com.eshabakhov.schoodule.curriculum.FcrBase;
-import com.eshabakhov.schoodule.curriculum.FcsPostgres;
-import com.eshabakhov.schoodule.curriculum.FederalCurriculum;
-import com.eshabakhov.schoodule.curriculum.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.error.VersionHeaderException;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -66,9 +61,31 @@ public class FederalCurriculumController {
         @RequestHeader("version") final CurriculumVersion version,
         @RequestBody final JsonNode request
     ) throws Exception {
+        final var description = request.get("description");
+        final String desc;
+        if (description == null) {
+            desc = null;
+        } else {
+            desc = description.asText();
+        }
         if (CurriculumVersion.SIMPLE.equals(version)) {
             final FederalCurriculum curriculum = new FcsPostgres(this.ctx)
-                .create(FederalCurriculumController.curriculum(request, Long.MIN_VALUE));
+                .create(
+                    FederalCurriculumController.required(request, "title").asText(),
+                    FederalCurriculum.Level.valueOf(
+                        FederalCurriculumController
+                            .required(request, "level")
+                            .asText()
+                    ),
+                    FederalCurriculum.Week.valueOf(
+                        FederalCurriculumController
+                            .required(request, "week")
+                            .asText()
+                    ),
+                    FederalCurriculumController.required(request, "version").asText(),
+                    FederalCurriculumController.required(request, "year").asText(),
+                    desc
+                );
             return ResponseEntity
                 .created(
                     URI.create(
@@ -150,9 +167,30 @@ public class FederalCurriculumController {
         @PathVariable final long curriculum,
         @RequestBody final JsonNode request
     ) throws Exception {
+        final JsonNode description = request.get("description");
+        final String desc;
+        if (description == null) {
+            desc = null;
+        } else {
+            desc = description.asText();
+        }
         if (CurriculumVersion.SIMPLE.equals(version)) {
             final FederalCurriculum updated = new FcsPostgres(this.ctx)
-                .put(FederalCurriculumController.curriculum(request, curriculum));
+                .curriculum(curriculum)
+                .retitled(FederalCurriculumController.required(request, "title").asText())
+                .releveled(
+                    FederalCurriculum.Level.valueOf(
+                        FederalCurriculumController.required(request, "level").asText()
+                    )
+                )
+                .reweeked(
+                    FederalCurriculum.Week.valueOf(
+                        FederalCurriculumController.required(request, "week").asText()
+                    )
+                )
+                .reversioned(FederalCurriculumController.required(request, "version").asText())
+                .reyeared(FederalCurriculumController.required(request, "year").asText())
+                .redescriptioned(desc);
             final ResponseEntity<FederalCurriculum> response;
             if (curriculum == updated.uid()) {
                 response = ResponseEntity.ok().body(updated);
@@ -188,11 +226,20 @@ public class FederalCurriculumController {
         @PathVariable final long curriculum,
         @RequestBody final JsonNode request
     ) throws Exception {
+        final JsonNode grade = FederalCurriculumController.required(request, "grade");
+        final JsonNode subject = FederalCurriculumController.required(request, "subjectName");
+        final JsonNode hours = FederalCurriculumController.required(request, "weeklyHours");
+        final JsonNode part = FederalCurriculumController.required(request, "partType");
         if (CurriculumVersion.SIMPLE.equals(version)) {
             final FederalCurriculumRequirement requirement = new FcsPostgres(this.ctx)
                 .curriculum(curriculum)
                 .requirements()
-                .create(FederalCurriculumController.requirement(request, Long.MIN_VALUE));
+                .create(
+                    grade.asInt(),
+                    subject.asText(),
+                    hours.asInt(),
+                    FederalCurriculumRequirement.PartType.valueOf(part.asText())
+                );
             return ResponseEntity
                 .created(
                     URI.create(
@@ -283,11 +330,19 @@ public class FederalCurriculumController {
         @PathVariable final long requirement,
         @RequestBody final JsonNode request
     ) throws Exception {
+        final JsonNode grade = FederalCurriculumController.required(request, "grade");
+        final JsonNode subject = FederalCurriculumController.required(request, "subjectName");
+        final JsonNode hours = FederalCurriculumController.required(request, "weeklyHours");
+        final JsonNode part = FederalCurriculumController.required(request, "partType");
         if (CurriculumVersion.SIMPLE.equals(version)) {
             final FederalCurriculumRequirement updated = new FcsPostgres(this.ctx)
                 .curriculum(curriculum)
                 .requirements()
-                .put(FederalCurriculumController.requirement(request, requirement));
+                .requirement(requirement)
+                .regraded(grade.asInt())
+                .resubjected(subject.asText())
+                .reweekled(hours.asInt())
+                .reparted(FederalCurriculumRequirement.PartType.valueOf(part.asText()));
             final ResponseEntity<FederalCurriculumRequirement> response;
             if (requirement == updated.uid()) {
                 response = ResponseEntity.ok().body(updated);
@@ -319,56 +374,9 @@ public class FederalCurriculumController {
         return ResponseEntity.noContent().build();
     }
 
-    private static FederalCurriculum curriculum(
-        final JsonNode request,
-        final long id
-    ) throws CurriculumRequiredFieldException {
-        final JsonNode title = FederalCurriculumController.required(request, "title");
-        final JsonNode level = FederalCurriculumController.required(request, "educationLevel");
-        final JsonNode week = FederalCurriculumController.required(request, "studyWeekType");
-        final JsonNode version = FederalCurriculumController.required(request, "version");
-        final JsonNode year = FederalCurriculumController.required(request, "academicYear");
-        final JsonNode description = request.get("description");
-        final String desc;
-        if (description == null) {
-            desc = null;
-        } else {
-            desc = description.asText();
-        }
-        return new FcBase(
-            id,
-            title.asText(),
-            FederalCurriculum.EducationLevel.valueOf(level.asText()),
-            FederalCurriculum.StudyWeek.valueOf(week.asText()),
-            version.asText(),
-            year.asText(),
-            desc
-        );
-    }
-
-    private static FederalCurriculumRequirement requirement(
-        final JsonNode request,
-        final long id
-    ) throws CurriculumRequiredFieldException {
-        final JsonNode grade = FederalCurriculumController.required(request, "grade");
-        final JsonNode subject = FederalCurriculumController.required(request, "subjectName");
-        final JsonNode hours = FederalCurriculumController.required(request, "weeklyHours");
-        final JsonNode part = FederalCurriculumController.required(request, "partType");
-        return new FcrBase(
-            id,
-            null,
-            grade.asInt(),
-            subject.asText(),
-            hours.asInt(),
-            FederalCurriculumRequirement.PartType.valueOf(part.asText())
-        );
-    }
-
-    private static JsonNode required(
-        final JsonNode request,
-        final String field
-    ) throws CurriculumRequiredFieldException {
-        final JsonNode value = request.get(field);
+    private static JsonNode required(final JsonNode request, final String field)
+        throws CurriculumRequiredFieldException {
+        final var value = request.get(field);
         if (value == null || value.asText().isBlank()) {
             throw new CurriculumRequiredFieldException(
                 String.format("Field '%s' is required and cannot be empty", field)

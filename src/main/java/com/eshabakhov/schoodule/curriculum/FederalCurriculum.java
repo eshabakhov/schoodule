@@ -10,6 +10,7 @@ import com.eshabakhov.schoodule.Jsonable;
  *
  * @since 0.0.1
  */
+@SuppressWarnings("PMD.TooManyMethods")
 public interface FederalCurriculum extends Jsonable {
 
     /**
@@ -31,14 +32,14 @@ public interface FederalCurriculum extends Jsonable {
      *
      * @return Education level
      */
-    EducationLevel educationLevel();
+    Level level();
 
     /**
      * Returns a study week type of the federal curriculum.
      *
      * @return Study week type
      */
-    StudyWeek studyWeekType();
+    Week week();
 
     /**
      * Returns a version of the federal curriculum.
@@ -52,7 +53,7 @@ public interface FederalCurriculum extends Jsonable {
      *
      * @return Academic year
      */
-    String academicYear();
+    String year();
 
     /**
      * Returns a description of the federal curriculum.
@@ -60,6 +61,48 @@ public interface FederalCurriculum extends Jsonable {
      * @return Description
      */
     String description();
+
+    /**
+     * Returns a title of the federal curriculum.
+     * @param title New title
+     * @return Title
+     */
+    FederalCurriculum retitled(String title);
+
+    /**
+     * Returns an education level of the federal curriculum.
+     * @param level New level
+     * @return Education level
+     */
+    FederalCurriculum releveled(Level level);
+
+    /**
+     * Returns a study week type of the federal curriculum.
+     * @param week New week
+     * @return Study week type
+     */
+    FederalCurriculum reweeked(Week week);
+
+    /**
+     * Returns a version of the federal curriculum.
+     * @param version New version
+     * @return Version
+     */
+    FederalCurriculum reversioned(String version);
+
+    /**
+     * Returns an academic year of the federal curriculum.
+     * @param year New year
+     * @return Academic year
+     */
+    FederalCurriculum reyeared(String year);
+
+    /**
+     * Returns a description of the federal curriculum.
+     * @param description New description
+     * @return Description
+     */
+    FederalCurriculum redescriptioned(String description);
 
     /**
      * Returns collection of federal curriculum requirements.
@@ -73,7 +116,7 @@ public interface FederalCurriculum extends Jsonable {
      *
      * @since 0.0.1
      */
-    enum EducationLevel {
+    enum Level {
 
         /** Primary general education, grades 1-4. */
         PRIMARY,
@@ -90,7 +133,7 @@ public interface FederalCurriculum extends Jsonable {
      *
      * @since 0.0.1
      */
-    enum StudyWeek {
+    enum Week {
 
         /** Five-day study week. */
         FIVE_DAYS,

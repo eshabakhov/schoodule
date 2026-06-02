@@ -250,9 +250,6 @@
 									<packageName>com.eshabakhov.schoodule</packageName>
 									<directory>target/generated-sources/jooq</directory>
 								</target>
-								<generate>
-									<pojos>true</pojos>
-								</generate>
 							</generator>
 						</configuration>
 					</execution>

@@ -55,6 +55,34 @@ public interface FederalCurriculumRequirement extends Jsonable {
     PartType partType();
 
     /**
+     * Returns a school grade.
+     * @param grade Grade
+     * @return Grade
+     */
+    FederalCurriculumRequirement regraded(Integer grade);
+
+    /**
+     * Returns a subject name.
+     * @param subject Subject
+     * @return Subject name
+     */
+    FederalCurriculumRequirement resubjected(String subject);
+
+    /**
+     * Returns the number of hours per week.
+     * @param hours Hours
+     * @return Weekly hours
+     */
+    FederalCurriculumRequirement reweekled(Integer hours);
+
+    /**
+     * Returns a curriculum part type.
+     * @param part PartType
+     * @return Curriculum part type
+     */
+    FederalCurriculumRequirement reparted(PartType part);
+
+    /**
      * Parts of a federal curriculum requirement.
      *
      * @since 0.0.1

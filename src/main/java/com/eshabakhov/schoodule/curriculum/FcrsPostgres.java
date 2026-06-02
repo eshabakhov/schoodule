@@ -39,35 +39,38 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
 
     @Override
     public FederalCurriculumRequirement create(
-        final FederalCurriculumRequirement requirement
+        final Integer grade,
+        final String subject,
+        final Integer hours,
+        final FederalCurriculumRequirement.PartType part
     ) throws Exception {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
                 final var existing = ttx.selectFrom(FcrsPostgres.REQUIREMENT)
                     .where(FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
-                        .and(FcrsPostgres.REQUIREMENT.GRADE.eq(requirement.grade()))
-                        .and(FcrsPostgres.REQUIREMENT.SUBJECT_NAME.eq(requirement.subjectName()))
+                        .and(FcrsPostgres.REQUIREMENT.GRADE.eq(grade))
+                        .and(FcrsPostgres.REQUIREMENT.SUBJECT_NAME.eq(subject))
                         .and(
                             FcrsPostgres.REQUIREMENT.PART_TYPE.eq(
-                                CurriculumPartType.valueOf(requirement.partType().name())
+                                CurriculumPartType.valueOf(part.name())
                             )
                         )
                         .and(FcrsPostgres.REQUIREMENT.IS_DELETED.eq(false))
                     )
                     .fetchOne();
                 if (existing != null) {
-                    throw new RequirementAlreadyExistsException(requirement);
+                    throw new RequirementAlreadyExistsException();
                 }
                 final FederalCurriculumRequirementRecord created = ttx
                     .insertInto(FcrsPostgres.REQUIREMENT)
                     .set(FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID, this.fid)
-                    .set(FcrsPostgres.REQUIREMENT.GRADE, requirement.grade())
-                    .set(FcrsPostgres.REQUIREMENT.SUBJECT_NAME, requirement.subjectName())
-                    .set(FcrsPostgres.REQUIREMENT.WEEKLY_HOURS, requirement.weeklyHours())
+                    .set(FcrsPostgres.REQUIREMENT.GRADE, grade)
+                    .set(FcrsPostgres.REQUIREMENT.SUBJECT_NAME, subject)
+                    .set(FcrsPostgres.REQUIREMENT.WEEKLY_HOURS, hours)
                     .set(
                         FcrsPostgres.REQUIREMENT.PART_TYPE,
-                        CurriculumPartType.valueOf(requirement.partType().name())
+                        CurriculumPartType.valueOf(part.name())
                     )
                     .set(FcrsPostgres.REQUIREMENT.IS_DELETED, false)
                     .returning()
@@ -130,42 +133,6 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
     }
 
     @Override
-    public FederalCurriculumRequirement put(final FederalCurriculumRequirement requirement)
-        throws Exception {
-        final FederalCurriculumRequirementRecord selected = this.ctx
-            .selectFrom(FcrsPostgres.REQUIREMENT)
-            .where(
-                FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
-                    .and(FcrsPostgres.REQUIREMENT.IS_DELETED.eq(false))
-                    .and(FcrsPostgres.REQUIREMENT.ID.eq(requirement.uid()))
-            )
-            .fetchOne();
-        final FederalCurriculumRequirement result;
-        if (selected == null) {
-            result = this.create(requirement);
-        } else {
-            final FederalCurriculumRequirementRecord updated = this.ctx
-                .update(FcrsPostgres.REQUIREMENT)
-                .set(FcrsPostgres.REQUIREMENT.GRADE, requirement.grade())
-                .set(FcrsPostgres.REQUIREMENT.SUBJECT_NAME, requirement.subjectName())
-                .set(FcrsPostgres.REQUIREMENT.WEEKLY_HOURS, requirement.weeklyHours())
-                .set(
-                    FcrsPostgres.REQUIREMENT.PART_TYPE,
-                    CurriculumPartType.valueOf(requirement.partType().name())
-                )
-                .set(FcrsPostgres.REQUIREMENT.UPDATED_AT, DSL.currentOffsetDateTime())
-                .where(FcrsPostgres.REQUIREMENT.ID.eq(requirement.uid()))
-                .returning()
-                .fetchOne();
-            if (updated == null) {
-                throw new RequirementFailedUpdateException();
-            }
-            result = new FcrPostgres(this.ctx, updated.getId());
-        }
-        return result;
-    }
-
-    @Override
     public void remove(final long id) throws Exception {
         final FederalCurriculumRequirementRecord selected = this.ctx
             .selectFrom(FcrsPostgres.REQUIREMENT)
@@ -201,19 +168,8 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
     }
 
     public static class RequirementAlreadyExistsException extends Exception {
-        public RequirementAlreadyExistsException(final FederalCurriculumRequirement requirement) {
-            super(
-                String.format(
-                    "FederalCurriculumRequirement `%s` already exists",
-                    requirement.json()
-                )
-            );
-        }
-    }
-
-    public static class RequirementFailedUpdateException extends Exception {
-        public RequirementFailedUpdateException() {
-            super("Failed to update FederalCurriculumRequirement");
+        public RequirementAlreadyExistsException() {
+            super("FederalCurriculumRequirement already exists");
         }
     }
 

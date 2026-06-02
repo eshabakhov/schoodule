@@ -15,6 +15,7 @@ import lombok.ToString;
  */
 @ToString(of = {"rid", "grd", "subj"})
 @EqualsAndHashCode
+@SuppressWarnings("PMD.TooManyMethods")
 public final class FcrBase implements FederalCurriculumRequirement {
 
     /** Federal curriculum requirement id. */
@@ -30,20 +31,10 @@ public final class FcrBase implements FederalCurriculumRequirement {
     private final String subj;
 
     /** Weekly hours. */
-    private final Integer hours;
+    private final Integer hrs;
 
     /** Curriculum part type. */
-    private final PartType part;
-
-    // @checkstyle ParameterNumberCheck (2 lines)
-    public FcrBase(
-        final Integer grade,
-        final String subject,
-        final Integer hours,
-        final PartType part
-    ) {
-        this(Long.MIN_VALUE, null, grade, subject, hours, part);
-    }
+    private final PartType prt;
 
     // @checkstyle ParameterNumberCheck (2 lines)
     public FcrBase(
@@ -58,8 +49,8 @@ public final class FcrBase implements FederalCurriculumRequirement {
         this.cur = curriculum;
         this.grd = grade;
         this.subj = subject;
-        this.hours = hours;
-        this.part = part;
+        this.hrs = hours;
+        this.prt = part;
     }
 
     @Override
@@ -84,12 +75,32 @@ public final class FcrBase implements FederalCurriculumRequirement {
 
     @Override
     public Integer weeklyHours() {
-        return this.hours;
+        return this.hrs;
     }
 
     @Override
     public PartType partType() {
-        return this.part;
+        return this.prt;
+    }
+
+    @Override
+    public FederalCurriculumRequirement regraded(final Integer grade) {
+        return new FcrBase(this.rid, this.cur, grade, this.subj, this.hrs, this.prt);
+    }
+
+    @Override
+    public FederalCurriculumRequirement resubjected(final String subject) {
+        return new FcrBase(this.rid, this.cur, this.grd, subject, this.hrs, this.prt);
+    }
+
+    @Override
+    public FederalCurriculumRequirement reweekled(final Integer hours) {
+        return new FcrBase(this.rid, this.cur, this.grd, this.subj, hours, this.prt);
+    }
+
+    @Override
+    public FederalCurriculumRequirement reparted(final PartType part) {
+        return new FcrBase(this.rid, this.cur, this.grd, this.subj, this.hrs, part);
     }
 
     @Override
@@ -98,8 +109,8 @@ public final class FcrBase implements FederalCurriculumRequirement {
             .put("id", this.rid)
             .put("grade", this.grd)
             .put("subjectName", this.subj)
-            .put("weeklyHours", this.hours)
-            .put("partType", this.part.name());
+            .put("weeklyHours", this.hrs)
+            .put("partType", this.prt.name());
         if (this.cur != null) {
             node.set("curriculum", this.cur.json());
         }
