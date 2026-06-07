@@ -7,12 +7,12 @@ import com.eshabakhov.schoodule.Media;
 import lombok.EqualsAndHashCode;
 
 /**
- * Decorator that adds a description to a {@link FederalCurriculum}.
+ * Decorator that adds an academic year to a {@link FederalCurriculum}.
  *
  * @since 0.0.1
  */
-@EqualsAndHashCode(of = {"origin", "description"})
-public final class FcDescription implements FederalCurriculum {
+@EqualsAndHashCode(of = {"origin", "year"})
+public final class FcYeared implements FederalCurriculum {
 
     /**
      * Wrapped curriculum.
@@ -20,19 +20,19 @@ public final class FcDescription implements FederalCurriculum {
     private final FederalCurriculum origin;
 
     /**
-     * Description.
+     * Academic year (format: YYYY/YYYY).
      */
-    private final String description;
+    private final String year;
 
     /**
-     * Creates a described curriculum decorator.
+     * Creates a yeared curriculum decorator.
      *
-     * @param origin      Wrapped curriculum
-     * @param description Description text
+     * @param origin Wrapped curriculum
+     * @param year   Academic year string, e.g. "2026/2027"
      */
-    public FcDescription(final FederalCurriculum origin, final String description) {
+    public FcYeared(final FederalCurriculum origin, final String year) {
         this.origin = origin;
-        this.description = description;
+        this.year = year;
     }
 
     @Override
@@ -42,7 +42,7 @@ public final class FcDescription implements FederalCurriculum {
 
     @Override
     public Media print(final Media media) {
-        return this.origin.print(media).with("description", this.description);
+        return this.origin.print(media).with("year", this.year);
     }
 
     @Override
@@ -52,12 +52,12 @@ public final class FcDescription implements FederalCurriculum {
 
     @Override
     public FederalCurriculum releveled(final Level level) {
-        return new FcDescription(this.origin.releveled(level), this.description);
+        return new FcYeared(this.origin.releveled(level), this.year);
     }
 
     @Override
     public FederalCurriculum reweeked(final Week week) {
-        return new FcDescription(this.origin.reweeked(week), this.description);
+        return new FcYeared(this.origin.reweeked(week), this.year);
     }
 
     @Override
@@ -66,13 +66,13 @@ public final class FcDescription implements FederalCurriculum {
     }
 
     @Override
-    public FederalCurriculum reyeared(final String year) {
-        return new FcYeared(this, year);
+    public FederalCurriculum reyeared(final String yrr) {
+        return new FcYeared(this.origin, yrr);
     }
 
     @Override
-    public FederalCurriculum redescriptioned(final String desc) {
-        return new FcDescription(this.origin, desc);
+    public FederalCurriculum redescriptioned(final String description) {
+        return new FcDescription(this, description);
     }
 
     @Override

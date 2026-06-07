@@ -9,43 +9,43 @@
 <div layout:fragment="content">
     <div class="page-title-row" style="margin-bottom:1.5rem;">
         <div>
-            <h1 th:text="${curriculum.title()}">Федеральный учебный план</h1>
+            <h1 th:text="${title}">Федеральный учебный план</h1>
             <p class="page-subtitle">Метаданные и нормативные требования</p>
         </div>
     </div>
     <div class="school-info">
         <div class="info-row">
             <span class="info-label">ID:</span>
-            <span class="info-value" th:text="${curriculum.uid()}">1</span>
+            <span class="info-value" th:text="${id}">1</span>
         </div>
         <div class="info-row">
             <span class="info-label">Уровень:</span>
-            <span class="info-value" th:text="${curriculum.level()}">BASIC</span>
+            <span class="info-value" th:text="${level}">BASIC</span>
         </div>
         <div class="info-row">
             <span class="info-label">Неделя:</span>
-            <span class="info-value" th:text="${curriculum.week()}">FIVE_DAYS</span>
+            <span class="info-value" th:text="${week}">FIVE_DAYS</span>
         </div>
         <div class="info-row">
             <span class="info-label">Версия:</span>
-            <span class="info-value" th:text="${curriculum.version()}">v1</span>
+            <span class="info-value" th:text="${version}">v1</span>
         </div>
         <div class="info-row">
             <span class="info-label">Учебный год:</span>
-            <span class="info-value" th:text="${curriculum.year()}">2026/2027</span>
+            <span class="info-value" th:text="${year}">2026/2027</span>
         </div>
         <div class="info-row">
             <span class="info-label">Описание:</span>
-            <span class="info-value" th:text="${curriculum.description()} ?: '—'">—</span>
+            <span class="info-value" th:text="${description} ?: '—'">—</span>
         </div>
     </div>
 
     <div class="actions">
-        <a th:href="@{/federal-curriculums/{id}/edit(id=${curriculum.uid()})}"
+        <a th:href="@{/federal-curriculums/{cid}/edit(cid=${id})}"
            class="btn-outline-action">Редактировать</a>
         <button class="btn-outline-action btn-delete-curriculum"
-                th:data-id="${curriculum.uid()}"
-                th:data-name="${curriculum.title()}"
+                th:data-id="${id}"
+                th:data-name="${title}"
                 style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;">
             Удалить
         </button>
@@ -54,7 +54,7 @@
     <div class="section-header" style="margin-top:2rem;">
         <h2>Требования учебного плана</h2>
     </div>
-    <form th:action="@{/federal-curriculums/{id}/requirements/create(id=${curriculum.uid()})}"
+    <form th:action="@{/federal-curriculums/{cid}/requirements/create(cid=${id})}"
           method="post"
           style="display:grid;grid-template-columns:80px 1fr 140px 170px auto;gap:.75rem;margin-top:1rem;">
         <input type="number" name="grade" min="1" max="11" placeholder="Класс" required/>
@@ -65,6 +65,7 @@
         </select>
         <button type="submit" class="btn-primary">Добавить</button>
     </form>
+
     <table class="data-table">
         <thead>
         <tr>
@@ -79,33 +80,41 @@
         <tr th:if="${#lists.isEmpty(requirements)}">
             <td colspan="5" class="empty-state">Требования пока не добавлены.</td>
         </tr>
+        <!--
+            Each item in requirements is a Map<String, Object>
+            printed by FcrPostgres via ThymeleafMedia.
+            Keys: id, grade, subjectName, weeklyHours, partType
+        -->
         <tr th:each="item : ${requirements}">
-            <td th:text="${item.grade()}">5</td>
-            <td th:text="${item.subjectName()}">Математика</td>
-            <td th:text="${item.weeklyHours()}">5</td>
-            <td th:text="${item.partType()}">MANDATORY</td>
+            <td th:text="${item['grade']}">5</td>
+            <td th:text="${item['subjectName']}">Математика</td>
+            <td th:text="${item['weeklyHours']}">5</td>
+            <td th:text="${item['partType']}">MANDATORY</td>
             <td>
                 <details>
                     <summary class="btn-outline-action" style="cursor:pointer;display:inline-flex;">Изменить</summary>
-                    <form th:action="@{/federal-curriculums/{id}/requirements/{r}/edit(id=${curriculum.uid()},r=${item.uid()})}"
+                    <form th:action="@{/federal-curriculums/{cid}/requirements/{rid}/edit(cid=${id},rid=${item['id']})}"
                           method="post"
                           style="display:grid;grid-template-columns:80px 1fr 120px 160px auto;gap:.5rem;margin-top:.75rem;">
-                        <input type="number" name="grade" min="1" max="11" th:value="${item.grade()}" required/>
-                        <input type="text" name="subjectName" th:value="${item.subjectName()}" required/>
-                        <input type="number" name="weeklyHours" min="1" th:value="${item.weeklyHours()}" required/>
+                        <input type="number" name="grade" min="1" max="11"
+                               th:value="${item['grade']}" required/>
+                        <input type="text" name="subjectName"
+                               th:value="${item['subjectName']}" required/>
+                        <input type="number" name="weeklyHours" min="1"
+                               th:value="${item['weeklyHours']}" required/>
                         <select name="partType" required>
                             <option th:each="part : ${partTypes}"
                                     th:value="${part}"
-                                    th:selected="${part == item.partType()}"
+                                    th:selected="${part.name() == item['partType']}"
                                     th:text="${part}">MANDATORY</option>
                         </select>
                         <button type="submit" class="btn-primary">OK</button>
                     </form>
                 </details>
                 <button class="btn-outline-action btn-delete-requirement"
-                        th:data-id="${item.uid()}"
-                        th:data-curriculum="${curriculum.uid()}"
-                        th:data-name="${item.subjectName()}"
+                        th:data-id="${item['id']}"
+                        th:data-curriculum="${id}"
+                        th:data-name="${item['subjectName']}"
                         style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;">
                     Удалить
                 </button>

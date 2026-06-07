@@ -7,12 +7,12 @@ import com.eshabakhov.schoodule.Media;
 import lombok.EqualsAndHashCode;
 
 /**
- * Decorator that adds a description to a {@link FederalCurriculum}.
+ * Decorator that adds a title to a {@link FederalCurriculum}.
  *
  * @since 0.0.1
  */
-@EqualsAndHashCode(of = {"origin", "description"})
-public final class FcDescription implements FederalCurriculum {
+@EqualsAndHashCode(of = {"origin", "title"})
+public final class FcTitled implements FederalCurriculum {
 
     /**
      * Wrapped curriculum.
@@ -20,19 +20,19 @@ public final class FcDescription implements FederalCurriculum {
     private final FederalCurriculum origin;
 
     /**
-     * Description.
+     * Title.
      */
-    private final String description;
+    private final String title;
 
     /**
-     * Creates a described curriculum decorator.
+     * Creates a titled curriculum decorator.
      *
-     * @param origin      Wrapped curriculum
-     * @param description Description text
+     * @param origin Wrapped curriculum
+     * @param title  Title
      */
-    public FcDescription(final FederalCurriculum origin, final String description) {
+    public FcTitled(final FederalCurriculum origin, final String title) {
         this.origin = origin;
-        this.description = description;
+        this.title = title;
     }
 
     @Override
@@ -42,22 +42,22 @@ public final class FcDescription implements FederalCurriculum {
 
     @Override
     public Media print(final Media media) {
-        return this.origin.print(media).with("description", this.description);
+        return this.origin.print(media).with("title", this.title);
     }
 
     @Override
-    public FederalCurriculum retitled(final String title) {
-        return new FcTitled(this, title);
+    public FederalCurriculum retitled(final String ttl) {
+        return new FcTitled(this.origin, ttl);
     }
 
     @Override
     public FederalCurriculum releveled(final Level level) {
-        return new FcDescription(this.origin.releveled(level), this.description);
+        return new FcTitled(this.origin.releveled(level), this.title);
     }
 
     @Override
     public FederalCurriculum reweeked(final Week week) {
-        return new FcDescription(this.origin.reweeked(week), this.description);
+        return new FcTitled(this.origin.reweeked(week), this.title);
     }
 
     @Override
@@ -71,8 +71,8 @@ public final class FcDescription implements FederalCurriculum {
     }
 
     @Override
-    public FederalCurriculum redescriptioned(final String desc) {
-        return new FcDescription(this.origin, desc);
+    public FederalCurriculum redescriptioned(final String description) {
+        return new FcDescription(this, description);
     }
 
     @Override

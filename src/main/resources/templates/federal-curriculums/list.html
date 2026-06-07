@@ -36,6 +36,11 @@
                th:value="${param.title != null ? param.title[0] : ''}"/>
     </div>
 
+    <!--
+        curriculums is List<Map<String, Object>>.
+        Each map is printed by FcPostgres via ThymeleafMedia.
+        Keys: id, title, level, week, version, year, description
+    -->
     <th:block th:fragment="curriculums-grid">
         <div id="federal-curriculums-results">
             <div class="card-grid" id="federal-curriculums-container">
@@ -51,7 +56,7 @@
 
                 <div th:each="item : ${curriculums}"
                      class="card-item federal-curriculum-row"
-                     th:data-id="${item.uid()}"
+                     th:data-id="${item['id']}"
                      style="cursor:pointer;">
                     <div class="card-item-header">
                         <div class="card-item-title-row">
@@ -65,13 +70,13 @@
                         </div>
                     </div>
                     <div class="card-item-period">
-                        <span class="card-item-name" th:text="${item.title()}">Учебный план</span>
+                        <span class="card-item-name" th:text="${item['title']}">Учебный план</span>
                         <div class="card-item-period-label">
-                            <span th:text="${item.level()}">BASIC</span>
+                            <span th:text="${item['level']}">BASIC</span>
                             ·
-                            <span th:text="${item.week()}">FIVE_DAYS</span>
+                            <span th:text="${item['week']}">FIVE_DAYS</span>
                             ·
-                            <span th:text="${item.year()}">2026/2027</span>
+                            <span th:text="${item['year']}">2026/2027</span>
                         </div>
                     </div>
                 </div>

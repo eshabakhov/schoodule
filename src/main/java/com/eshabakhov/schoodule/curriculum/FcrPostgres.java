@@ -1,31 +1,43 @@
 /*
- * В© 2025-2026 Eset Shabakhov. Schoodule
+ * © 2025-2026 Eset Shabakhov. Schoodule
  */
 package com.eshabakhov.schoodule.curriculum;
 
+import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.enums.CurriculumPartType;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
 
 /**
  * Postgres implementation of {@link FederalCurriculumRequirement}.
+ * Holds only {@code rid} and {@code ctx} — all data is read from DB on demand.
  *
  * @since 0.0.1
  */
 @SuppressWarnings("PMD.TooManyMethods")
 public final class FcrPostgres implements FederalCurriculumRequirement {
 
-    /** JOOQ Table for FederalCurriculumRequirement. */
+    /**
+     * JOOQ table reference.
+     */
     private static final com.eshabakhov.schoodule.tables.FederalCurriculumRequirement REQUIREMENT =
         com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
 
-    /** Federal curriculum requirement id. */
+    /**
+     * Federal curriculum requirement id.
+     */
     private final Long rid;
 
-    /** Database connection. */
+    /**
+     * Database connection.
+     */
     private final DSLContext ctx;
 
+    /**
+     * Creates a Postgres-backed requirement.
+     *
+     * @param ctx JOOQ DSL context
+     * @param rid Requirement ID
+     */
     public FcrPostgres(final DSLContext ctx, final Long rid) {
         this.ctx = ctx;
         this.rid = rid;
@@ -37,48 +49,17 @@ public final class FcrPostgres implements FederalCurriculumRequirement {
     }
 
     @Override
-    public FederalCurriculum curriculum() {
-        return new FcPostgres(
-            this.ctx,
-            this.ctx.select(FcrPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID)
-                .from(FcrPostgres.REQUIREMENT)
-                .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
-                .fetchOneInto(Long.class)
-        );
-    }
-
-    @Override
-    public Integer grade() {
-        return this.ctx.select(FcrPostgres.REQUIREMENT.GRADE)
-            .from(FcrPostgres.REQUIREMENT)
+    public Media print(final Media media) {
+        return this.ctx.selectFrom(FcrPostgres.REQUIREMENT)
             .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
-            .fetchOneInto(Integer.class);
-    }
-
-    @Override
-    public String subjectName() {
-        return this.ctx.select(FcrPostgres.REQUIREMENT.SUBJECT_NAME)
-            .from(FcrPostgres.REQUIREMENT)
-            .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
-            .fetchOneInto(String.class);
-    }
-
-    @Override
-    public Integer weeklyHours() {
-        return this.ctx.select(FcrPostgres.REQUIREMENT.WEEKLY_HOURS)
-            .from(FcrPostgres.REQUIREMENT)
-            .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
-            .fetchOneInto(Integer.class);
-    }
-
-    @Override
-    public PartType partType() {
-        return PartType.valueOf(
-            this.ctx.select(FcrPostgres.REQUIREMENT.PART_TYPE)
-                .from(FcrPostgres.REQUIREMENT)
-                .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
-                .fetchOneInto(String.class)
-        );
+            .fetchOne(
+                record -> media
+                    .with("id", record.getId())
+                    .with("grade", record.getGrade())
+                    .with("subjectName", record.getSubjectName())
+                    .with("weeklyHours", record.getWeeklyHours())
+                    .with("partType", record.getPartType().name())
+            );
     }
 
     @Override
@@ -127,21 +108,5 @@ public final class FcrPostgres implements FederalCurriculumRequirement {
                 .returningResult(FcrPostgres.REQUIREMENT.ID)
                 .fetchOne(FcrPostgres.REQUIREMENT.ID)
         );
-    }
-
-    @Override
-    public ObjectNode json() {
-        return this.ctx.selectFrom(FcrPostgres.REQUIREMENT)
-            .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
-            .fetchOne(
-                selected ->
-                    JsonNodeFactory.instance.objectNode()
-                        .put("id", selected.getId())
-                        .put("curriculumId", selected.getFederalCurriculumId())
-                        .put("grade", selected.getGrade())
-                        .put("subjectName", selected.getSubjectName())
-                        .put("weeklyHours", selected.getWeeklyHours())
-                        .put("partType", selected.getPartType().name())
-            );
     }
 }

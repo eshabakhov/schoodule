@@ -1,10 +1,12 @@
 /*
- * Р’В© 2025-2026 Eset Shabakhov. Schoodule
+ * © 2025-2026 Eset Shabakhov. Schoodule
  */
 package com.eshabakhov.schoodule.curriculum;
 
 import com.eshabakhov.schoodule.PageableList;
+import com.eshabakhov.schoodule.media.ThymeleafMedia;
 import com.eshabakhov.schoodule.page.PageRequest;
+import java.util.List;
 import java.util.Map;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -20,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * Controller for Html response {@link FederalCurriculum}.
+ * Controller for HTML responses for {@link FederalCurriculum}.
  *
  * @since 0.0.1
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
@@ -33,11 +35,15 @@ import org.springframework.web.servlet.ModelAndView;
 @SuppressWarnings("PMD.UseObjectForClearerAPI")
 public class FederalCurriculumsHtmlController {
 
-    /** JOOQ Table for FederalCurriculum. */
+    /**
+     * JOOQ Table for FederalCurriculum.
+     */
     private static final com.eshabakhov.schoodule.tables.FederalCurriculum CURRICULUM =
         com.eshabakhov.schoodule.tables.FederalCurriculum.FEDERAL_CURRICULUM;
 
-    /** JOOQ DSL context for executing database queries. */
+    /**
+     * JOOQ DSL context for executing database queries.
+     */
     private final DSLContext ctx;
 
     public FederalCurriculumsHtmlController(final DSLContext ctx) {
@@ -58,17 +64,19 @@ public class FederalCurriculumsHtmlController {
                 )
             );
         }
-        final PageableList<FederalCurriculum> curriculums = new FcsPostgres(this.ctx)
+        final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
             .curriculums(condition, new PageRequest(limit, offset));
         return new ModelAndView("federal-curriculums/list")
             .addAllObjects(
                 Map.of(
                     "pageTitle", "Федеральные учебные планы",
-                    "curriculums", curriculums.list(),
+                    "curriculums", result.list().stream()
+                        .map(fc -> ((ThymeleafMedia) fc.print(new ThymeleafMedia())).map())
+                        .toList(),
                     "page", offset,
                     "limit", limit,
-                    "totalPages", (int) Math.ceil((double) curriculums.total() / limit),
-                    "hasNext", curriculums.total() > (long) offset * limit,
+                    "totalPages", (int) Math.ceil((double) result.total() / limit),
+                    "hasNext", result.total() > (long) offset * limit,
                     "hasPrev", offset > 1
                 )
             );
@@ -88,16 +96,19 @@ public class FederalCurriculumsHtmlController {
                 )
             );
         }
-        final PageableList<FederalCurriculum> curriculums = new FcsPostgres(this.ctx)
+        final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
             .curriculums(condition, new PageRequest(limit, offset));
+        final List<Map<String, Object>> curriculums = result.list().stream()
+            .map(fc -> ((ThymeleafMedia) fc.print(new ThymeleafMedia())).map())
+            .toList();
         return new ModelAndView("federal-curriculums/list :: curriculums-grid")
             .addAllObjects(
                 Map.of(
-                    "curriculums", curriculums.list(),
+                    "curriculums", curriculums,
                     "page", offset,
                     "limit", limit,
-                    "totalPages", (int) Math.ceil((double) curriculums.total() / limit),
-                    "hasNext", curriculums.total() > (long) offset * limit,
+                    "totalPages", (int) Math.ceil((double) result.total() / limit),
+                    "hasNext", result.total() > (long) offset * limit,
                     "hasPrev", offset > 1
                 )
             );
@@ -134,12 +145,7 @@ public class FederalCurriculumsHtmlController {
             "redirect:/federal-curriculums/%d",
             new FcsPostgres(this.ctx)
                 .create(
-                    title.trim(),
-                    level,
-                    week,
-                    version.trim(),
-                    year.trim(),
-                    desc
+                    title.trim(), level, week, version.trim(), year.trim(), desc
                 ).uid()
         );
     }
@@ -147,16 +153,17 @@ public class FederalCurriculumsHtmlController {
     @GetMapping(value = "/{curriculum}", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView details(@PathVariable final long curriculum) throws Exception {
         final FederalCurriculum found = new FcsPostgres(this.ctx).curriculum(curriculum);
+        final Map<String, Object> data = ((ThymeleafMedia) found.print(new ThymeleafMedia())).map();
         return new ModelAndView("federal-curriculums/details")
+            .addAllObjects(data)
             .addAllObjects(
                 Map.of(
-                    "pageTitle", found.title(),
-                    "curriculum", found,
+                    "pageTitle", data.getOrDefault("title", ""),
                     "requirements", found.requirements()
-                        .requirements(
-                            DSL.trueCondition(),
-                            new PageRequest(Integer.MAX_VALUE, 1)
-                        ).list(),
+                        .requirements(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
+                        .list().stream()
+                        .map(req -> ((ThymeleafMedia) req.print(new ThymeleafMedia())).map())
+                        .toList(),
                     "partTypes", FederalCurriculumRequirement.PartType.values()
                 )
             );
@@ -166,9 +173,15 @@ public class FederalCurriculumsHtmlController {
     public ModelAndView editForm(@PathVariable final long curriculum) throws Exception {
         return new ModelAndView("federal-curriculums/edit")
             .addAllObjects(
+                (
+                    (ThymeleafMedia) new FcsPostgres(this.ctx)
+                        .curriculum(curriculum)
+                        .print(new ThymeleafMedia())
+                ).map()
+            )
+            .addAllObjects(
                 Map.of(
                     "pageTitle", "Редактировать федеральный учебный план",
-                    "curriculum",  new FcsPostgres(this.ctx).curriculum(curriculum),
                     "levels", FederalCurriculum.Level.values(),
                     "studyWeeks", FederalCurriculum.Week.values()
                 )

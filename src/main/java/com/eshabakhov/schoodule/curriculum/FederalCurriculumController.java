@@ -1,12 +1,16 @@
 /*
- * Р’В© 2025-2026 Eset Shabakhov. Schoodule
+ * © 2025-2026 Eset Shabakhov. Schoodule
  */
 package com.eshabakhov.schoodule.curriculum;
 
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.error.VersionHeaderException;
+import com.eshabakhov.schoodule.media.JsonMedia;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
@@ -47,7 +51,7 @@ public class FederalCurriculumController {
     private static final com.eshabakhov.schoodule.tables.FederalCurriculumRequirement REQUIREMENT =
         com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
 
-    /** JOOQ DSL context for executing database queries. */
+    /** JOOQ DSL context for executing database queries.*/
     private final DSLContext ctx;
 
     FederalCurriculumController(final DSLContext ctx) {
@@ -57,48 +61,38 @@ public class FederalCurriculumController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create federal curriculum")
-    public ResponseEntity<FederalCurriculum> create(
+    public ResponseEntity<ObjectNode> create(
         @RequestHeader("version") final CurriculumVersion version,
         @RequestBody final JsonNode request
     ) throws Exception {
-        final var description = request.get("description");
+        if (!CurriculumVersion.SIMPLE.equals(version)) {
+            throw new VersionHeaderException(version.name());
+        }
+        final JsonNode description = request.get("description");
         final String desc;
         if (description == null) {
             desc = null;
         } else {
             desc = description.asText();
         }
-        if (CurriculumVersion.SIMPLE.equals(version)) {
-            final FederalCurriculum curriculum = new FcsPostgres(this.ctx)
-                .create(
-                    FederalCurriculumController.required(request, "title").asText(),
-                    FederalCurriculum.Level.valueOf(
-                        FederalCurriculumController
-                            .required(request, "level")
-                            .asText()
-                    ),
-                    FederalCurriculum.Week.valueOf(
-                        FederalCurriculumController
-                            .required(request, "week")
-                            .asText()
-                    ),
-                    FederalCurriculumController.required(request, "version").asText(),
-                    FederalCurriculumController.required(request, "year").asText(),
-                    desc
-                );
-            return ResponseEntity
-                .created(
-                    URI.create(
-                        String.format(
-                            "/api/federal-curriculums/%d",
-                            curriculum.uid()
-                        )
-                    )
-                )
-                .body(curriculum);
-        } else {
-            throw new VersionHeaderException(version.name());
-        }
+        final FederalCurriculum curriculum = new FcsPostgres(this.ctx)
+            .create(
+                FederalCurriculumController.required(request, "title").asText(),
+                FederalCurriculum.Level.valueOf(
+                    FederalCurriculumController.required(request, "level").asText()
+                ),
+                FederalCurriculum.Week.valueOf(
+                    FederalCurriculumController.required(request, "week").asText()
+                ),
+                FederalCurriculumController.required(request, "version").asText(),
+                FederalCurriculumController.required(request, "year").asText(),
+                desc
+            );
+        final JsonMedia media = new JsonMedia();
+        curriculum.print(media);
+        return ResponseEntity
+            .created(URI.create(String.format("/api/federal-curriculums/%d", curriculum.uid())))
+            .body(media.json());
     }
 
     @GetMapping
@@ -116,7 +110,7 @@ public class FederalCurriculumController {
     )
     @Operation(summary = "Fetch list of federal curriculums")
     //@checkstyle ParameterNumberCheck (1 line)
-    public ResponseEntity<PageableList<FederalCurriculum>> list(
+    public ResponseEntity<ObjectNode> list(
         @RequestParam(name = "limit", required = false, defaultValue = "10") final int limit,
         @RequestParam(name = "offset", required = false, defaultValue = "1") final int offset,
         @RequestParam(value = "title_ct", required = false) final String title
@@ -129,9 +123,20 @@ public class FederalCurriculumController {
                 )
             );
         }
-        return ResponseEntity.ok().body(
-            new FcsPostgres(this.ctx).curriculums(condition, new PageRequest(limit, offset))
+        final PageableList<FederalCurriculum> result =
+            new FcsPostgres(this.ctx).curriculums(condition, new PageRequest(limit, offset));
+        final ArrayNode items = JsonNodeFactory.instance.arrayNode();
+        result.list().forEach(
+            fc -> {
+                final JsonMedia media = new JsonMedia();
+                fc.print(media);
+                items.add(media.json());
+            }
         );
+        final ObjectNode response = JsonNodeFactory.instance.objectNode();
+        response.set("items", items);
+        response.put("total", result.total());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{curriculum}")
@@ -148,25 +153,29 @@ public class FederalCurriculumController {
         """
     )
     @Operation(summary = "Fetch federal curriculum")
-    public ResponseEntity<FederalCurriculum> get(
+    public ResponseEntity<ObjectNode> get(
         @RequestHeader("version") final CurriculumVersion version,
         @PathVariable final long curriculum
     ) throws Exception {
-        if (CurriculumVersion.SIMPLE.equals(version)) {
-            return ResponseEntity.ok().body(new FcsPostgres(this.ctx).curriculum(curriculum));
-        } else {
+        if (!CurriculumVersion.SIMPLE.equals(version)) {
             throw new VersionHeaderException(version.name());
         }
+        final JsonMedia media = new JsonMedia();
+        new FcsPostgres(this.ctx).curriculum(curriculum).print(media);
+        return ResponseEntity.ok(media.json());
     }
 
     @PutMapping("/{curriculum}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update federal curriculum")
-    public ResponseEntity<FederalCurriculum> put(
+    public ResponseEntity<ObjectNode> put(
         @RequestHeader("version") final CurriculumVersion version,
         @PathVariable final long curriculum,
         @RequestBody final JsonNode request
     ) throws Exception {
+        if (!CurriculumVersion.SIMPLE.equals(version)) {
+            throw new VersionHeaderException(version.name());
+        }
         final JsonNode description = request.get("description");
         final String desc;
         if (description == null) {
@@ -174,40 +183,33 @@ public class FederalCurriculumController {
         } else {
             desc = description.asText();
         }
-        if (CurriculumVersion.SIMPLE.equals(version)) {
-            final FederalCurriculum updated = new FcsPostgres(this.ctx)
-                .curriculum(curriculum)
-                .retitled(FederalCurriculumController.required(request, "title").asText())
-                .releveled(
-                    FederalCurriculum.Level.valueOf(
-                        FederalCurriculumController.required(request, "level").asText()
-                    )
+        final FederalCurriculum updated = new FcsPostgres(this.ctx)
+            .curriculum(curriculum)
+            .retitled(FederalCurriculumController.required(request, "title").asText())
+            .releveled(
+                FederalCurriculum.Level.valueOf(
+                    FederalCurriculumController.required(request, "level").asText()
                 )
-                .reweeked(
-                    FederalCurriculum.Week.valueOf(
-                        FederalCurriculumController.required(request, "week").asText()
-                    )
+            )
+            .reweeked(
+                FederalCurriculum.Week.valueOf(
+                    FederalCurriculumController.required(request, "week").asText()
                 )
-                .reversioned(FederalCurriculumController.required(request, "version").asText())
-                .reyeared(FederalCurriculumController.required(request, "year").asText())
-                .redescriptioned(desc);
-            final ResponseEntity<FederalCurriculum> response;
-            if (curriculum == updated.uid()) {
-                response = ResponseEntity.ok().body(updated);
-            } else {
-                response = ResponseEntity.created(
-                    URI.create(
-                        String.format(
-                            "/api/federal-curriculums/%d",
-                            updated.uid()
-                        )
-                    )
-                ).body(updated);
-            }
-            return response;
+            )
+            .reversioned(FederalCurriculumController.required(request, "version").asText())
+            .reyeared(FederalCurriculumController.required(request, "year").asText())
+            .redescriptioned(desc);
+        final JsonMedia media = new JsonMedia();
+        updated.print(media);
+        final ResponseEntity<ObjectNode> response;
+        if (curriculum == updated.uid()) {
+            response = ResponseEntity.ok(media.json());
         } else {
-            throw new VersionHeaderException(version.name());
+            response = ResponseEntity
+                .created(URI.create(String.format("/api/federal-curriculums/%d", updated.uid())))
+                .body(media.json());
         }
+        return response;
     }
 
     @DeleteMapping("/{curriculum}")
@@ -221,57 +223,51 @@ public class FederalCurriculumController {
     @PostMapping("/{curriculum}/requirements")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create federal curriculum requirement")
-    public ResponseEntity<FederalCurriculumRequirement> createRequirement(
+    public ResponseEntity<ObjectNode> createRequirement(
         @RequestHeader("version") final CurriculumVersion version,
         @PathVariable final long curriculum,
         @RequestBody final JsonNode request
     ) throws Exception {
-        final JsonNode grade = FederalCurriculumController.required(request, "grade");
-        final JsonNode subject = FederalCurriculumController.required(request, "subjectName");
-        final JsonNode hours = FederalCurriculumController.required(request, "weeklyHours");
-        final JsonNode part = FederalCurriculumController.required(request, "partType");
-        if (CurriculumVersion.SIMPLE.equals(version)) {
-            final FederalCurriculumRequirement requirement = new FcsPostgres(this.ctx)
-                .curriculum(curriculum)
-                .requirements()
-                .create(
-                    grade.asInt(),
-                    subject.asText(),
-                    hours.asInt(),
-                    FederalCurriculumRequirement.PartType.valueOf(part.asText())
-                );
-            return ResponseEntity
-                .created(
-                    URI.create(
-                        String.format(
-                            "/api/federal-curriculums/%d/requirements/%d",
-                            curriculum,
-                            requirement.uid()
-                        )
-                    )
-                )
-                .body(requirement);
-        } else {
+        if (!CurriculumVersion.SIMPLE.equals(version)) {
             throw new VersionHeaderException(version.name());
         }
+        final FederalCurriculumRequirement requirement = new FcsPostgres(this.ctx)
+            .curriculum(curriculum)
+            .requirements()
+            .create(
+                FederalCurriculumController.required(request, "grade").asInt(),
+                FederalCurriculumController.required(request, "subjectName").asText(),
+                FederalCurriculumController.required(request, "weeklyHours").asInt(),
+                FederalCurriculumRequirement.PartType.valueOf(
+                    FederalCurriculumController.required(request, "partType").asText()
+                )
+            );
+        final JsonMedia media = new JsonMedia();
+        requirement.print(media);
+        return ResponseEntity
+            .created(
+                URI.create(
+                    String.format(
+                        "/api/federal-curriculums/%d/requirements/%d",
+                        curriculum, requirement.uid()
+                    )
+                )
+            )
+            .body(media.json());
     }
 
     @GetMapping("/{curriculum}/requirements")
     @PreAuthorize(
         """
             hasAnyRole(
-                'ADMIN',
-                'DIRECTOR',
-                'DEPUTY_DIRECTOR',
-                'BASIC_MAKER',
-                'ADVANCED_MAKER',
-                'PRO_MAKER'
+                'ADMIN', 'DIRECTOR', 'DEPUTY_DIRECTOR',
+                'BASIC_MAKER', 'ADVANCED_MAKER', 'PRO_MAKER'
             )
         """
     )
     @Operation(summary = "Fetch federal curriculum requirements")
     //@checkstyle ParameterNumberCheck (1 line)
-    public ResponseEntity<PageableList<FederalCurriculumRequirement>> requirements(
+    public ResponseEntity<ObjectNode> requirements(
         @PathVariable final long curriculum,
         @RequestParam(name = "limit", required = false, defaultValue = "10") final int limit,
         @RequestParam(name = "offset", required = false, defaultValue = "1") final int offset,
@@ -279,88 +275,98 @@ public class FederalCurriculumController {
     ) throws Exception {
         Condition condition = DSL.trueCondition();
         if (grade != null) {
-            condition = condition.and(FederalCurriculumController.REQUIREMENT.GRADE.eq(grade));
+            condition = condition.and(
+                FederalCurriculumController.REQUIREMENT.GRADE.eq(grade)
+            );
         }
-        return ResponseEntity.ok().body(
-            new FcsPostgres(this.ctx)
-                .curriculum(curriculum)
-                .requirements()
-                .requirements(condition, new PageRequest(limit, offset))
+        final PageableList<FederalCurriculumRequirement> result = new FcsPostgres(this.ctx)
+            .curriculum(curriculum)
+            .requirements()
+            .requirements(condition, new PageRequest(limit, offset));
+        final ArrayNode items = JsonNodeFactory.instance.arrayNode();
+        result.list().forEach(
+            req -> {
+                final JsonMedia media = new JsonMedia();
+                req.print(media);
+                items.add(media.json());
+            }
         );
+        final ObjectNode response = JsonNodeFactory.instance.objectNode();
+        response.set("items", items);
+        response.put("total", result.total());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{curriculum}/requirements/{requirement}")
     @PreAuthorize(
         """
             hasAnyRole(
-                'ADMIN',
-                'DIRECTOR',
-                'DEPUTY_DIRECTOR',
-                'BASIC_MAKER',
-                'ADVANCED_MAKER',
-                'PRO_MAKER'
+                'ADMIN', 'DIRECTOR', 'DEPUTY_DIRECTOR',
+                'BASIC_MAKER', 'ADVANCED_MAKER', 'PRO_MAKER'
             )
         """
     )
     @Operation(summary = "Fetch federal curriculum requirement")
-    public ResponseEntity<FederalCurriculumRequirement> requirement(
+    public ResponseEntity<ObjectNode> requirement(
         @RequestHeader("version") final CurriculumVersion version,
         @PathVariable final long curriculum,
         @PathVariable final long requirement
     ) throws Exception {
-        if (CurriculumVersion.SIMPLE.equals(version)) {
-            return ResponseEntity.ok().body(
-                new FcsPostgres(this.ctx)
-                    .curriculum(curriculum)
-                    .requirements()
-                    .requirement(requirement)
-            );
-        } else {
+        if (!CurriculumVersion.SIMPLE.equals(version)) {
             throw new VersionHeaderException(version.name());
         }
+        final JsonMedia media = new JsonMedia();
+        new FcsPostgres(this.ctx)
+            .curriculum(curriculum)
+            .requirements()
+            .requirement(requirement)
+            .print(media);
+        return ResponseEntity.ok(media.json());
     }
 
     @PutMapping("/{curriculum}/requirements/{requirement}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update federal curriculum requirement")
     //@checkstyle ParameterNumberCheck (1 line)
-    public ResponseEntity<FederalCurriculumRequirement> putRequirement(
+    public ResponseEntity<ObjectNode> putRequirement(
         @RequestHeader("version") final CurriculumVersion version,
         @PathVariable final long curriculum,
         @PathVariable final long requirement,
         @RequestBody final JsonNode request
     ) throws Exception {
-        final JsonNode grade = FederalCurriculumController.required(request, "grade");
-        final JsonNode subject = FederalCurriculumController.required(request, "subjectName");
-        final JsonNode hours = FederalCurriculumController.required(request, "weeklyHours");
-        final JsonNode part = FederalCurriculumController.required(request, "partType");
-        if (CurriculumVersion.SIMPLE.equals(version)) {
-            final FederalCurriculumRequirement updated = new FcsPostgres(this.ctx)
-                .curriculum(curriculum)
-                .requirements()
-                .requirement(requirement)
-                .regraded(grade.asInt())
-                .resubjected(subject.asText())
-                .reweekled(hours.asInt())
-                .reparted(FederalCurriculumRequirement.PartType.valueOf(part.asText()));
-            final ResponseEntity<FederalCurriculumRequirement> response;
-            if (requirement == updated.uid()) {
-                response = ResponseEntity.ok().body(updated);
-            } else {
-                response = ResponseEntity.created(
+        if (!CurriculumVersion.SIMPLE.equals(version)) {
+            throw new VersionHeaderException(version.name());
+        }
+        final FederalCurriculumRequirement updated = new FcsPostgres(this.ctx)
+            .curriculum(curriculum)
+            .requirements()
+            .requirement(requirement)
+            .regraded(FederalCurriculumController.required(request, "grade").asInt())
+            .resubjected(FederalCurriculumController.required(request, "subjectName").asText())
+            .reweekled(FederalCurriculumController.required(request, "weeklyHours").asInt())
+            .reparted(
+                FederalCurriculumRequirement.PartType.valueOf(
+                    FederalCurriculumController.required(request, "partType").asText()
+                )
+            );
+        final JsonMedia media = new JsonMedia();
+        updated.print(media);
+        final ResponseEntity<ObjectNode> response;
+        if (requirement == updated.uid()) {
+            response = ResponseEntity.ok(media.json());
+        } else {
+            response = ResponseEntity
+                .created(
                     URI.create(
                         String.format(
                             "/api/federal-curriculums/%d/requirements/%d",
-                            curriculum,
-                            updated.uid()
+                            curriculum, updated.uid()
                         )
                     )
-                ).body(updated);
-            }
-            return response;
-        } else {
-            throw new VersionHeaderException(version.name());
+                )
+                .body(media.json());
         }
+        return response;
     }
 
     @DeleteMapping("/{curriculum}/requirements/{requirement}")
@@ -391,10 +397,13 @@ public class FederalCurriculumController {
         }
     }
 
-    /** Federal curriculum accept version. */
+    /**
+     * Federal curriculum accept version.
+     */
     public enum CurriculumVersion {
-
-        /** Version of simple federal curriculum. */
+        /**
+         * Version of simple federal curriculum.
+         */
         SIMPLE
     }
 }

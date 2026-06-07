@@ -12,6 +12,7 @@ import org.jooq.Condition;
  *
  * @since 0.0.1
  */
+@SuppressWarnings("PMD.UseObjectForClearerAPI")
 public interface FederalCurriculums {
 
     /**

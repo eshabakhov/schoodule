@@ -7,12 +7,12 @@ import com.eshabakhov.schoodule.Media;
 import lombok.EqualsAndHashCode;
 
 /**
- * Decorator that adds a description to a {@link FederalCurriculum}.
+ * Decorator that adds a version to a {@link FederalCurriculum}.
  *
  * @since 0.0.1
  */
-@EqualsAndHashCode(of = {"origin", "description"})
-public final class FcDescription implements FederalCurriculum {
+@EqualsAndHashCode(of = {"origin", "version"})
+public final class FcVersioned implements FederalCurriculum {
 
     /**
      * Wrapped curriculum.
@@ -20,19 +20,19 @@ public final class FcDescription implements FederalCurriculum {
     private final FederalCurriculum origin;
 
     /**
-     * Description.
+     * Version.
      */
-    private final String description;
+    private final String version;
 
     /**
-     * Creates a described curriculum decorator.
+     * Creates a versioned curriculum decorator.
      *
-     * @param origin      Wrapped curriculum
-     * @param description Description text
+     * @param origin  Wrapped curriculum
+     * @param version Version string
      */
-    public FcDescription(final FederalCurriculum origin, final String description) {
+    public FcVersioned(final FederalCurriculum origin, final String version) {
         this.origin = origin;
-        this.description = description;
+        this.version = version;
     }
 
     @Override
@@ -42,7 +42,7 @@ public final class FcDescription implements FederalCurriculum {
 
     @Override
     public Media print(final Media media) {
-        return this.origin.print(media).with("description", this.description);
+        return this.origin.print(media).with("version", this.version);
     }
 
     @Override
@@ -52,17 +52,17 @@ public final class FcDescription implements FederalCurriculum {
 
     @Override
     public FederalCurriculum releveled(final Level level) {
-        return new FcDescription(this.origin.releveled(level), this.description);
+        return new FcVersioned(this.origin.releveled(level), this.version);
     }
 
     @Override
     public FederalCurriculum reweeked(final Week week) {
-        return new FcDescription(this.origin.reweeked(week), this.description);
+        return new FcVersioned(this.origin.reweeked(week), this.version);
     }
 
     @Override
-    public FederalCurriculum reversioned(final String version) {
-        return new FcVersioned(this, version);
+    public FederalCurriculum reversioned(final String ver) {
+        return new FcVersioned(this.origin, ver);
     }
 
     @Override
@@ -71,8 +71,8 @@ public final class FcDescription implements FederalCurriculum {
     }
 
     @Override
-    public FederalCurriculum redescriptioned(final String desc) {
-        return new FcDescription(this.origin, desc);
+    public FederalCurriculum redescriptioned(final String description) {
+        return new FcDescription(this, description);
     }
 
     @Override

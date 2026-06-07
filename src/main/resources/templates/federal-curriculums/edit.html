@@ -11,44 +11,48 @@
         </div>
     </div>
     <div style="max-width:640px;margin:0 auto;">
-        <form th:action="@{/federal-curriculums/{id}/edit(id=${curriculum.uid()})}" method="post"
+        <!--
+            All variables (id, title, level, week, version, year, description)
+            come from ThymeleafMedia.map() added via addAllObjects() in the controller.
+        -->
+        <form th:action="@{/federal-curriculums/{cid}/edit(cid=${id})}" method="post"
               style="display:flex;flex-direction:column;gap:1rem;">
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Название
-                <input type="text" name="title" th:value="${curriculum.title()}" required autofocus/>
+                <input type="text" name="title" th:value="${title}" required autofocus/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Уровень образования
                 <select name="level" required>
-                    <option th:each="level : ${levels}"
-                            th:value="${level}"
-                            th:selected="${level == curriculum.level()}"
-                            th:text="${level}">BASIC</option>
+                    <option th:each="lvl : ${levels}"
+                            th:value="${lvl}"
+                            th:selected="${lvl.name() == level}"
+                            th:text="${lvl}">BASIC</option>
                 </select>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Учебная неделя
                 <select name="week" required>
-                    <option th:each="week : ${studyWeeks}"
-                            th:value="${week}"
-                            th:selected="${week == curriculum.week()}"
-                            th:text="${week}">FIVE_DAYS</option>
+                    <option th:each="wk : ${studyWeeks}"
+                            th:value="${wk}"
+                            th:selected="${wk.name() == week}"
+                            th:text="${wk}">FIVE_DAYS</option>
                 </select>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Версия
-                <input type="text" name="version" th:value="${curriculum.version()}" required/>
+                <input type="text" name="version" th:value="${version}" required/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Учебный год
-                <input type="text" name="year" th:value="${curriculum.year()}" required/>
+                <input type="text" name="year" th:value="${year}" required/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Описание
-                <textarea name="description" rows="4" th:text="${curriculum.description()}"></textarea>
+                <textarea name="description" rows="4" th:text="${description}"></textarea>
             </label>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
-                <a th:href="@{/federal-curriculums/{id}(id=${curriculum.uid()})}" class="btn-outline-action">Отмена</a>
+                <a th:href="@{/federal-curriculums/{cid}(cid=${id})}" class="btn-outline-action">Отмена</a>
                 <button type="submit" class="btn-primary">Сохранить</button>
             </div>
         </form>

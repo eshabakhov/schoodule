@@ -3,111 +3,79 @@
  */
 package com.eshabakhov.schoodule.curriculum;
 
-import com.eshabakhov.schoodule.Jsonable;
+import com.eshabakhov.schoodule.Media;
+import com.eshabakhov.schoodule.Printable;
 
 /**
- * Federal curriculum plan domain entity interface.
+ * Federal curriculum plan domain entity.
+ *
+ * <p>Does not expose data via getters. Instead, prints itself
+ * into a {@link Media} via {@link Printable#print(Media)}.
  *
  * @since 0.0.1
  */
 @SuppressWarnings("PMD.TooManyMethods")
-public interface FederalCurriculum extends Jsonable {
+public interface FederalCurriculum extends Printable {
 
     /**
-     * Returns a FederalCurriculum unique identifier.
+     * Returns the unique identifier of this curriculum.
      *
-     * @return FederalCurriculum's ID
+     * @return Curriculum ID
      */
     Long uid();
 
     /**
-     * Returns a title of the federal curriculum.
+     * Returns a new curriculum with an updated title.
      *
-     * @return Title
-     */
-    String title();
-
-    /**
-     * Returns an education level of the federal curriculum.
-     *
-     * @return Education level
-     */
-    Level level();
-
-    /**
-     * Returns a study week type of the federal curriculum.
-     *
-     * @return Study week type
-     */
-    Week week();
-
-    /**
-     * Returns a version of the federal curriculum.
-     *
-     * @return Version
-     */
-    String version();
-
-    /**
-     * Returns an academic year of the federal curriculum.
-     *
-     * @return Academic year
-     */
-    String year();
-
-    /**
-     * Returns a description of the federal curriculum.
-     *
-     * @return Description
-     */
-    String description();
-
-    /**
-     * Returns a title of the federal curriculum.
      * @param title New title
-     * @return Title
+     * @return Updated curriculum
      */
     FederalCurriculum retitled(String title);
 
     /**
-     * Returns an education level of the federal curriculum.
-     * @param level New level
-     * @return Education level
+     * Returns a new curriculum with an updated education level.
+     *
+     * @param level New education level
+     * @return Updated curriculum
      */
     FederalCurriculum releveled(Level level);
 
     /**
-     * Returns a study week type of the federal curriculum.
-     * @param week New week
-     * @return Study week type
+     * Returns a new curriculum with an updated study week type.
+     *
+     * @param week New study week type
+     * @return Updated curriculum
      */
     FederalCurriculum reweeked(Week week);
 
     /**
-     * Returns a version of the federal curriculum.
+     * Returns a new curriculum with an updated version.
+     *
      * @param version New version
-     * @return Version
+     * @return Updated curriculum
      */
     FederalCurriculum reversioned(String version);
 
     /**
-     * Returns an academic year of the federal curriculum.
-     * @param year New year
-     * @return Academic year
+     * Returns a new curriculum with an updated academic year.
+     *
+     * @param year New academic year
+     * @return Updated curriculum
      */
     FederalCurriculum reyeared(String year);
 
     /**
-     * Returns a description of the federal curriculum.
+     * Returns a new curriculum with an updated description.
+     *
      * @param description New description
-     * @return Description
+     * @return Updated curriculum
      */
     FederalCurriculum redescriptioned(String description);
 
     /**
-     * Returns collection of federal curriculum requirements.
+     * Returns the requirements collection for this curriculum.
      *
-     * @return Federal curriculum requirements collection
+     * @return Federal curriculum requirements
      */
     FederalCurriculumRequirements requirements();
 
@@ -117,14 +85,17 @@ public interface FederalCurriculum extends Jsonable {
      * @since 0.0.1
      */
     enum Level {
-
-        /** Primary general education, grades 1-4. */
+        /**
+         * Primary general education, grades 1–4.
+         */
         PRIMARY,
-
-        /** Basic general education, grades 5-9. */
+        /**
+         * Basic general education, grades 5–9.
+         */
         BASIC,
-
-        /** Secondary general education, grades 10-11. */
+        /**
+         * Secondary general education, grades 10–11.
+         */
         SECONDARY
     }
 
@@ -134,12 +105,13 @@ public interface FederalCurriculum extends Jsonable {
      * @since 0.0.1
      */
     enum Week {
-
-        /** Five-day study week. */
+        /**
+         * Five-day study week.
+         */
         FIVE_DAYS,
-
-        /** Six-day study week. */
+        /**
+         * Six-day study week.
+         */
         SIX_DAYS
     }
-
 }

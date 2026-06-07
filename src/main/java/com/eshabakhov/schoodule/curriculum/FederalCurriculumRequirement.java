@@ -1,84 +1,57 @@
 /*
- * В© 2025-2026 Eset Shabakhov. Schoodule
+ * © 2025-2026 Eset Shabakhov. Schoodule
  */
 package com.eshabakhov.schoodule.curriculum;
 
-import com.eshabakhov.schoodule.Jsonable;
+import com.eshabakhov.schoodule.Media;
+import com.eshabakhov.schoodule.Printable;
 
 /**
- * Federal curriculum requirement domain entity interface.
+ * Federal curriculum requirement domain entity.
+ *
+ * <p>Does not expose data via getters. Instead, prints itself
+ * into a {@link Media} via {@link Printable#print(Media)}.
  *
  * @since 0.0.1
  */
-public interface FederalCurriculumRequirement extends Jsonable {
+public interface FederalCurriculumRequirement extends Printable {
 
     /**
-     * Returns a FederalCurriculumRequirement unique identifier.
+     * Returns the unique identifier of this requirement.
      *
-     * @return FederalCurriculumRequirement's ID
+     * @return Requirement ID
      */
     Long uid();
 
     /**
-     * Returns the parent federal curriculum.
+     * Returns a new requirement with an updated grade.
      *
-     * @return Federal curriculum
-     */
-    FederalCurriculum curriculum();
-
-    /**
-     * Returns a school grade.
-     *
-     * @return Grade
-     */
-    Integer grade();
-
-    /**
-     * Returns a subject name.
-     *
-     * @return Subject name
-     */
-    String subjectName();
-
-    /**
-     * Returns the number of hours per week.
-     *
-     * @return Weekly hours
-     */
-    Integer weeklyHours();
-
-    /**
-     * Returns a curriculum part type.
-     *
-     * @return Curriculum part type
-     */
-    PartType partType();
-
-    /**
-     * Returns a school grade.
-     * @param grade Grade
-     * @return Grade
+     * @param grade New grade
+     * @return Updated requirement
      */
     FederalCurriculumRequirement regraded(Integer grade);
 
     /**
-     * Returns a subject name.
-     * @param subject Subject
-     * @return Subject name
+     * Returns a new requirement with an updated subject name.
+     *
+     * @param subject New subject name
+     * @return Updated requirement
      */
     FederalCurriculumRequirement resubjected(String subject);
 
     /**
-     * Returns the number of hours per week.
-     * @param hours Hours
-     * @return Weekly hours
+     * Returns a new requirement with an updated weekly hours count.
+     *
+     * @param hours New weekly hours
+     * @return Updated requirement
      */
     FederalCurriculumRequirement reweekled(Integer hours);
 
     /**
-     * Returns a curriculum part type.
-     * @param part PartType
-     * @return Curriculum part type
+     * Returns a new requirement with an updated curriculum part type.
+     *
+     * @param part New part type
+     * @return Updated requirement
      */
     FederalCurriculumRequirement reparted(PartType part);
 
@@ -88,12 +61,13 @@ public interface FederalCurriculumRequirement extends Jsonable {
      * @since 0.0.1
      */
     enum PartType {
-
-        /** Mandatory part of a curriculum plan. */
+        /**
+         * Mandatory part of a curriculum plan.
+         */
         MANDATORY,
-
-        /** Optional part of a curriculum plan. */
+        /**
+         * Optional part of a curriculum plan.
+         */
         OPTIONAL
     }
-
 }

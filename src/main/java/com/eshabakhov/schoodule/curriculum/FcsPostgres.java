@@ -20,7 +20,12 @@ import org.jooq.impl.DSL;
  * @since 0.0.1
  */
 @EqualsAndHashCode
-@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
+@SuppressWarnings(
+    {
+        "PMD.AvoidFieldNameMatchingMethodName",
+        "PMD.UseObjectForClearerAPI"
+    }
+)
 public final class FcsPostgres implements FederalCurriculums {
 
     /** JOOQ Table for FederalCurriculum. */
