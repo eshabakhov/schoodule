@@ -3,8 +3,8 @@
  */
 package com.eshabakhov.schoodule.federal.curriculum.requirement;
 
-import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.federal.curriculum.FcsPostgres;
+import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
 import org.jooq.DSLContext;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
