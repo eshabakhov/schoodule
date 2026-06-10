@@ -6,6 +6,7 @@ package com.eshabakhov.schoodule.media;
 import com.eshabakhov.schoodule.Media;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Set;
 
 /**
  * A {@link Media} implementation that collects printed data
@@ -49,6 +50,20 @@ public final class JsonMedia implements Media {
     @Override
     public Media with(final String name, final Integer value) {
         this.node.put(name, value);
+        return this;
+    }
+
+    @Override
+    public Media include(final String... names) {
+        final var allowed = Set.of(names);
+        this.node.fieldNames()
+            .forEachRemaining(
+                field ->  {
+                    if (!allowed.contains(field)) {
+                        this.node.remove(field);
+                    }
+                }
+            );
         return this;
     }
 

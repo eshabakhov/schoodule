@@ -1,7 +1,7 @@
 /*
  * © 2025-2026 Eset Shabakhov. Schoodule
  */
-package com.eshabakhov.schoodule.curriculum;
+package com.eshabakhov.schoodule.federal;
 
 import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.Printable;

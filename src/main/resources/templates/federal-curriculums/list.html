@@ -12,7 +12,7 @@
             <h1>Федеральные учебные планы</h1>
             <p class="page-subtitle">Справочник нормативных учебных планов для школ</p>
         </div>
-        <a th:href="@{/federal-curriculums/create}"
+        <a th:href="@{/federal/curriculums/create}"
            class="btn-primary"
            style="display:inline-flex;align-items:center;gap:.5rem;
                   padding:.5rem 1rem;border-radius:var(--radius-sm);
@@ -47,7 +47,7 @@
                 <div th:if="${#lists.isEmpty(curriculums)}"
                      style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted-fg);">
                     Федеральные учебные планы не найдены.
-                    <a th:href="@{/federal-curriculums/create}"
+                    <a th:href="@{/federal/curriculums/create}"
                        style="color:var(--primary);font-weight:600;
                               text-decoration:underline;margin-left:.25rem;">
                         Добавить первый

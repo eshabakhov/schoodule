@@ -7,4 +7,4 @@
  *
  * @since 0.0.1
  */
-package com.eshabakhov.schoodule.curriculum;
+package com.eshabakhov.schoodule.federal.curriculum;

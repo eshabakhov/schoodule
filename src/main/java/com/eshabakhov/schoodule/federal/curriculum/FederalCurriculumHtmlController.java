@@ -1,9 +1,11 @@
 /*
  * © 2025-2026 Eset Shabakhov. Schoodule
  */
-package com.eshabakhov.schoodule.curriculum;
+package com.eshabakhov.schoodule.federal.curriculum;
 
 import com.eshabakhov.schoodule.PageableList;
+import com.eshabakhov.schoodule.federal.FederalCurriculum;
+import com.eshabakhov.schoodule.federal.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.media.ThymeleafMedia;
 import com.eshabakhov.schoodule.page.PageRequest;
 import java.util.List;
@@ -30,10 +32,10 @@ import org.springframework.web.servlet.ModelAndView;
  * @checkstyle ParameterNumberCheck (1000 lines)
  */
 @Controller
-@RequestMapping("/federal-curriculums")
+@RequestMapping("/federal/curriculums")
 @PreAuthorize("hasRole('ADMIN')")
 @SuppressWarnings("PMD.UseObjectForClearerAPI")
-public class FederalCurriculumsHtmlController {
+public class FederalCurriculumHtmlController {
 
     /**
      * JOOQ Table for FederalCurriculum.
@@ -46,7 +48,7 @@ public class FederalCurriculumsHtmlController {
      */
     private final DSLContext ctx;
 
-    public FederalCurriculumsHtmlController(final DSLContext ctx) {
+    public FederalCurriculumHtmlController(final DSLContext ctx) {
         this.ctx = ctx;
     }
 
@@ -59,7 +61,7 @@ public class FederalCurriculumsHtmlController {
         Condition condition = DSL.trueCondition();
         if (title != null && !title.isBlank()) {
             condition = condition.and(
-                FederalCurriculumsHtmlController.CURRICULUM.TITLE.likeIgnoreCase(
+                FederalCurriculumHtmlController.CURRICULUM.TITLE.likeIgnoreCase(
                     String.format("%%%s%%", title)
                 )
             );
@@ -91,7 +93,7 @@ public class FederalCurriculumsHtmlController {
         Condition condition = DSL.trueCondition();
         if (title != null && !title.isBlank()) {
             condition = condition.and(
-                FederalCurriculumsHtmlController.CURRICULUM.TITLE.likeIgnoreCase(
+                FederalCurriculumHtmlController.CURRICULUM.TITLE.likeIgnoreCase(
                     String.format("%%%s%%", title)
                 )
             );
@@ -142,7 +144,7 @@ public class FederalCurriculumsHtmlController {
             desc = description.trim();
         }
         return String.format(
-            "redirect:/federal-curriculums/%d",
+            "redirect:/federal/curriculums/%d",
             new FcsPostgres(this.ctx)
                 .create(
                     title.trim(), level, week, version.trim(), year.trim(), desc
@@ -212,41 +214,6 @@ public class FederalCurriculumsHtmlController {
             .reversioned(version.trim())
             .reyeared(year.trim())
             .redescriptioned(desc);
-        return String.format("redirect:/federal-curriculums/%d", curriculum);
-    }
-
-    @PostMapping("/{curriculum}/requirements/create")
-    public String createRequirement(
-        @PathVariable final long curriculum,
-        @RequestParam final Integer grade,
-        @RequestParam(name = "subjectName") final String subject,
-        @RequestParam(name = "weeklyHours") final Integer hours,
-        @RequestParam(name = "partType") final FederalCurriculumRequirement.PartType part
-    ) throws Exception {
-        new FcsPostgres(this.ctx)
-            .curriculum(curriculum)
-            .requirements()
-            .create(grade, subject.trim(), hours, part);
-        return String.format("redirect:/federal-curriculums/%d", curriculum);
-    }
-
-    @PostMapping("/{curriculum}/requirements/{requirement}/edit")
-    public String editRequirement(
-        @PathVariable final long curriculum,
-        @PathVariable final long requirement,
-        @RequestParam final Integer grade,
-        @RequestParam(name = "subjectName") final String subject,
-        @RequestParam(name = "weeklyHours") final Integer hours,
-        @RequestParam(name = "partType") final FederalCurriculumRequirement.PartType part
-    ) throws Exception {
-        new FcsPostgres(this.ctx)
-            .curriculum(curriculum)
-            .requirements()
-            .requirement(requirement)
-            .regraded(grade)
-            .resubjected(subject.trim())
-            .reweekled(hours)
-            .reparted(part);
-        return String.format("redirect:/federal-curriculums/%d", curriculum);
+        return String.format("redirect:/federal/curriculums/%d", curriculum);
     }
 }

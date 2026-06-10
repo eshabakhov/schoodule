@@ -37,4 +37,12 @@ public interface Media {
      * @return Updated media
      */
     Media with(String name, Integer value);
+
+    /**
+     * Includes specified fields.
+     *
+     * @param name Fields name
+     * @return Updated media
+     */
+    Media include(String... name);
 }

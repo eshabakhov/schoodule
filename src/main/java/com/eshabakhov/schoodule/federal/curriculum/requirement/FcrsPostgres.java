@@ -1,11 +1,13 @@
 /*
  * В© 2025-2026 Eset Shabakhov. Schoodule
  */
-package com.eshabakhov.schoodule.curriculum;
+package com.eshabakhov.schoodule.federal.curriculum.requirement;
 
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.enums.CurriculumPartType;
+import com.eshabakhov.schoodule.federal.FederalCurriculumRequirement;
+import com.eshabakhov.schoodule.federal.FederalCurriculumRequirements;
 import com.eshabakhov.schoodule.page.ResponsePageableList;
 import com.eshabakhov.schoodule.tables.records.FederalCurriculumRequirementRecord;
 import lombok.EqualsAndHashCode;

@@ -2,7 +2,7 @@ $(() => {
     $(document).on('click', '#federal-curriculums-container .federal-curriculum-row', function(e) {
         if ($(e.target).closest('.card-item-actions').length) return;
         const id = $(this).data('id');
-        window.location.href = `/federal-curriculums/${id}`;
+        window.location.href = `/federal/curriculums/${id}`;
     });
 
     function getParam(key, fallback) {
@@ -51,12 +51,12 @@ $(() => {
         const name = $(this).data('name');
         if (!confirm(`Удалить «${name}»?`)) return;
         $.ajax({
-            url: `/api/federal-curriculums/${id}`,
+            url: `/api/federal/curriculums/${id}`,
             method: 'DELETE',
             headers: { version: 'SIMPLE' }
         })
             .done(() => {
-                window.location.href = '/federal-curriculums';
+                window.location.href = '/federal/curriculums';
             })
             .fail(() => alert('Не удалось удалить федеральный учебный план'));
     });
@@ -67,7 +67,7 @@ $(() => {
         const name = $(this).data('name');
         if (!confirm(`Удалить требование «${name}»?`)) return;
         $.ajax({
-            url: `/api/federal-curriculums/${curriculum}/requirements/${id}`,
+            url: `/api/federal/curriculums/${curriculum}/requirements/${id}`,
             method: 'DELETE',
             headers: { version: 'SIMPLE' }
         })

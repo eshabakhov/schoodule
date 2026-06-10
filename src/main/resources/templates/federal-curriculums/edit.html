@@ -15,7 +15,7 @@
             All variables (id, title, level, week, version, year, description)
             come from ThymeleafMedia.map() added via addAllObjects() in the controller.
         -->
-        <form th:action="@{/federal-curriculums/{cid}/edit(cid=${id})}" method="post"
+        <form th:action="@{/federal/curriculums/{cid}/edit(cid=${id})}" method="post"
               style="display:flex;flex-direction:column;gap:1rem;">
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Название
@@ -52,7 +52,7 @@
                 <textarea name="description" rows="4" th:text="${description}"></textarea>
             </label>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
-                <a th:href="@{/federal-curriculums/{cid}(cid=${id})}" class="btn-outline-action">Отмена</a>
+                <a th:href="@{/federal/curriculums/{cid}(cid=${id})}" class="btn-outline-action">Отмена</a>
                 <button type="submit" class="btn-primary">Сохранить</button>
             </div>
         </form>

@@ -7,6 +7,7 @@ import com.eshabakhov.schoodule.Media;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A {@link Media} implementation that collects printed data
@@ -62,6 +63,20 @@ public final class ThymeleafMedia implements Media {
     public Media with(final String name, final Integer value) {
         final Map<String, Object> copy = new LinkedHashMap<>(this.data);
         copy.put(name, value);
+        return new ThymeleafMedia(copy);
+    }
+
+    @Override
+    public Media include(final String... names) {
+        final var allowed = Set.of(names);
+        final Map<String, Object> copy = new LinkedHashMap<>(this.data);
+        copy.keySet().stream().iterator().forEachRemaining(
+            field -> {
+                if (!allowed.contains(field)) {
+                    copy.remove(field);
+                }
+            }
+        );
         return new ThymeleafMedia(copy);
     }
 
