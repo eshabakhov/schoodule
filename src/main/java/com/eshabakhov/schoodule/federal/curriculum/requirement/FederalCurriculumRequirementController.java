@@ -4,7 +4,7 @@
 package com.eshabakhov.schoodule.federal.curriculum.requirement;
 
 import com.eshabakhov.schoodule.PageableList;
-import com.eshabakhov.schoodule.federal.FederalCurriculumRequirement;
+import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.federal.curriculum.FcsPostgres;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.eshabakhov.schoodule.page.PageRequest;

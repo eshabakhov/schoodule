@@ -5,7 +5,6 @@ package com.eshabakhov.schoodule.federal.curriculum;
 
 import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
-import com.eshabakhov.schoodule.federal.FederalCurriculumRequirements;
 
 /**
  * Simple implementation of {@link FederalCurriculum}.

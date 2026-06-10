@@ -5,7 +5,6 @@ package com.eshabakhov.schoodule.federal.curriculum;
 
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
-import com.eshabakhov.schoodule.federal.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.media.ThymeleafMedia;
 import com.eshabakhov.schoodule.page.PageRequest;
 import java.util.List;

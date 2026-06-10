@@ -7,7 +7,6 @@ import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.enums.EducationLevelType;
 import com.eshabakhov.schoodule.enums.StudyWeekType;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
-import com.eshabakhov.schoodule.federal.FederalCurriculumRequirements;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.FcrsPostgres;
 import org.jooq.DSLContext;
 

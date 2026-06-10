@@ -5,6 +5,7 @@ package com.eshabakhov.schoodule.federal;
 
 import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.Printable;
+import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirements;
 
 /**
  * Federal curriculum plan domain entity.
