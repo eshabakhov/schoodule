@@ -293,13 +293,6 @@
                 is_deleted boolean NOT NULL DEFAULT FALSE,
                 created_at timestamptz NOT NULL DEFAULT NOW(),
                 updated_at timestamptz NOT NULL DEFAULT NOW(),
-                CONSTRAINT uq_federal_curriculum_variant
-                    UNIQUE (
-                        education_level,
-                        study_week_type,
-                        version,
-                        academic_year
-                    ),
                 CONSTRAINT chk_federal_curriculum_academic_year
                     CHECK (academic_year ~ '^[0-9]{4}/[0-9]{4}$')
             );
@@ -319,13 +312,6 @@
                         REFERENCES public.federal_curriculum(id)
                         ON DELETE CASCADE
                         ON UPDATE CASCADE,
-                CONSTRAINT uq_federal_curriculum_requirement_subject
-                    UNIQUE (
-                        federal_curriculum_id,
-                        grade,
-                        subject_name,
-                        part_type
-                    ),
                 CONSTRAINT chk_federal_curriculum_requirement_grade
                     CHECK (grade BETWEEN 1 AND 11),
                 CONSTRAINT chk_federal_curriculum_requirement_weekly_hours

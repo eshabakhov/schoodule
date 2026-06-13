@@ -46,22 +46,6 @@
             Удалить
         </button>
     </div>
-    <div id="edit-school" class="modal" sec:authorize="hasRole('ADMIN')">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Редактировать школу</h2>
-            <form id="edit-school-form">
-                <label>
-                    Название
-                    <input type="text"
-                           name="name"
-                           th:value="${school.name()}"
-                           required />
-                </label>
-                <button type="submit" id="submit-update">Обновить</button>
-            </form>
-        </div>
-    </div>
 </div>
 <th:block layout:fragment="page-scripts">
     <script type="module" th:src="@{/js/school-details.js}" sec:authorize="hasRole('ADMIN')"></script>
