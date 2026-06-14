@@ -1,0 +1,107 @@
+.req-add-panel {
+    display: none;
+    grid-template-columns: 80px 1fr 140px 170px auto;
+    gap: .75rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.req-add-panel.open {
+    display: grid;
+}
+
+.td-icon-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted-fg);
+    cursor: pointer;
+    transition: background var(--ease), color var(--ease), border-color var(--ease);
+    flex-shrink: 0;
+}
+
+.td-icon-btn:hover {
+    background: var(--accent);
+    color: var(--fg);
+}
+
+.td-icon-btn.btn-icon-delete:hover {
+    background: #fef2f2;
+    color: var(--destructive);
+    border-color: #fecaca;
+}
+
+.td-icon-btn.btn-icon-save {
+    border-color: #bbf7d0;
+    color: #15803d;
+}
+
+.td-icon-btn.btn-icon-save:hover {
+    background: #f0fdf4;
+}
+
+.td-icon-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.req-inline-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: .3rem .4rem;
+    font-size: .875rem;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    border: 1px solid var(--input);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--fg);
+    outline: none;
+    transition: border-color var(--ease), box-shadow var(--ease);
+}
+
+.req-inline-input:focus {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px rgb(24 24 27 / 8%);
+}
+
+.req-row-save,
+.req-row-cancel {
+    display: none;
+}
+
+tr.req-editing .req-row-edit,
+tr.req-editing .req-row-delete {
+    display: none;
+}
+
+tr.req-editing .req-row-save,
+tr.req-editing .req-row-cancel {
+    display: inline-flex;
+}
+
+.req-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.req-filter-bar input[type='number'],
+.req-filter-bar input[type='text'],
+.req-filter-bar select {
+    width: auto;
+}
+
+.req-filter-bar .search-wrap {
+    flex: 1;
+    min-width: 160px;
+    max-width: 260px;
+}
