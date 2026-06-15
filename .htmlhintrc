@@ -1,4 +1,9 @@
 {
+  "doctype-first": true,
+  "doctype-html5": true,
+  "head-script-disabled": true,
+  "html-lang-require": true,
+  "meta-charset-require": true,
   "tagname-lowercase": true,
   "attr-lowercase": true,
   "attr-value-double-quotes": true,
