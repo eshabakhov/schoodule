@@ -25,4 +25,10 @@
     --layout-w: 1200px;
     --ease: 150ms cubic-bezier(.4, 0, .2, 1);
     --destructive: #ef4444;
+    --error-bg: #fef2f2;
+    --error-text: #dc2626;
+    --error-border: #fecaca;
+    --success-bg: #f0fdf4;
+    --success-text: #16a34a;
+    --success-border: #bbf7d0;
 }
