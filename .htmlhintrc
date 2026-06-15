@@ -7,6 +7,7 @@
   "meta-description-require": true,
   "meta-viewport-require": true,
   "link-rel-canonical-require": true,
+  "style-disabled": true,
   "tagname-lowercase": true,
   "attr-lowercase": true,
   "attr-value-double-quotes": true,
