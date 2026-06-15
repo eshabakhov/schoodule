@@ -1,3 +1,4 @@
+<!-- htmlhint-disable link-rel-canonical-require -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
@@ -7,10 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
-    <link rel="icon" type="image/png" href="/favicon.svg">
     <meta charset="UTF-8">
     <meta name="description" content="Schoodule - система управления школьными расписаниями">
     <title th:text="${pageTitle} ?: 'Schoodule'">Schoodule</title>
+    <link rel="icon" type="image/png" href="/favicon.svg">
     <link rel="stylesheet" th:href="@{/css/shadcn.css}">
 </head>
 <body>
