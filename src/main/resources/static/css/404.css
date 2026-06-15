@@ -1,0 +1,35 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.error-page {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.error-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    height: 44px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+}
+
+.error-footer-logo {
+    font-size: .8125rem;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    color: var(--fg);
+}
+
+.error-footer-copy {
+    font-size: .75rem;
+    color: var(--muted-fg);
+}
