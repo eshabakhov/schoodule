@@ -9,7 +9,6 @@ import com.eshabakhov.schoodule.tables.SubscriptionPlanRoles;
 import com.eshabakhov.schoodule.tables.UserRole;
 import com.eshabakhov.schoodule.user.AuthUser;
 import com.eshabakhov.schoodule.user.Subscription;
-import com.eshabakhov.schoodule.user.SubscriptionPlan;
 import com.eshabakhov.schoodule.user.Subscriptions;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -74,17 +73,17 @@ public final class PgSubscriptions implements Subscriptions {
                 .onConflict(PgSubscriptions.SUB.USER_ID)
                 .doNothing()
                 .execute();
-            subscription = new PgSubscription(SubscriptionPlan.BASIC, OffsetDateTime.MAX);
+            subscription = new PgSubscription(Subscription.Plan.BASIC, OffsetDateTime.MAX);
         } else {
             final OffsetDateTime raw = selected.get(PgSubscriptions.SUB.EXPIRES_AT);
             if (raw == null) {
                 subscription = new PgSubscription(
-                    SubscriptionPlan.valueOf(selected.get(PgSubscriptions.SUB.PLAN)),
+                    Subscription.Plan.valueOf(selected.get(PgSubscriptions.SUB.PLAN)),
                     OffsetDateTime.MAX
                 );
             } else {
                 subscription = new PgSubscription(
-                    SubscriptionPlan.valueOf(selected.get(PgSubscriptions.SUB.PLAN)),
+                    Subscription.Plan.valueOf(selected.get(PgSubscriptions.SUB.PLAN)),
                     raw
                 );
             }
@@ -93,7 +92,7 @@ public final class PgSubscriptions implements Subscriptions {
     }
 
     @Override
-    public void subscription(final SubscriptionPlan plan) throws Exception {
+    public void subscription(final Subscription.Plan plan) throws Exception {
         if (this.user.info().corporate() || this.user.isAdmin()) {
             throw new PersonalOnlyException(this.user.uid());
         }
@@ -130,7 +129,7 @@ public final class PgSubscriptions implements Subscriptions {
      * @param plan Target plan
      * @return List of role types to grant
      */
-    private static List<RoleType> roles(final DSLContext dsl, final SubscriptionPlan plan) {
+    private static List<RoleType> roles(final DSLContext dsl, final Subscription.Plan plan) {
         return dsl.select(PgSubscriptions.SPR.ROLE_NAME)
             .from(PgSubscriptions.SPR)
             .where(PgSubscriptions.SPR.PLAN.eq(plan.name()))

@@ -5,7 +5,7 @@ package com.eshabakhov.schoodule.security;
 
 import com.eshabakhov.schoodule.User;
 import com.eshabakhov.schoodule.tables.LoginAttempt;
-import com.eshabakhov.schoodule.user.RoleEnum;
+import com.eshabakhov.schoodule.user.Roles;
 import com.eshabakhov.schoodule.user.UrsPostgres;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -54,7 +54,7 @@ public final class LoginSuccessHandler implements AuthenticationSuccessHandler {
         if (user.roles()
             .list()
             .stream()
-            .anyMatch(role -> RoleEnum.ADMIN.name().equalsIgnoreCase(role.name()))) {
+            .anyMatch(role -> Roles.RoleEnum.ADMIN.name().equalsIgnoreCase(role.name()))) {
             response.sendRedirect("/schools");
         } else {
             response.sendRedirect(String.format("/schools/%s", user.info().school()));

@@ -5,7 +5,6 @@ package com.eshabakhov.schoodule.user.role;
 
 import com.eshabakhov.schoodule.enums.RoleType;
 import com.eshabakhov.schoodule.user.Role;
-import com.eshabakhov.schoodule.user.RoleEnum;
 import com.eshabakhov.schoodule.user.Roles;
 import java.util.List;
 import java.util.stream.Collectors;

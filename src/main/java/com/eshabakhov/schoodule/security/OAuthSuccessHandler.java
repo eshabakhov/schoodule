@@ -4,7 +4,7 @@
 package com.eshabakhov.schoodule.security;
 
 import com.eshabakhov.schoodule.user.AuthUser;
-import com.eshabakhov.schoodule.user.RoleEnum;
+import com.eshabakhov.schoodule.user.Roles;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -41,7 +41,7 @@ public final class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         if (user.roles()
             .list()
             .stream()
-            .anyMatch(role -> RoleEnum.ADMIN.name().equalsIgnoreCase(role.name()))) {
+            .anyMatch(role -> Roles.RoleEnum.ADMIN.name().equalsIgnoreCase(role.name()))) {
             response.sendRedirect("/schools");
         } else {
             response.sendRedirect(String.format("/schools/%s", user.info().school()));
