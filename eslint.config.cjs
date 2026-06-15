@@ -16,11 +16,7 @@ module.exports = [
                 URLSearchParams: 'readonly',
                 history: 'readonly',
                 $: 'readonly',
-                jQuery: 'readonly',
-                initEntityCrud: 'readonly',
-                initEditEntity: 'readonly',
-                initSchoolCrud: 'readonly',
-                initModals: 'readonly'
+                jQuery: 'readonly'
             }
         },
         rules: {
