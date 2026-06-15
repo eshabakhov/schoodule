@@ -39,7 +39,7 @@ public final class ExpiryReset {
     private static final Logger LOG = LoggerFactory.getLogger(ExpiryReset.class);
 
     /** JOOQ table reference for subscription. */
-    private static final com.eshabakhov.schoodule.tables.Subscription SUB =
+    private static final com.eshabakhov.schoodule.tables.Subscription SUBSCRIPTION =
         com.eshabakhov.schoodule.tables.Subscription.SUBSCRIPTION;
 
     /** JOOQ table reference for subscription_plan_roles. */
@@ -57,15 +57,17 @@ public final class ExpiryReset {
      */
     @Scheduled(cron = "0 0 3 * * *", zone = "UTC")
     public void reset() {
-        final var expired = this.ctx
-            .select(ExpiryReset.SUB.USER_ID)
-            .from(ExpiryReset.SUB)
+        final var expired = this.ctx.select(ExpiryReset.SUBSCRIPTION.USER_ID)
+            .from(ExpiryReset.SUBSCRIPTION)
             .join(User.USER)
-            .on(User.USER.ID.eq(ExpiryReset.SUB.USER_ID))
+            .on(User.USER.ID.eq(ExpiryReset.SUBSCRIPTION.USER_ID))
             .where(
-                ExpiryReset.SUB.PLAN.ne("BASIC")
-                    .and(ExpiryReset.SUB.EXPIRES_AT.isNotNull())
-                    .and(ExpiryReset.SUB.EXPIRES_AT.lt(Instant.now().atOffset(ZoneOffset.UTC)))
+                ExpiryReset.SUBSCRIPTION.PLAN.ne("BASIC")
+                    .and(ExpiryReset.SUBSCRIPTION.EXPIRES_AT.isNotNull())
+                    .and(
+                        ExpiryReset.SUBSCRIPTION.EXPIRES_AT
+                            .lt(Instant.now().atOffset(ZoneOffset.UTC))
+                    )
                     .and(User.USER.CORPORATE.eq(false))
                     .and(User.USER.DELETED.isNull())
             )
@@ -74,21 +76,27 @@ public final class ExpiryReset {
         if (expired.isEmpty()) {
             size = 0;
         } else {
-            final List<RoleType> basic = roles(this.ctx, Subscription.Plan.BASIC);
+            final var basic = this.ctx.select(ExpiryReset.SPR.ROLE_NAME)
+                .from(ExpiryReset.SPR)
+                .where(ExpiryReset.SPR.PLAN.eq(Subscription.Plan.BASIC.name()))
+                .fetch()
+                .stream()
+                .map(r -> r.get(ExpiryReset.SPR.ROLE_NAME))
+                .toList();
             for (final var row : expired) {
-                final long uid = row.get(ExpiryReset.SUB.USER_ID);
+                final long uid = row.get(ExpiryReset.SUBSCRIPTION.USER_ID);
                 this.ctx.transaction(
                     conf -> {
                         final var dsl = conf.dsl();
                         swap(dsl, uid, basic);
-                        dsl.update(ExpiryReset.SUB)
-                            .set(ExpiryReset.SUB.PLAN, "BASIC")
-                            .setNull(ExpiryReset.SUB.EXPIRES_AT)
+                        dsl.update(ExpiryReset.SUBSCRIPTION)
+                            .set(ExpiryReset.SUBSCRIPTION.PLAN, "BASIC")
+                            .setNull(ExpiryReset.SUBSCRIPTION.EXPIRES_AT)
                             .set(
-                                ExpiryReset.SUB.UPDATED_AT,
+                                ExpiryReset.SUBSCRIPTION.UPDATED_AT,
                                 Instant.now().atOffset(ZoneOffset.UTC)
                             )
-                            .where(ExpiryReset.SUB.USER_ID.eq(uid))
+                            .where(ExpiryReset.SUBSCRIPTION.USER_ID.eq(uid))
                             .execute();
                     }
                 );
@@ -96,29 +104,8 @@ public final class ExpiryReset {
             size = expired.size();
         }
         if (size > 0) {
-            LOG.info(
-                "[ExpiryReset] Downgraded {} expired subscription(s) to BASIC%n",
-                size
-            );
+            LOG.info("[ExpiryReset] Downgraded {} expired subscription(s) to BASIC%n", size);
         }
-    }
-
-    /**
-     * Reads the {@link RoleType} set for the given plan
-     * from {@code subscription_plan_roles}.
-     *
-     * @param dsl  DSL context (may be inside a transaction)
-     * @param plan Target plan
-     * @return List of role types to grant
-     */
-    private static List<RoleType> roles(final DSLContext dsl, final Subscription.Plan plan) {
-        return dsl.select(ExpiryReset.SPR.ROLE_NAME)
-            .from(ExpiryReset.SPR)
-            .where(ExpiryReset.SPR.PLAN.eq(plan.name()))
-            .fetch()
-            .stream()
-            .map(r -> r.get(ExpiryReset.SPR.ROLE_NAME))
-            .toList();
     }
 
     /**
@@ -154,8 +141,7 @@ public final class ExpiryReset {
             )
             .execute();
         for (final RoleType role : grants) {
-            final var rid = dsl
-                .select(Role.ROLE.ID)
+            final var rid = dsl.select(Role.ROLE.ID)
                 .from(Role.ROLE)
                 .where(Role.ROLE.NAME.eq(role))
                 .fetchOne();
