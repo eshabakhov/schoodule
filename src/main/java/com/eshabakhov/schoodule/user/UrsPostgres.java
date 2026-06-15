@@ -62,8 +62,8 @@ public final class UrsPostgres implements Users {
                     throw new UserCreationException("Failed to create user");
                 }
                 final var user = new UrPostgres(ttx, inserted.getId());
-                user.roles().grant(RoleEnum.STUDENT);
-                user.roles().grant(RoleEnum.BASIC_MAKER);
+                user.roles().grant(Roles.RoleEnum.STUDENT);
+                user.roles().grant(Roles.RoleEnum.BASIC_MAKER);
                 return user;
             }
         );

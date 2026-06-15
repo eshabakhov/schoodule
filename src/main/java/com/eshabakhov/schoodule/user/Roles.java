@@ -37,4 +37,39 @@ public interface Roles {
      * @throws Exception if removal fails
      */
     void revoke(long identity) throws Exception;
+
+    /**
+     * User role enumeration.
+     *
+     * @since 0.0.1
+     */
+    enum RoleEnum {
+
+        /** System administrator. */
+        ADMIN,
+
+        /** School director. */
+        DIRECTOR,
+
+        /** Deputy director. */
+        DEPUTY_DIRECTOR,
+
+        /** Teacher. */
+        TEACHER,
+
+        /** Student. */
+        STUDENT,
+
+        /** Basic maker. */
+        BASIC_MAKER,
+
+        /** Advanced maker. */
+        ADVANCED_MAKER,
+
+        /** Pro maker. */
+        PRO_MAKER,
+
+        /** Viewer. */
+        VIEWER
+    }
 }

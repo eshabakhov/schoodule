@@ -239,11 +239,11 @@ public class UserController {
             .roles()
             .grant(
                 switch (rolenode.asText()) {
-                    case "ADMIN" -> RoleEnum.ADMIN;
-                    case "DIRECTOR" -> RoleEnum.DIRECTOR;
-                    case "DEPUTY_DIRECTOR" -> RoleEnum.DEPUTY_DIRECTOR;
-                    case "TEACHER" -> RoleEnum.TEACHER;
-                    default -> RoleEnum.STUDENT;
+                    case "ADMIN" -> Roles.RoleEnum.ADMIN;
+                    case "DIRECTOR" -> Roles.RoleEnum.DIRECTOR;
+                    case "DEPUTY_DIRECTOR" -> Roles.RoleEnum.DEPUTY_DIRECTOR;
+                    case "TEACHER" -> Roles.RoleEnum.TEACHER;
+                    default -> Roles.RoleEnum.STUDENT;
                 }
             );
         return ResponseEntity

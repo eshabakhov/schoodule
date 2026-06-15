@@ -4,7 +4,6 @@
 package com.eshabakhov.schoodule.user.subscription;
 
 import com.eshabakhov.schoodule.user.Subscription;
-import com.eshabakhov.schoodule.user.SubscriptionPlan;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 
@@ -26,7 +25,7 @@ import java.time.OffsetDateTime;
 public final class PgSubscription implements Subscription {
 
     /** Current plan. */
-    private final SubscriptionPlan current;
+    private final Plan current;
 
     /** Expiry; {@link OffsetDateTime#MAX} for perpetual plans. */
     private final OffsetDateTime exp;
@@ -37,13 +36,13 @@ public final class PgSubscription implements Subscription {
      * @param current Plan in effect
      * @param expiry  Expiry timestamp; use {@link OffsetDateTime#MAX} for no expiry
      */
-    public PgSubscription(final SubscriptionPlan current, final OffsetDateTime expiry) {
+    public PgSubscription(final Plan current, final OffsetDateTime expiry) {
         this.current = current;
         this.exp = expiry;
     }
 
     @Override
-    public SubscriptionPlan plan() {
+    public Plan plan() {
         return this.current;
     }
 

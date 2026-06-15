@@ -6,7 +6,7 @@ package com.eshabakhov.schoodule.security;
 import com.eshabakhov.schoodule.enums.RoleType;
 import com.eshabakhov.schoodule.tables.Role;
 import com.eshabakhov.schoodule.tables.UserRole;
-import com.eshabakhov.schoodule.user.RoleEnum;
+import com.eshabakhov.schoodule.user.Roles;
 import com.eshabakhov.schoodule.user.UrsPostgres;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
@@ -67,7 +67,7 @@ public final class BootstrapAdmin implements ApplicationRunner {
                     this.email(),
                     false
                 );
-                admin.roles().grant(RoleEnum.ADMIN);
+                admin.roles().grant(Roles.RoleEnum.ADMIN);
                 BootstrapAdmin.LOG.info(
                     "Bootstrap admin created for username '{}' and email '{}'",
                     this.username(),

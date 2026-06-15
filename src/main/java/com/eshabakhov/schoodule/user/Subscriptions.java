@@ -35,5 +35,5 @@ public interface Subscriptions {
      *
      * @param plan Target plan
      */
-    void subscription(SubscriptionPlan plan) throws Exception;
+    void subscription(Subscription.Plan plan) throws Exception;
 }

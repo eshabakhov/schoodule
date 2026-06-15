@@ -64,7 +64,7 @@ public final class SubscriptionPage {
                 "subscription",
                 new PgSubscriptions(this.ctx, user).subscription()
             );
-            model.addAttribute("plans", SubscriptionPlan.values());
+            model.addAttribute("plans", Subscription.Plan.values());
             page = "user/subscription";
         }
         return page;
@@ -89,8 +89,8 @@ public final class SubscriptionPage {
         if (user.info().corporate()) {
             page = "redirect:/users/profile";
         } else {
-            final SubscriptionPlan selected = SubscriptionPlan.valueOf(plan);
-            if (selected == SubscriptionPlan.BASIC) {
+            final Subscription.Plan selected = Subscription.Plan.valueOf(plan);
+            if (selected == Subscription.Plan.BASIC) {
                 page = "redirect:/users/subscription";
             } else {
                 new PgSubscriptions(this.ctx, user).subscription(selected);
@@ -113,7 +113,7 @@ public final class SubscriptionPage {
         if (user.info().corporate()) {
             page = "redirect:/users/profile";
         } else {
-            new PgSubscriptions(this.ctx, user).subscription(SubscriptionPlan.BASIC);
+            new PgSubscriptions(this.ctx, user).subscription(Subscription.Plan.BASIC);
             page = "redirect:/users/subscription?cancelled";
         }
         return page;

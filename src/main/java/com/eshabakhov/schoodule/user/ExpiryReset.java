@@ -74,7 +74,7 @@ public final class ExpiryReset {
         if (expired.isEmpty()) {
             size = 0;
         } else {
-            final List<RoleType> basic = roles(this.ctx, SubscriptionPlan.BASIC);
+            final List<RoleType> basic = roles(this.ctx, Subscription.Plan.BASIC);
             for (final var row : expired) {
                 final long uid = row.get(ExpiryReset.SUB.USER_ID);
                 this.ctx.transaction(
@@ -111,7 +111,7 @@ public final class ExpiryReset {
      * @param plan Target plan
      * @return List of role types to grant
      */
-    private static List<RoleType> roles(final DSLContext dsl, final SubscriptionPlan plan) {
+    private static List<RoleType> roles(final DSLContext dsl, final Subscription.Plan plan) {
         return dsl.select(ExpiryReset.SPR.ROLE_NAME)
             .from(ExpiryReset.SPR)
             .where(ExpiryReset.SPR.PLAN.eq(plan.name()))
