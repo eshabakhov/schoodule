@@ -4,11 +4,9 @@ $(() => {
         const id = $(this).data('id');
         window.location.href = `/federal/curriculums/${id}`;
     });
-
     function getParam(key, fallback) {
         return new URLSearchParams(window.location.search).get(key) || fallback;
     }
-
     function updateUrl(title, offset, limit) {
         const params = new URLSearchParams();
         if (title) params.set('title', title);
@@ -16,7 +14,6 @@ $(() => {
         params.set('limit', limit);
         history.pushState(null, '', window.location.pathname + '?' + params.toString());
     }
-
     function loadFragment(title, offset, limit) {
         updateUrl(title, offset, limit);
         $.get(window.location.pathname + '/fragment', { title, offset, limit })
@@ -24,7 +21,6 @@ $(() => {
                 $('#federal-curriculums-results').replaceWith(html);
             });
     }
-
     $(document).on(
         'click',
         '#federal-curriculums-pagination .pagination-btn',
@@ -36,7 +32,6 @@ $(() => {
             loadFragment(title, offset, limit);
         }
     );
-
     let searchTimer;
     $(document).on('input', '#federal-curriculum-search', function() {
         clearTimeout(searchTimer);
@@ -45,7 +40,6 @@ $(() => {
             loadFragment(q, 1, parseInt(getParam('limit', '15')));
         }, 300);
     });
-
     $(document).on('click', '.btn-delete-curriculum', function() {
         const id = $(this).data('id');
         const name = $(this).data('name');

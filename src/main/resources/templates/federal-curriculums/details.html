@@ -5,6 +5,7 @@
       layout:decorate="~{base}">
 <head>
     <title th:text="${pageTitle}">Федеральный учебный план</title>
+    <link rel="stylesheet" th:href="@{/css/federal-curriculum-details.css}">
 </head>
 <body>
 <div layout:fragment="content">
@@ -25,7 +26,7 @@
                     </svg>
                 </a>
             </h1>
-            <p class="page-subtitle">Информация о школе</p>
+            <p class="page-subtitle">Информация о федеральном учебном плане</p>
         </div>
     </div>
     <div class="school-info">
@@ -54,89 +55,148 @@
             <span class="info-value" th:text="${description} ?: '—'">—</span>
         </div>
     </div>
-
-    <div class="section-header" style="margin-top:2rem;">
-        <h2>Требования учебного плана</h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;
+                margin-top:2rem;margin-bottom:.75rem;">
+        <h2 style="margin:0;">Требования учебного плана</h2>
+        <button id="btn-toggle-add"
+                type="button"
+                class="btn-outline-action">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="2"
+                 id="toggle-add-icon"
+                 style="width:14px;height:14px;">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span id="toggle-add-label">Добавить требование</span>
+        </button>
     </div>
-    <form th:action="@{/federal/curriculums/{cid}/requirements/create(cid=${id})}"
-          method="post"
-          style="display:grid;grid-template-columns:80px 1fr 140px 170px auto;gap:.75rem;margin-top:1rem;">
+    <form id="req-add-panel"
+          class="req-add-panel"
+          th:action="@{/federal/curriculums/{cid}/requirements/create(cid=${id})}"
+          method="post">
         <input type="number" name="grade" min="1" max="11" placeholder="Класс" required/>
         <input type="text" name="subjectName" placeholder="Предмет" required/>
-        <input type="number" name="weeklyHours" min="1" placeholder="Часы" required/>
+        <input type="number" name="weeklyHours" min="1" placeholder="Часов/нед." required/>
         <select name="partType" required>
-            <option th:each="part : ${partTypes}" th:value="${part}" th:text="${part}">MANDATORY</option>
+            <option th:each="part : ${partTypes}"
+                    th:value="${part}"
+                    th:text="${part}">MANDATORY</option>
         </select>
-        <button type="submit" class="btn-primary">Добавить</button>
+        <button type="submit" class="btn-primary">Сохранить</button>
     </form>
-
+    <div class="req-filter-bar">
+        <input type="number" id="filter-grade" min="1" max="11"
+               placeholder="Класс" style="width:90px;"/>
+        <div class="search-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="filter-subject" placeholder="Поиск по предмету..."/>
+        </div>
+        <select id="filter-part" style="width:auto;">
+            <option value="">Все части</option>
+            <option th:each="part : ${partTypes}"
+                    th:value="${part}"
+                    th:text="${part}">MANDATORY</option>
+        </select>
+    </div>
     <table class="data-table">
         <thead>
         <tr>
             <th>Класс</th>
             <th>Предмет</th>
-            <th>Часов/неделю</th>
+            <th>Часов/нед.</th>
             <th>Часть</th>
-            <th>Действия</th>
+            <th style="text-align:right;padding-right:1rem;">Действия</th>
         </tr>
         </thead>
-        <tbody>
+        <tbody id="req-tbody">
+        <tr id="req-empty-row" style="display:none;">
+            <td colspan="5" class="empty-state">Требования не найдены.</td>
+        </tr>
         <tr th:if="${#lists.isEmpty(requirements)}">
             <td colspan="5" class="empty-state">Требования пока не добавлены.</td>
         </tr>
-        <!--
-            Each item in requirements is a Map<String, Object>
-            printed by FcrPostgres via ThymeleafMedia.
-            Keys: id, grade, subjectName, weeklyHours, partType
-        -->
-        <tr th:each="item : ${requirements}">
-            <td th:text="${item['grade']}">5</td>
-            <td th:text="${item['subjectName']}">Математика</td>
-            <td th:text="${item['weeklyHours']}">5</td>
-            <td th:text="${item['partType']}">MANDATORY</td>
+        <tr th:each="item : ${requirements}"
+            class="req-data-row"
+            th:data-grade="${item['grade']}"
+            th:data-subject="${item['subjectName']}"
+            th:data-part="${item['partType']}">
+            <td class="view-grade"   th:text="${item['grade']}">5</td>
+            <td class="view-subject" th:text="${item['subjectName']}">Математика</td>
+            <td class="view-hours"   th:text="${item['weeklyHours']}">5</td>
+            <td class="view-part"    th:text="${item['partType']}">MANDATORY</td>
             <td>
-                <details>
-                    <summary class="btn-outline-action" style="cursor:pointer;display:inline-flex;">Изменить</summary>
-                    <form th:action="@{/federal/curriculums/{cid}/requirements/{rid}/edit(cid=${id},rid=${item['id']})}"
+                <div class="td-actions">
+                    <button type="button"
+                            class="td-icon-btn req-row-edit"
+                            title="Редактировать">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2">
+                            <path d="M12 20h9"/>
+                            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                        </svg>
+                    </button>
+                    <button type="button"
+                            class="td-icon-btn btn-icon-delete req-row-delete btn-delete-requirement"
+                            th:data-id="${item['id']}"
+                            th:data-curriculum="${id}"
+                            th:data-name="${item['subjectName']}"
+                            title="Удалить">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                    <button type="button"
+                            class="td-icon-btn btn-icon-save req-row-save"
+                            title="Сохранить">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </button>
+                    <button type="button"
+                            class="td-icon-btn req-row-cancel"
+                            title="Отмена">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                    <form class="req-edit-form"
+                          th:action="@{/federal/curriculums/{cid}/requirements/{rid}/edit(cid=${id},rid=${item['id']})}"
                           method="post"
-                          style="display:grid;grid-template-columns:80px 1fr 120px 160px auto;gap:.5rem;margin-top:.75rem;">
-                        <input type="number" name="grade" min="1" max="11"
-                               th:value="${item['grade']}" required/>
-                        <input type="text" name="subjectName"
-                               th:value="${item['subjectName']}" required/>
-                        <input type="number" name="weeklyHours" min="1"
-                               th:value="${item['weeklyHours']}" required/>
-                        <select name="partType" required>
-                            <option th:each="part : ${partTypes}"
-                                    th:value="${part}"
-                                    th:selected="${part.name() == item['partType']}"
-                                    th:text="${part}">MANDATORY</option>
-                        </select>
-                        <button type="submit" class="btn-primary">OK</button>
+                          style="display:none;">
+                        <input type="hidden" name="grade"       class="edit-grade"/>
+                        <input type="hidden" name="subjectName" class="edit-subject"/>
+                        <input type="hidden" name="weeklyHours" class="edit-hours"/>
+                        <input type="hidden" name="partType"    class="edit-part"/>
                     </form>
-                </details>
-                <button class="btn-outline-action btn-delete-requirement"
-                        th:data-id="${item['id']}"
-                        th:data-curriculum="${id}"
-                        th:data-name="${item['subjectName']}"
-                        style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;">
-                    Удалить
-                </button>
+                </div>
             </td>
         </tr>
+
         </tbody>
     </table>
+    <div class="pagination-wrap" id="req-pagination"></div>
     <div class="details-footer-actions" sec:authorize="hasRole('ADMIN')">
         <button class="btn-outline-action btn-delete-curriculum"
                 th:data-id="${id}"
                 th:data-name="${title}"
                 style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;">
-            Удалить
+            Удалить план
         </button>
     </div>
 </div>
 <th:block layout:fragment="page-scripts">
     <script type="module" th:src="@{/js/federal-curriculums.js}"></script>
+    <script type="module" th:src="@{/js/federal-curriculum-details.js}"></script>
 </th:block>
 </body>
 </html>
