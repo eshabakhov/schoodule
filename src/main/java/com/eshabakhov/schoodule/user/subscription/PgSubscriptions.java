@@ -64,7 +64,6 @@ public final class PgSubscriptions implements Subscriptions {
             .from(PgSubscriptions.SUB)
             .where(PgSubscriptions.SUB.USER_ID.eq(this.user.uid()))
             .fetchOne();
-        final Subscription subscription;
         if (selected == null) {
             this.ctx.insertInto(PgSubscriptions.SUB)
                 .set(PgSubscriptions.SUB.USER_ID, this.user.uid())
@@ -73,22 +72,8 @@ public final class PgSubscriptions implements Subscriptions {
                 .onConflict(PgSubscriptions.SUB.USER_ID)
                 .doNothing()
                 .execute();
-            subscription = new PgSubscription(Subscription.Plan.BASIC, OffsetDateTime.MAX);
-        } else {
-            final OffsetDateTime raw = selected.get(PgSubscriptions.SUB.EXPIRES_AT);
-            if (raw == null) {
-                subscription = new PgSubscription(
-                    Subscription.Plan.valueOf(selected.get(PgSubscriptions.SUB.PLAN)),
-                    OffsetDateTime.MAX
-                );
-            } else {
-                subscription = new PgSubscription(
-                    Subscription.Plan.valueOf(selected.get(PgSubscriptions.SUB.PLAN)),
-                    raw
-                );
-            }
         }
-        return subscription;
+        return new PgSubscription(this.ctx, this.user.uid());
     }
 
     @Override
