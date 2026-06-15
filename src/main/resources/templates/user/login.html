@@ -8,37 +8,6 @@
     <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
     <title>Вход — Schoodule</title>
     <link rel="stylesheet" th:href="@{/css/login.css}">
-    <style>
-        .btn-yandex {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: .625rem;
-            width: 100%;
-            padding: .5625rem 1rem;
-            font-size: .875rem;
-            font-weight: 600;
-            font-family: 'DM Sans', system-ui, sans-serif;
-            color: #fff;
-            background: #fc3f1d;
-            border: none;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            text-decoration: none;
-            transition: background var(--ease), transform .15s;
-            letter-spacing: .01em;
-            box-sizing: border-box;
-        }
-
-        .btn-yandex:hover  { background: #e0381a; }
-        .btn-yandex:active { transform: scale(.98); }
-
-        .btn-yandex svg {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-        }
-    </style>
 </head>
 <body>
 <div class="page-container">
