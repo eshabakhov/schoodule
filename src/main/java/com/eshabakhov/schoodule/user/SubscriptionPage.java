@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.Map;
 
 /**
  * HTTP endpoints for subscription management.
@@ -45,29 +48,25 @@ public final class SubscriptionPage {
      * Renders the subscription management page for personal users.
      *
      * @param user  Authenticated user
-     * @param model View model
      * @return Template name or redirect
      * @throws Exception if database access fails
      */
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
-    public String page(
-        @AuthenticationPrincipal
-        final AuthUser user,
-        final Model model
-    ) throws Exception {
-        final String page;
+    public ModelAndView page(@AuthenticationPrincipal final AuthUser user) throws Exception {
+        final ModelAndView model;
         if (user.info().corporate()) {
-            page = "redirect:/users/profile";
+            model = new ModelAndView("redirect:/users/profile");
         } else {
-            model.addAttribute("pageTitle", "Подписка");
-            model.addAttribute(
-                "subscription",
-                new PgSubscriptions(this.ctx, user).subscription()
-            );
-            model.addAttribute("plans", Subscription.Plan.values());
-            page = "user/subscription";
+            model = new ModelAndView("user/subscription")
+                .addAllObjects(
+                    Map.of(
+                        "pageTitle", "Подписка",
+                        "subscription", new PgSubscriptions(this.ctx, user).subscription(),
+                        "plans", Subscription.Plan.values()
+                    )
+                );
         }
-        return page;
+        return model;
     }
 
     /**
@@ -79,25 +78,27 @@ public final class SubscriptionPage {
      * @throws Exception if activation fails
      */
     @PostMapping("/checkout")
-    public String checkout(
+    public ModelAndView checkout(
         @AuthenticationPrincipal
         final AuthUser user,
         @RequestParam
         final String plan
     ) throws Exception {
-        final String page;
+        final ModelAndView model;
         if (user.info().corporate()) {
-            page = "redirect:/users/profile";
+            model = new ModelAndView("redirect:/users/profile");
         } else {
             final Subscription.Plan selected = Subscription.Plan.valueOf(plan);
             if (selected == Subscription.Plan.BASIC) {
-                page = "redirect:/users/subscription";
+                model = new ModelAndView("redirect:/users/subscription");
             } else {
                 new PgSubscriptions(this.ctx, user).subscription(selected);
-                page = String.format("redirect:/users/subscription?activated=%s", selected.name());
+                model = new ModelAndView(
+                    String.format("redirect:/users/subscription?activated=%s", selected.name())
+                );
             }
         }
-        return page;
+        return model;
     }
 
     /**
@@ -108,14 +109,14 @@ public final class SubscriptionPage {
      * @throws Exception if downgrade fails
      */
     @PostMapping("/cancel")
-    public String cancel(@AuthenticationPrincipal final AuthUser user) throws Exception {
-        final String page;
+    public ModelAndView cancel(@AuthenticationPrincipal final AuthUser user) throws Exception {
+        final ModelAndView model;
         if (user.info().corporate()) {
-            page = "redirect:/users/profile";
+            model = new ModelAndView("redirect:/users/profile");
         } else {
             new PgSubscriptions(this.ctx, user).subscription(Subscription.Plan.BASIC);
-            page = "redirect:/users/subscription?cancelled";
+            model = new ModelAndView("redirect:/users/subscription?cancelled");
         }
-        return page;
+        return model;
     }
 }
