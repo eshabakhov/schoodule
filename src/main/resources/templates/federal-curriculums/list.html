@@ -106,9 +106,7 @@
                         </svg>
                     </a>
                     <th:block th:if="${totalPages > 1}"
-                              th:with=" start=${page > 3 ? page - 2 : 1},
-                              end=${page + 2 <= totalPages ? page + 2 : totalPages},
-                              end=${end < 5 ? (totalPages < 5 ? totalPages : 5) : end}">
+                              th:with="start=${page > 3 ? page - 2 : 1},end=${page + 2 <= totalPages ? page + 2 : totalPages},end=${end < 5 ? (totalPages < 5 ? totalPages : 5) : end}">
                         <th:block th:if="${start > 1}">
                             <a class="pagination-btn"
                                href="#"

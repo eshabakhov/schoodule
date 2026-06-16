@@ -18,6 +18,7 @@
   "attr-value-double-quotes": true,
   "attr-value-no-duplication": true,
   "attr-value-not-empty": true,
+  "attr-whitespace": true,
   "tagname-lowercase": true,
   "attr-value-double-quotes": true,
   "spec-char-escape": false
