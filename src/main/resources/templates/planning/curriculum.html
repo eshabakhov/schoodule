@@ -27,6 +27,7 @@
         <div class="section-header">
             <h2>План классов</h2>
             <button class="btn-add"
+                    type="submit"
                     onclick="document.getElementById('add-modal').style.display='flex'">+ Добавить</button>
         </div>
         <div class="error-message" th:if="${param.error}" th:text="${param.error}">Ошибка</div>
