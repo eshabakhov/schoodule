@@ -27,9 +27,11 @@
         <form method="post"
               style="display:flex;flex-direction:column;gap:1rem;"
               th:action="@{/schools/{id}/schedules/create(id=${school.uid()})}">
-            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+            <label for="schedule-name"
+                   style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Название расписания
-                <input name="name"
+                <input id="schedule-name"
+                       name="name"
                        type="text"
                        autofocus="autofocus"
                        placeholder="Например: Расписание 2026/2027"

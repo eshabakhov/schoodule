@@ -22,9 +22,11 @@
         <form method="post"
               style="display:flex;flex-direction:column;gap:1rem;"
               th:action="@{/federal/curriculums/create}">
-            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+            <label for="title-name"
+                   style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Название
-                <input name="title"
+                <input id="title-name"
+                       name="title"
                        type="text"
                        autofocus="autofocus"
                        required="required"/>
@@ -45,15 +47,19 @@
                             th:value="${week}">FIVE_DAYS</option>
                 </select>
             </label>
-            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+            <label for="version-name"
+                   style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Версия
-                <input name="version"
+                <input id="version-name"
+                       name="version"
                        type="text"
                        required="required"/>
             </label>
-            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+            <label for="year-name"
+                   style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Учебный год
-                <input name="year"
+                <input id="year-name"
+                       name="year"
                        type="text"
                        placeholder="2026/2027"
                        required="required"/>

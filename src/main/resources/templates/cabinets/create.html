@@ -27,9 +27,11 @@
         <form method="post"
               style="display:flex;flex-direction:column;gap:1rem;"
               th:action="@{/schools/{s}/buildings/{b}/cabinets/create(s=${school.uid()},b=${building.uid()})}">
-            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+            <label for="cabinet-name"
+                   style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Название кабинета
-                <input name="name"
+                <input id="cabinet-name"
+                       name="name"
                        type="text"
                        autofocus="autofocus"
                        placeholder="Например: Кабинет 301"
