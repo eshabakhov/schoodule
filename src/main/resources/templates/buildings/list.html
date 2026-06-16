@@ -46,7 +46,6 @@
                    type="text"
                    placeholder="Поиск корпуса..."
                    th:value="${param.name != null ? param.name[0] : ''}">
-            </input>
         </label>
     </div>
     <th:block th:fragment="buildings-grid">
@@ -136,7 +135,7 @@
                        href="#"
                        th:data-limit="${limit}"
                        th:data-offset="${page + 1}"
-                       th:if="${hasNext}"\>
+                       th:if="${hasNext}">
                         <svg fill="none"
                              stroke="currentColor"
                              stroke-width="2"
