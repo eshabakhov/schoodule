@@ -45,7 +45,8 @@
             <input id="schedule-search"
                    type="text"
                    placeholder="Поиск расписания..."
-                   th:value="${param.name != null ? param.name[0] : ''}"/>
+                   th:value="${param.name != null ? param.name[0] : ''}">
+            </input>
         </label>
     </div>
     <th:block th:fragment="schedules-grid">

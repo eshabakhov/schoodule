@@ -93,14 +93,16 @@
                    max="11"
                    min="1"
                    placeholder="Класс"
-                   required="required"/>
+                   required="required">
+            </input>
         </label>
         <label for="subject-name">
             <input id="subject-name"
                    name="subjectName"
                    type="text"
                    placeholder="Предмет"
-                   required="required"/>
+                   required="required">
+            </input>
         </label>
         <label for="weekly-hours">
             <input id="weekly-hours"
@@ -108,7 +110,8 @@
                    type="number"
                    min="1"
                    placeholder="Часов/нед."
-                   required="required"/>
+                   required="required">
+            </input>
         </label>
         <select name="partType" required="required">
             <option th:each="part : ${partTypes}"
@@ -124,7 +127,8 @@
                    max="11"
                    min="1"
                    placeholder="Класс"
-                   style="width:90px;"/>
+                   style="width:90px;">
+            </input>
         </label>
         <div class="search-wrap">
             <svg fill="none"
@@ -138,7 +142,8 @@
             <label for="filter-subject">
                 <input id="filter-subject"
                        type="text"
-                       placeholder="Поиск по предмету..."/>
+                       placeholder="Поиск по предмету...">
+                </input>
             </label>
         </div>
         <select id="filter-part" style="width:auto;">
@@ -228,10 +233,10 @@
                           method="post"
                           style="display:none;"
                           th:action="@{/federal/curriculums/{cid}/requirements/{rid}/edit(cid=${id},rid=${item['id']})}">
-                        <input class="edit-grade" name="grade" type="hidden"/>
-                        <input class="edit-subject" name="subjectName" type="hidden"/>
-                        <input class="edit-hours" name="weeklyHours" type="hidden"/>
-                        <input class="edit-part" name="partType" type="hidden"/>
+                        <input class="edit-grade" name="grade" type="hidden"></input>
+                        <input class="edit-subject" name="subjectName" type="hidden"></input>
+                        <input class="edit-hours" name="weeklyHours" type="hidden"></input>
+                        <input class="edit-part" name="partType" type="hidden"></input>
                     </form>
                 </div>
             </td>

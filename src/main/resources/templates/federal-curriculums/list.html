@@ -46,7 +46,8 @@
             <input id="federal-curriculum-search"
                    type="text"
                    placeholder="Поиск плана..."
-                   th:value="${param.title != null ? param.title[0] : ''}"/>
+                   th:value="${param.title != null ? param.title[0] : ''}">
+            </input>
         </label>
     </div>
     <th:block th:fragment="curriculums-grid">
