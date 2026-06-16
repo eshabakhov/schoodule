@@ -1,9 +1,9 @@
 <!-- htmlhint-disable link-rel-canonical-require -->
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
+<html lang="ru"
       layout:decorate="~{base}"
-      lang="ru">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
@@ -19,43 +19,44 @@
         </div>
     </div>
     <div style="max-width:640px;margin:0 auto;">
-        <form th:action="@{/federal/curriculums/create}" method="post"
-              style="display:flex;flex-direction:column;gap:1rem;">
+        <form method="post"
+              style="display:flex;flex-direction:column;gap:1rem;"
+              th:action="@{/federal/curriculums/create}">
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Название
-                <input type="text" name="title" required autofocus/>
+                <input name="title" type="text" autofocus required/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Уровень образования
                 <select name="level" required>
                     <option th:each="level : ${levels}"
-                            th:value="${level}"
-                            th:text="${level}">BASIC</option>
+                            th:text="${level}"
+                            th:value="${level}">BASIC</option>
                 </select>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Учебная неделя
                 <select name="week" required>
                     <option th:each="week : ${studyWeeks}"
-                            th:value="${week}"
-                            th:text="${week}">FIVE_DAYS</option>
+                            th:text="${week}"
+                            th:value="${week}">FIVE_DAYS</option>
                 </select>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Версия
-                <input type="text" name="version" required/>
+                <input name="version" type="text" required/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Учебный год
-                <input type="text" name="year" placeholder="2026/2027" required/>
+                <input name="year" type="text" placeholder="2026/2027" required/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Описание
                 <textarea name="description" rows="4"></textarea>
             </label>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
-                <a th:href="@{/federal/curriculums}" class="btn-outline-action">Отмена</a>
-                <button type="submit" class="btn-primary">Создать</button>
+                <a class="btn-outline-action" th:href="@{/federal/curriculums}">Отмена</a>
+                <button class="btn-primary" type="submit">Создать</button>
             </div>
         </form>
     </div>

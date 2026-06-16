@@ -1,9 +1,9 @@
 <!-- htmlhint-disable link-rel-canonical-require -->
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
+<html lang="ru"
       layout:decorate="~{base}"
-      lang="ru">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
@@ -19,28 +19,28 @@
             </div>
         </div>
     </div>
-    <div th:if="${param.error}" class="error-message">
+    <div class="error-message" th:if="${param.error}">
         Название не может быть пустым
     </div>
     <div style="max-width:480px; margin: 0 auto;">
-        <form th:action="@{/schools/{id}/edit(id=${school.uid()})}" method="post"
-              style="display:flex;flex-direction:column;gap:1rem;">
+        <form method="post"
+              style="display:flex;flex-direction:column;gap:1rem;"
+              th:action="@{/schools/{id}/edit(id=${school.uid()})}">
             <label style="display:flex;flex-direction:column;gap:.375rem;
                           font-size:.875rem;font-weight:500;">
                 Название школы
-                <input type="text"
-                       name="name"
-                       th:value="${school.name()}"
+                <input name="name"
+                       type="text"
                        autofocus
-                       required />
+                       required
+                       th:value="${school.name()}"/>
             </label>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
-                <a href="javascript:history.back()" class="btn-outline-action">Отмена</a>
-                <button type="submit" class="btn-primary">Сохранить</button>
+                <a class="btn-outline-action" href="javascript:history.back()">Отмена</a>
+                <button class="btn-primary" type="submit">Сохранить</button>
             </div>
         </form>
     </div>
-
 </div>
 </body>
 </html>

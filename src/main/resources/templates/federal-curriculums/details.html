@@ -1,10 +1,10 @@
 <!-- htmlhint-disable link-rel-canonical-require -->
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+<html lang="ru"
       layout:decorate="~{base}"
-      lang="ru">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
@@ -18,14 +18,18 @@
         <div>
             <h1 class="title-with-action">
                 <span th:text="${title}">Федеральный учебный план</span>
-                <a th:href="@{/federal/curriculums/{cid}/edit(cid=${id})}"
-                   class="btn-icon-edit"
+                <a class="btn-icon-edit"
                    title="Редактировать"
                    aria-label="Редактировать"
-                   sec:authorize="hasRole('ADMIN')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
-                         fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor" stroke-width="2">
+                   sec:authorize="hasRole('ADMIN')"
+                   th:href="@{/federal/curriculums/{cid}/edit(cid=${id})}">
+                    <svg fill="none"
+                         height="15"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         viewBox="0 0 24 24"
+                         width="15"
+                         xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 20h9"/>
                         <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
                     </svg>
@@ -63,49 +67,73 @@
     <div style="display:flex;align-items:center;justify-content:space-between;
                 margin-top:2rem;margin-bottom:.75rem;">
         <h2 style="margin:0;">Требования учебного плана</h2>
-        <button id="btn-toggle-add"
-                type="button"
-                class="btn-outline-action">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor" stroke-width="2"
-                 id="toggle-add-icon"
-                 style="width:14px;height:14px;">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
+        <button class="btn-outline-action"
+                id="btn-toggle-add"
+                type="button">
+            <svg id="toggle-add-icon"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 style="width:14px;height:14px;"
+                 viewBox="0 0 24 24"
+                 xmlns="http://www.w3.org/2000/svg">
+                <line x1="12" x2="12" y1="5" y2="19"/>
+                <line x1="5" x2="19" y1="12" y2="12"/>
             </svg>
             <span id="toggle-add-label">Добавить требование</span>
         </button>
     </div>
-    <form id="req-add-panel"
-          class="req-add-panel"
-          th:action="@{/federal/curriculums/{cid}/requirements/create(cid=${id})}"
-          method="post">
-        <input type="number" name="grade" min="1" max="11" placeholder="Класс" required/>
-        <input type="text" name="subjectName" placeholder="Предмет" required/>
-        <input type="number" name="weeklyHours" min="1" placeholder="Часов/нед." required/>
+    <form class="req-add-panel"
+          id="req-add-panel"
+          method="post"
+          th:action="@{/federal/curriculums/{cid}/requirements/create(cid=${id})}">
+        <input name="grade"
+               type="number"
+               max="11"
+               min="1"
+               placeholder="Класс"
+               required/>
+        <input name="subjectName"
+               type="text"
+               placeholder="Предмет"
+               required/>
+        <input name="weeklyHours"
+               type="number"
+               min="1"
+               placeholder="Часов/нед."
+               required/>
         <select name="partType" required>
             <option th:each="part : ${partTypes}"
-                    th:value="${part}"
-                    th:text="${part}">MANDATORY</option>
+                    th:text="${part}"
+                    th:value="${part}">MANDATORY</option>
         </select>
-        <button type="submit" class="btn-primary">Сохранить</button>
+        <button class="btn-primary" type="submit">Сохранить</button>
     </form>
     <div class="req-filter-bar">
-        <input type="number" id="filter-grade" min="1" max="11"
-               placeholder="Класс" style="width:90px;"/>
+        <input id="filter-grade"
+               type="number"
+               max="11"
+               min="1"
+               placeholder="Класс"
+               style="width:90px;"/>
         <div class="search-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor" stroke-width="2">
+            <svg fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 viewBox="0 0 24 24"
+                 xmlns="http://www.w3.org/2000/svg">
                 <circle cx="11" cy="11" r="8"/>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                <line x1="21" x2="16.65" y1="21" y2="16.65"/>
             </svg>
-            <input type="text" id="filter-subject" placeholder="Поиск по предмету..."/>
+            <input id="filter-subject"
+                   type="text"
+                   placeholder="Поиск по предмету..."/>
         </div>
         <select id="filter-part" style="width:auto;">
             <option value="">Все части</option>
             <option th:each="part : ${partTypes}"
-                    th:value="${part}"
-                    th:text="${part}">MANDATORY</option>
+                    th:text="${part}"
+                    th:value="${part}">MANDATORY</option>
         </select>
     </div>
     <table class="data-table">
@@ -120,68 +148,78 @@
         </thead>
         <tbody id="req-tbody">
         <tr id="req-empty-row" style="display:none;">
-            <td colspan="5" class="empty-state">Требования не найдены.</td>
+            <td class="empty-state" colspan="5">Требования не найдены.</td>
         </tr>
         <tr th:if="${#lists.isEmpty(requirements)}">
-            <td colspan="5" class="empty-state">Требования пока не добавлены.</td>
+            <td class="empty-state" colspan="5">Требования пока не добавлены.</td>
         </tr>
-        <tr th:each="item : ${requirements}"
-            class="req-data-row"
+        <tr class="req-data-row"
             th:data-grade="${item['grade']}"
+            th:data-part="${item['partType']}"
             th:data-subject="${item['subjectName']}"
-            th:data-part="${item['partType']}">
+            th:each="item : ${requirements}">
             <td class="view-grade"   th:text="${item['grade']}">5</td>
             <td class="view-subject" th:text="${item['subjectName']}">Математика</td>
             <td class="view-hours"   th:text="${item['weeklyHours']}">5</td>
             <td class="view-part"    th:text="${item['partType']}">MANDATORY</td>
             <td>
                 <div class="td-actions">
-                    <button type="button"
-                            class="td-icon-btn req-row-edit"
-                            title="Редактировать">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                             stroke="currentColor" stroke-width="2">
+                    <button class="td-icon-btn req-row-edit" type="button" title="Редактировать">
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 20h9"/>
                             <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
                         </svg>
                     </button>
-                    <button type="button"
-                            class="td-icon-btn btn-icon-delete req-row-delete btn-delete-requirement"
-                            th:data-id="${item['id']}"
+                    <button class="td-icon-btn btn-icon-delete req-row-delete btn-delete-requirement"
+                            type="button"
+                            title="Удалить"
                             th:data-curriculum="${id}"
-                            th:data-name="${item['subjectName']}"
-                            title="Удалить">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                             stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
+                            th:data-id="${item['id']}"
+                            th:data-name="${item['subjectName']}">
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <line x1="18" x2="6" y1="6" y2="18"/>
+                            <line x1="6" x2="18" y1="6" y2="18"/>
                         </svg>
                     </button>
-                    <button type="button"
-                            class="td-icon-btn btn-icon-save req-row-save"
+                    <button class="td-icon-btn btn-icon-save req-row-save"
+                            type="button"
                             title="Сохранить">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                             stroke="currentColor" stroke-width="2.5">
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
                             <polyline points="20 6 9 17 4 12"/>
                         </svg>
                     </button>
-                    <button type="button"
-                            class="td-icon-btn req-row-cancel"
+                    <button class="td-icon-btn req-row-cancel"
+                            type="button"
                             title="Отмена">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                             stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <line x1="18" x2="6" y1="6" y2="18"/>
+                            <line x1="6" x2="18" y1="6" y2="18"/>
                         </svg>
                     </button>
                     <form class="req-edit-form"
-                          th:action="@{/federal/curriculums/{cid}/requirements/{rid}/edit(cid=${id},rid=${item['id']})}"
                           method="post"
-                          style="display:none;">
-                        <input type="hidden" name="grade"       class="edit-grade"/>
-                        <input type="hidden" name="subjectName" class="edit-subject"/>
-                        <input type="hidden" name="weeklyHours" class="edit-hours"/>
-                        <input type="hidden" name="partType"    class="edit-part"/>
+                          style="display:none;"
+                          th:action="@{/federal/curriculums/{cid}/requirements/{rid}/edit(cid=${id},rid=${item['id']})}">
+                        <input class="edit-grade" name="grade" type="hidden"/>
+                        <input class="edit-subject" name="subjectName" type="hidden"/>
+                        <input class="edit-hours" name="weeklyHours" type="hidden"/>
+                        <input class="edit-part" name="partType" type="hidden"/>
                     </form>
                 </div>
             </td>
@@ -192,9 +230,9 @@
     <div class="pagination-wrap" id="req-pagination"></div>
     <div class="details-footer-actions" sec:authorize="hasRole('ADMIN')">
         <button class="btn-outline-action btn-delete-curriculum"
+                style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;"
                 th:data-id="${id}"
-                th:data-name="${title}"
-                style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;">
+                th:data-name="${title}">
             Удалить план
         </button>
     </div>
