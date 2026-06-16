@@ -41,10 +41,12 @@
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" x2="16.65" y1="21" y2="16.65"/>
         </svg>
-        <input id="school-search"
-               type="text"
-               placeholder="Поиск школы..."
-               th:value="${param.name != null ? param.name[0] : ''}"/>
+        <label for="school-search">
+            <input id="school-search"
+                   type="text"
+                   placeholder="Поиск школы..."
+                   th:value="${param.name != null ? param.name[0] : ''}"/>
+        </label>
     </div>
     <th:block th:fragment="schools-grid">
         <div id="schools-results">

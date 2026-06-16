@@ -26,17 +26,21 @@
         <form method="post"
               style="display:flex;flex-direction:column;gap:1rem;"
               th:action="@{/schools/{s}/classes/{c}/edit(s=${school.uid()},c=${clazz.uid()})}">
-            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+            <label for="grade-name"
+                   style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Параллель
-                <input name="grade"
+                <input id="grade-name"
+                       name="grade"
                        type="text"
                        autofocus="autofocus"
                        required="required"
                        th:value="${clazz.grade()}"/>
             </label>
-            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+            <label for="litera-name"
+                   style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Литера
-                <input name="litera"
+                <input id="litera-name"
+                       name="litera"
                        type="text"
                        autofocus="autofocus"
                        required="required"

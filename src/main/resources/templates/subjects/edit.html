@@ -26,9 +26,11 @@
         <form method="post"
               style="display:flex;flex-direction:column;gap:1rem;"
               th:action="@{/schools/{s}/subjects/{sub}/edit(s=${school.uid()},sub=${subject.uid()})}">
-            <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+            <label for="subject-name"
+                   style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Название предмета
-                <input name="name"
+                <input id="subject-name"
+                       name="name"
                        type="text"
                        autofocus="autofocus"
                        required="required"

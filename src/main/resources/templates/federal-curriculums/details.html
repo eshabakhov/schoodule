@@ -86,21 +86,30 @@
           id="req-add-panel"
           method="post"
           th:action="@{/federal/curriculums/{cid}/requirements/create(cid=${id})}">
-        <input name="grade"
-               type="number"
-               max="11"
-               min="1"
-               placeholder="Класс"
-               required="required"/>
-        <input name="subjectName"
-               type="text"
-               placeholder="Предмет"
-               required="required"/>
-        <input name="weeklyHours"
-               type="number"
-               min="1"
-               placeholder="Часов/нед."
-               required="required"/>
+        <label for="grade-number">
+            <input id="grade-number"
+                   name="grade"
+                   type="number"
+                   max="11"
+                   min="1"
+                   placeholder="Класс"
+                   required="required"/>
+        </label>
+        <label for="subject-name">
+            <input id="subject-name"
+                   name="subjectName"
+                   type="text"
+                   placeholder="Предмет"
+                   required="required"/>
+        </label>
+        <label for="weekly-hours">
+            <input id="weekly-hours"
+                   name="weeklyHours"
+                   type="number"
+                   min="1"
+                   placeholder="Часов/нед."
+                   required="required"/>
+        </label>
         <select name="partType" required="required">
             <option th:each="part : ${partTypes}"
                     th:text="${part}"
@@ -109,12 +118,14 @@
         <button class="btn-primary" type="submit">Сохранить</button>
     </form>
     <div class="req-filter-bar">
-        <input id="filter-grade"
-               type="number"
-               max="11"
-               min="1"
-               placeholder="Класс"
-               style="width:90px;"/>
+        <label for="filter-grade">
+            <input id="filter-grade"
+                   type="number"
+                   max="11"
+                   min="1"
+                   placeholder="Класс"
+                   style="width:90px;"/>
+        </label>
         <div class="search-wrap">
             <svg fill="none"
                  stroke="currentColor"
@@ -124,9 +135,11 @@
                 <circle cx="11" cy="11" r="8"/>
                 <line x1="21" x2="16.65" y1="21" y2="16.65"/>
             </svg>
-            <input id="filter-subject"
-                   type="text"
-                   placeholder="Поиск по предмету..."/>
+            <label for="filter-subject">
+                <input id="filter-subject"
+                       type="text"
+                       placeholder="Поиск по предмету..."/>
+            </label>
         </div>
         <select id="filter-part" style="width:auto;">
             <option value="">Все части</option>
