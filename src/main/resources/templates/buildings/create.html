@@ -30,7 +30,11 @@
             <label style="display:flex;flex-direction:column;gap:.375rem;
                           font-size:.875rem;font-weight:500;">
                 Название корпуса
-                <input name="name" type="text" autofocus placeholder="Например: Корпус 1" required/>
+                <input name="name"
+                       type="text"
+                       autofocus="autofocus"
+                       placeholder="Например: Корпус 1"
+                       required="required"/>
             </label>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
                 <a class="btn-outline-action" th:href="@{/schools/{id}/buildings(id=${school.uid()})}">Отмена</a>

@@ -14,6 +14,10 @@
   "attr-no-duplication": true,
   "attr-no-unnecessary-whitespace": true,
   "attr-sorted": true,
+  "attr-unsafe-chars": true,
+  "attr-value-double-quotes": true,
+  "attr-value-no-duplication": true,
+  "attr-value-not-empty": true,
   "tagname-lowercase": true,
   "attr-value-double-quotes": true,
   "spec-char-escape": false

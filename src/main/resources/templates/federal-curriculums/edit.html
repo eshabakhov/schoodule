@@ -25,13 +25,13 @@
                 Название
                 <input name="title"
                        type="text"
-                       autofocus
-                       required
+                       autofocus="autofocus"
+                       required="required"
                        th:value="${title}"/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Уровень образования
-                <select name="level" required>
+                <select name="level" required="required">
                     <option th:each="lvl : ${levels}"
                             th:selected="${lvl.name() == level}"
                             th:text="${lvl}"
@@ -40,7 +40,7 @@
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Учебная неделя
-                <select name="week" required>
+                <select name="week" required="required">
                     <option th:each="wk : ${studyWeeks}"
                             th:selected="${wk.name() == week}"
                             th:text="${wk}"
@@ -49,11 +49,17 @@
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Версия
-                <input name="version" type="text" required th:value="${version}"/>
+                <input name="version"
+                       type="text"
+                       required="required"
+                       th:value="${version}"/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Учебный год
-                <input name="year" type="text" required th:value="${year}"/>
+                <input name="year"
+                       type="text"
+                       required="required"
+                       th:value="${year}"/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Описание

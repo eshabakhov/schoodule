@@ -67,7 +67,7 @@
                   th:action="@{/schools/{schoolId}/schedules/{scheduleId}/curriculum/create(schoolId=${school.uid()},scheduleId=${schedule.uid()})}">
                 <label>
                     Класс
-                    <select name="clazz" required>
+                    <select name="clazz" required="required">
                         <option value="">Выберите класс</option>
                         <option th:each="cls : ${classes.list()}"
                                 th:text="${cls.name()}"
@@ -76,7 +76,7 @@
                 </label>
                 <label>
                     Предмет
-                    <select name="subject" required>
+                    <select name="subject" required="required">
                         <option value="">Выберите предмет</option>
                         <option th:each="subj : ${subjects.list()}"
                                 th:text="${subj.name()}"
@@ -89,7 +89,7 @@
                            type="number"
                            max="10"
                            min="1"
-                           required
+                           required="required"
                     />
                 </label>
                 <button class="btn-submit" type="submit">Сохранить</button>
