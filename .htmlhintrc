@@ -20,6 +20,7 @@
   "attr-value-not-empty": true,
   "attr-whitespace": true,
   "button-type-require": true,
+  "form-method-require": true,
   "tagname-lowercase": true,
   "attr-value-double-quotes": true,
   "spec-char-escape": false
