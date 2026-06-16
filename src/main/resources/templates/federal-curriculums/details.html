@@ -92,17 +92,17 @@
                max="11"
                min="1"
                placeholder="Класс"
-               required/>
+               required="required"/>
         <input name="subjectName"
                type="text"
                placeholder="Предмет"
-               required/>
+               required="required"/>
         <input name="weeklyHours"
                type="number"
                min="1"
                placeholder="Часов/нед."
-               required/>
-        <select name="partType" required>
+               required="required"/>
+        <select name="partType" required="required">
             <option th:each="part : ${partTypes}"
                     th:text="${part}"
                     th:value="${part}">MANDATORY</option>

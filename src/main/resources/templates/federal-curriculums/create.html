@@ -24,11 +24,14 @@
               th:action="@{/federal/curriculums/create}">
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Название
-                <input name="title" type="text" autofocus required/>
+                <input name="title"
+                       type="text"
+                       autofocus="autofocus"
+                       required="required"/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Уровень образования
-                <select name="level" required>
+                <select name="level" required="required">
                     <option th:each="level : ${levels}"
                             th:text="${level}"
                             th:value="${level}">BASIC</option>
@@ -36,7 +39,7 @@
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Учебная неделя
-                <select name="week" required>
+                <select name="week" required="required">
                     <option th:each="week : ${studyWeeks}"
                             th:text="${week}"
                             th:value="${week}">FIVE_DAYS</option>
@@ -44,11 +47,16 @@
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Версия
-                <input name="version" type="text" required/>
+                <input name="version"
+                       type="text"
+                       required="required"/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Учебный год
-                <input name="year" type="text" placeholder="2026/2027" required/>
+                <input name="year"
+                       type="text"
+                       placeholder="2026/2027"
+                       required="required"/>
             </label>
             <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Описание

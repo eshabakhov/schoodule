@@ -32,9 +32,9 @@
                 Название расписания
                 <input name="name"
                        type="text"
-                       autofocus
+                       autofocus="autofocus"
                        placeholder="Например: Расписание 2026/2027"
-                       required/>
+                       required="required"/>
             </label>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
                 <a class="btn-outline-action" th:href="@{/schools/{id}/schedules(id=${school.uid()})}">Отмена</a>
