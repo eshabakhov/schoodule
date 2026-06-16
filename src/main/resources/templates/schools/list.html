@@ -17,9 +17,9 @@
             <h1>Школы</h1>
             <p class="page-subtitle">Управление школами в системе</p>
         </div>
-        <a class="btn-primary" href="/schools/create" style="display:inline-flex;align-items:center;gap:.5rem;
-                  padding:.5rem 1rem;border-radius:var(--radius-sm);
-                  font-size:.875rem;font-weight:500;text-decoration:none;">
+        <a class="btn-primary"
+           href="/schools/create"
+           style="display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border-radius:var(--radius-sm);font-size:.875rem;font-weight:500;text-decoration:none;">
             <svg fill="none"
                  stroke="currentColor"
                  stroke-width="2"
@@ -97,9 +97,7 @@
                         </svg>
                     </a>
                     <th:block th:if="${totalPages > 1}"
-                              th:with="start=${page > 3 ? page - 2 : 1},
-                              end=${page + 2 <= totalPages ? page + 2 : totalPages},
-                              end=${end < 5 ? (totalPages < 5 ? totalPages : 5) : end}">
+                              th:with="start=${page > 3 ? page - 2 : 1},end=${page + 2 <= totalPages ? page + 2 : totalPages},end=${end < 5 ? (totalPages < 5 ? totalPages : 5) : end}">
                         <th:block th:if="${start > 1}">
                             <a class="pagination-btn"
                                href="#"

@@ -18,9 +18,7 @@
             <p class="page-subtitle">Управление предметами школы</p>
         </div>
         <a class="btn-primary"
-           style="display:inline-flex;align-items:center;gap:.5rem;
-                  padding:.5rem 1rem;border-radius:var(--radius-sm);
-                  font-size:.875rem;font-weight:500;text-decoration:none;"
+           style="display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border-radius:var(--radius-sm);font-size:.875rem;font-weight:500;text-decoration:none;"
            th:href="@{/schools/{id}/subjects/create(id=${school.uid()})}">
             <svg fill="none"
                  stroke="currentColor"
@@ -55,8 +53,8 @@
             <div class="card-grid" id="subjects-container">
                 <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted-fg);" th:if="${#lists.isEmpty(subjects)}">
                     Предметы не найдены.
-                    <a style="color:var(--primary);font-weight:600;
-                              text-decoration:underline;margin-left:.25rem;" th:href="@{/schools/{id}/subjects/create(id=${school.uid()})}">
+                    <a style="color:var(--primary);font-weight:600;text-decoration:underline;margin-left:.25rem;"
+                       th:href="@{/schools/{id}/subjects/create(id=${school.uid()})}">
                         Добавить первый
                     </a>
                 </div>
@@ -106,9 +104,7 @@
                         </svg>
                     </a>
                     <th:block th:if="${totalPages > 1}"
-                              th:with="start=${page > 3 ? page - 2 : 1},
-                              end=${page + 2 <= totalPages ? page + 2 : totalPages},
-                              end=${end < 5 ? (totalPages < 5 ? totalPages : 5) : end}">
+                              th:with="start=${page > 3 ? page - 2 : 1},end=${page + 2 <= totalPages ? page + 2 : totalPages},end=${end < 5 ? (totalPages < 5 ? totalPages : 5) : end}">
                         <th:block th:if="${start > 1}">
                             <a class="pagination-btn"
                                href="#"
