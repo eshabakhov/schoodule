@@ -9,7 +9,7 @@
     <meta charset="UTF-8">
     <meta name="description" content="Управление подписками">
     <title>Подписка</title>
-    <link rel="stylesheet" th:href="@{/css/subscription.css}"></link>
+    <link rel="stylesheet" th:href="@{/css/subscription.css}">
 </head>
 <body>
 <div layout:fragment="content"
@@ -202,7 +202,7 @@
                 </div>
                 <div class="plan-card-actions" th:if="${plan != 'ADVANCED'}">
                     <form method="post" th:action="@{/users/subscription/checkout}">
-                        <input name="plan" type="hidden" value="ADVANCED"></input>
+                        <input name="plan" type="hidden" value="ADVANCED">
                         <button class="btn-plan-checkout" type="submit">Перейти</button>
                     </form>
                     <p class="plan-stub-note">Тестовый режим — 30 дней без списания</p>
@@ -287,7 +287,7 @@
                 </div>
                 <div class="plan-card-actions" th:if="${plan != 'PRO'}">
                     <form method="post" th:action="@{/users/subscription/checkout}">
-                        <input name="plan" type="hidden" value="PRO"></input>
+                        <input name="plan" type="hidden" value="PRO">
                         <button class="btn-plan-checkout" type="submit">Перейти</button>
                     </form>
                     <p class="plan-stub-note">Тестовый режим — 30 дней без списания</p>
@@ -338,7 +338,7 @@
                 </div>
                 <div class="plan-card-actions" th:if="${plan != 'VIEWER'}">
                     <form method="post" th:action="@{/users/subscription/checkout}">
-                        <input name="plan" type="hidden" value="VIEWER"></input>
+                        <input name="plan" type="hidden" value="VIEWER">
                         <button class="btn-plan-checkout" type="submit">Перейти</button>
                     </form>
                     <p class="plan-stub-note">Тестовый режим — 30 дней без списания</p>

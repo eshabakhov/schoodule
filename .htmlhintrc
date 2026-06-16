@@ -27,6 +27,9 @@
   "h1-require": true,
   "href-abs-or-rel": false,
   "main-require": true,
+  "src-not-empty": true,
+  "tag-no-obsolete": true,
+  "tag-pair": true,
   "tagname-lowercase": true,
   "spec-char-escape": false
 }
