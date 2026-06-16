@@ -1,6 +1,6 @@
 <!-- htmlhint-disable link-rel-canonical-require -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
     <title>401 — Schoodule</title>
     <link rel="stylesheet" th:href="@{/css/shadcn.css}">
     <link rel="stylesheet" th:href="@{/css/401.css}">
-    <link rel="icon" type="image/png" href="/favicon.svg">
+    <link type="image/png" rel="icon" href="/favicon.svg">
 </head>
 <body>
 <div class="error-page">
@@ -16,7 +16,7 @@
         <span class="error-code">401</span>
         <h1 class="error-title">Необходима авторизация</h1>
         <p class="error-desc">Для доступа к этой странице нужно войти в систему.</p>
-        <a href="/login" class="btn btn-primary">Войти</a>
+        <a class="btn btn-primary" href="/login">Войти</a>
     </div>
 </div>
 <footer class="error-footer">

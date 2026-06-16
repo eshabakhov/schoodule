@@ -1,9 +1,9 @@
 <!-- htmlhint-disable link-rel-canonical-require -->
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
+<html lang="ru"
       layout:decorate="~{base}"
-      lang="ru">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
@@ -18,20 +18,18 @@
             <h1 th:text="${schedule.name()}">Расписание</h1>
         </div>
         <nav class="planning-tabs">
-            <a th:href="@{/schools/{schoolId}/schedules/{scheduleId}/curriculum(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
-               class="tab-link active">
+            <a class="tab-link active"
+               th:href="@{/schools/{schoolId}/schedules/{scheduleId}/curriculum(schoolId=${school.uid()},scheduleId=${schedule.uid()})}">
                 План классов
             </a>
         </nav>
 
         <div class="section-header">
             <h2>План классов</h2>
-            <button onclick="document.getElementById('add-modal').style.display='flex'"
-                    class="btn-add">+ Добавить</button>
+            <button class="btn-add"
+                    onclick="document.getElementById('add-modal').style.display='flex'">+ Добавить</button>
         </div>
-
-        <div th:if="${param.error}" class="error-message" th:text="${param.error}">Ошибка</div>
-
+        <div class="error-message" th:if="${param.error}" th:text="${param.error}">Ошибка</div>
         <table class="data-table">
             <thead>
             <tr>
@@ -43,38 +41,37 @@
             </thead>
             <tbody>
             <tr th:if="${#lists.isEmpty(curriculums)}">
-                <td colspan="4" class="empty-state">Нет данных. Добавьте план класса.</td>
+                <td class="empty-state" colspan="4">Нет данных. Добавьте план класса.</td>
             </tr>
             <tr th:each="curric : ${curriculums.list()}">
                 <td th:text="${curric.schoolClass().name()}">5А</td>
                 <td th:text="${curric.subject().name()}">Математика</td>
                 <td th:text="${curric.hoursPerWeek()}">5</td>
                 <td>
-                    <form th:action="@{/schools/{schoolId}/schedules/{scheduleId}/curriculum/{curriculumId}/delete(schoolId=${school.uid()},scheduleId=${schedule.uid()},curriculumId=${curric.uid()})}"
-                          method="post"
+                    <form method="post"
+                          onsubmit="return confirm('Удалить план класса?')"
                           style="display: inline;"
-                          onsubmit="return confirm('Удалить план класса?')">
-                        <button type="submit" class="btn-action btn-delete">Удалить</button>
+                          th:action="@{/schools/{schoolId}/schedules/{scheduleId}/curriculum/{curriculumId}/delete(schoolId=${school.uid()},scheduleId=${schedule.uid()},curriculumId=${curric.uid()})}">
+                        <button class="btn-action btn-delete" type="submit">Удалить</button>
                     </form>
                 </td>
             </tr>
             </tbody>
         </table>
     </div>
-
-    <div id="add-modal" class="modal">
+    <div class="modal" id="add-modal">
         <div class="modal-content">
             <span class="close" onclick="document.getElementById('add-modal').style.display='none'">&times;</span>
             <h2>Добавить план класса</h2>
-            <form th:action="@{/schools/{schoolId}/schedules/{scheduleId}/curriculum/create(schoolId=${school.uid()},scheduleId=${schedule.uid()})}"
-                  method="post">
+            <form method="post"
+                  th:action="@{/schools/{schoolId}/schedules/{scheduleId}/curriculum/create(schoolId=${school.uid()},scheduleId=${schedule.uid()})}">
                 <label>
                     Класс
                     <select name="clazz" required>
                         <option value="">Выберите класс</option>
                         <option th:each="cls : ${classes.list()}"
-                                th:value="${cls.uid()}"
-                                th:text="${cls.name()}">5А</option>
+                                th:text="${cls.name()}"
+                                th:value="${cls.uid()}">5А</option>
                     </select>
                 </label>
                 <label>
@@ -82,15 +79,20 @@
                     <select name="subject" required>
                         <option value="">Выберите предмет</option>
                         <option th:each="subj : ${subjects.list()}"
-                                th:value="${subj.uid()}"
-                                th:text="${subj.name()}">Математика</option>
+                                th:text="${subj.name()}"
+                                th:value="${subj.uid()}">Математика</option>
                     </select>
                 </label>
                 <label>
                     Часов в неделю
-                    <input type="number" name="hours" min="1" max="10" required/>
+                    <input name="hours"
+                           type="number"
+                           max="10"
+                           min="1"
+                           required
+                    />
                 </label>
-                <button type="submit" class="btn-submit">Сохранить</button>
+                <button class="btn-submit" type="submit">Сохранить</button>
             </form>
         </div>
     </div>

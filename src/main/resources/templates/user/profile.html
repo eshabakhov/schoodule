@@ -1,9 +1,9 @@
 <!-- htmlhint-disable link-rel-canonical-require -->
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
+<html lang="ru"
       layout:decorate="~{base}"
-      lang="ru">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
@@ -32,7 +32,7 @@
                                 overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
                          th:text="${user.credentials().username()}">username</div>
                     <div style="font-size:.8125rem;color:var(--muted-fg);margin-top:.125rem;">
-                        ID: <span th:text="${user.uid()}" style="font-family:monospace;">1</span>
+                        ID: <span style="font-family:monospace;" th:text="${user.uid()}">1</span>
                     </div>
                 </div>
             </div>
@@ -50,22 +50,23 @@
                     <span class="info-label">ID</span>
                     <span class="info-value td-mono" th:text="${user.uid()}">1</span>
                 </div>
-                <div class="info-row" th:if="${school!= null && school.name() != null}"
-                     style="border-bottom:1px solid var(--border);padding-bottom:.875rem;">
+                <div class="info-row"
+                     style="border-bottom:1px solid var(--border);padding-bottom:.875rem;"
+                     th:if="${school!= null && school.name() != null}">
                     <span class="info-label">Школа</span>
-                    <a th:href="@{/schools/{id}(id=${user.info().school()})}"
-                       class="info-value"
+                    <a class="info-value"
                        style="color:var(--fg);text-decoration:underline;text-underline-offset:2px;"
+                       th:href="@{/schools/{id}(id=${user.info().school()})}"
                        th:text="${school.name()}">Школа</a>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Роли</span>
                     <div style="display:flex;flex-wrap:wrap;gap:.375rem;">
-                        <span th:each="role : ${user.roles().list()}"
-                              class="badge badge-secondary"
+                        <span class="badge badge-secondary"
+                              th:each="role : ${user.roles().list()}"
                               th:text="${role.name()}">ROLE</span>
-                        <span th:if="${#lists.isEmpty(user.roles().list())}"
-                              class="badge badge-outline">Нет ролей</span>
+                        <span class="badge badge-outline"
+                              th:if="${#lists.isEmpty(user.roles().list())}">Нет ролей</span>
                     </div>
                 </div>
 
@@ -73,8 +74,9 @@
         </div>
         <div class="card">
             <div class="card-body">
-                <form th:action="@{/logout}" method="post"
-                      style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+                <form method="post"
+                      style="display:flex;align-items:center;justify-content:space-between;gap:1rem;"
+                      th:action="@{/logout}">
                     <input type="hidden"
                            th:if="${_csrf != null}"
                            th:name="${_csrf.parameterName}"
@@ -86,21 +88,24 @@
                         </div>
                     </div>
                     <button type="submit"
+                            onmouseout="this.style.background='#fef2f2'"
+                            onmouseover="this.style.background='#fee2e2'"
                             style="all:unset;box-sizing:border-box;display:inline-flex;
                                    align-items:center;gap:.5rem;padding:.5rem 1rem;
                                    font-size:.875rem;font-weight:500;font-family:inherit;
                                    border-radius:var(--radius-sm);border:1px solid #fecaca;
                                    background:#fef2f2;color:#dc2626;cursor:pointer;
                                    transition:background 150ms ease,border-color 150ms ease;
-                                   white-space:nowrap;"
-                            onmouseover="this.style.background='#fee2e2'"
-                            onmouseout="this.style.background='#fef2f2'">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                             stroke="currentColor" stroke-width="2"
-                             style="width:15px;height:15px;">
+                                   white-space:nowrap;">
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             style="width:15px;height:15px;"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                             <polyline points="16 17 21 12 16 7"/>
-                            <line x1="21" y1="12" x2="9" y2="12"/>
+                            <line x1="21" x2="9" y1="12" y2="12"/>
                         </svg>
                         Выйти
                     </button>

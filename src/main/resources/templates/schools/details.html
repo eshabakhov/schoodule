@@ -1,10 +1,10 @@
 <!-- htmlhint-disable link-rel-canonical-require -->
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+<html lang="ru"
       layout:decorate="~{base}"
-      lang="ru">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
@@ -17,14 +17,18 @@
         <div>
             <h1 class="title-with-action">
                 <span th:text="${school.name()}">Название школы</span>
-                <a th:href="@{/schools/{id}/edit(id=${school.uid()})}"
-                   class="btn-icon-edit"
+                <a class="btn-icon-edit"
                    title="Редактировать"
                    aria-label="Редактировать"
-                   sec:authorize="hasRole('ADMIN')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
-                         fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor" stroke-width="2">
+                   sec:authorize="hasRole('ADMIN')"
+                   th:href="@{/schools/{id}/edit(id=${school.uid()})}">
+                    <svg fill="none"
+                         height="15"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         viewBox="0 0 24 24"
+                         width="15"
+                         xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 20h9"/>
                         <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
                     </svg>
@@ -45,15 +49,15 @@
     </div>
     <div class="details-footer-actions" sec:authorize="hasRole('ADMIN')">
         <button class="btn-outline-action btn-delete-row"
-            th:data-id="${school.uid()}" th:data-name="${school.name()}"
-            title="Удалить"
-            style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;">
+                title="Удалить"
+                style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;"
+                th:data-id="${school.uid()}" th:data-name="${school.name()}">
             Удалить
         </button>
     </div>
 </div>
 <th:block layout:fragment="page-scripts">
-    <script type="module" th:src="@{/js/schools.js}" sec:authorize="hasRole('ADMIN')"></script>
+    <script type="module" sec:authorize="hasRole('ADMIN')" th:src="@{/js/schools.js}"></script>
 </th:block>
 </body>
 </html>

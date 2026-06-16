@@ -1,9 +1,9 @@
 <!-- htmlhint-disable link-rel-canonical-require -->
 <!DOCTYPE html>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:th="http://www.thymeleaf.org"
+<html lang="ru"
       layout:decorate="~{base}"
-      lang="ru">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
@@ -22,35 +22,55 @@
                 <p class="page-subtitle">Управление тарифным планом</p>
             </div>
         </div>
-        <div th:if="${param.activated != null}" class="sub-alert ok">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        <div class="sub-alert ok" th:if="${param.activated != null}">
+            <svg fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 viewBox="0 0 24 24"
+                 xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
             Подписка активирована на 30 дней. Роли обновлены.
         </div>
-        <div th:if="${param.cancelled != null}" class="sub-alert ok">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        <div class="sub-alert ok" th:if="${param.cancelled != null}">
+            <svg fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 viewBox="0 0 24 24"
+                 xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
             Подписка отменена. Роли сброшены до набора Базового плана.
         </div>
-        <div th:if="${param.error != null}" class="sub-alert err">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+        <div class="sub-alert err" th:if="${param.error != null}">
+            <svg fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 viewBox="0 0 24 24"
+                 xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" x2="9" y1="9" y2="15"/>
+                <line x1="9" x2="15" y1="9" y2="15"/>
             </svg>
             Произошла ошибка. Попробуйте ещё раз.
         </div>
         <div class="sub-banner">
             <div class="sub-banner-left">
-                <div th:classappend="${plan == 'BASIC' 
-                    ? 'basic'
-                    : plan == 'ADVANCED' 
-                    ? 'advanced'
-                    : plan == 'PRO'
-                    ? 'pro'
-                    : 'viewer'}"
-                     class="sub-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <div class="sub-icon"
+                     th:classappend="${plan == 'BASIC'
+                     ? 'basic'
+                     : plan == 'ADVANCED'
+                     ? 'advanced'
+                     : plan == 'PRO'
+                     ? 'pro'
+                     : 'viewer'}">
+                    <svg fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg">
                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
                     </svg>
                 </div>
@@ -59,92 +79,273 @@
                     <div class="sub-label">Текущий тарифный план</div>
                 </div>
             </div>
-            <span th:if="${plan == 'BASIC'}" class="sub-chip chip-free">
+            <span class="sub-chip chip-free" th:if="${plan == 'BASIC'}">
                 Бессрочно · Бесплатно
             </span>
-            <span th:if="${plan != 'BASIC' and subscription.valid()}"
-                  class="sub-chip chip-ok">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            <span class="sub-chip chip-ok"
+                  th:if="${plan != 'BASIC' and subscription.valid()}">
+                <svg fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
                 </svg>
                 Активна до <span th:text="${#temporals.format(subscription.expiry(), 'dd.MM.yyyy')}">01.04.2026</span>
             </span>
-            <span th:if="${plan != 'BASIC' and !subscription.valid()}"
-                  class="sub-chip chip-warn">Истекла</span>
+            <span class="sub-chip chip-warn"
+                  th:if="${plan != 'BASIC' and !subscription.valid()}">Истекла</span>
         </div>
         <div class="plans-title">Доступные планы</div>
         <div class="plans-grid">
-            <div th:classappend="${plan == 'BASIC' ? 'is-current' : ''}" class="plan-card">
-                <span th:if="${plan == 'BASIC'}" class="plan-pill pill-curr">Текущий</span>
+            <div class="plan-card" th:classappend="${plan == 'BASIC' ? 'is-current' : ''}">
+                <span class="plan-pill pill-curr" th:if="${plan == 'BASIC'}">Текущий</span>
                 <div>
                     <div class="plan-card-name">Базовый</div>
                     <div class="plan-card-price"><strong>0 ₽</strong> / бессрочно</div>
                 </div>
                 <div class="plan-features">
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Просмотр расписания</div>
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Доступ к учебному плану</div>
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>До 1 расписания</div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Просмотр расписания
+                    </div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Доступ к учебному плану
+                    </div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        До 1 расписания
+                    </div>
                 </div>
             </div>
-            <div th:classappend="${plan == 'ADVANCED' ? 'is-current' : ''}" class="plan-card">
-                <span th:if="${plan == 'ADVANCED'}" class="plan-pill pill-curr">Текущий</span>
+            <div class="plan-card" th:classappend="${plan == 'ADVANCED' ? 'is-current' : ''}" >
+                <span class="plan-pill pill-curr" th:if="${plan == 'ADVANCED'}" >Текущий</span>
                 <div>
                     <div class="plan-card-name">Продвинутый</div>
                     <div class="plan-card-price"><strong>0 ₽</strong> / мес</div>
                 </div>
                 <div class="plan-features">
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Всё из Базового</div>
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Создание расписаний</div>
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Управление учебным планом</div>
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>До 5 расписаний</div>
-                    <div class="plan-feat soon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;flex-shrink:0;margin-top:.1rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Экспорт PDF — скоро</div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Всё из Базового
+                    </div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Создание расписаний
+                    </div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Управление учебным планом
+                    </div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        До 5 расписаний
+                    </div>
+                    <div class="plan-feat soon">
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             style="width:13px;height:13px;flex-shrink:0;margin-top:.1rem;"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" x2="12" y1="8" y2="12"/>
+                            <line x1="12" x2="12.01" y1="16" y2="16"/>
+                        </svg>
+                        Экспорт PDF — скоро
+                    </div>
                 </div>
                 <div class="plan-card-actions" th:if="${plan != 'ADVANCED'}">
-                    <form th:action="@{/users/subscription/checkout}" method="post">
-                        <input type="hidden" name="plan" value="ADVANCED"/>
-                        <button type="submit" class="btn-plan-checkout">Перейти</button>
+                    <form method="post" th:action="@{/users/subscription/checkout}">
+                        <input name="plan" type="hidden" value="ADVANCED"/>
+                        <button class="btn-plan-checkout" type="submit">Перейти</button>
                     </form>
                     <p class="plan-stub-note">Тестовый режим — 30 дней без списания</p>
                 </div>
             </div>
-            <div th:classappend="${plan == 'PRO' ? 'is-current' : 'is-popular'}" class="plan-card">
-                <span th:if="${plan != 'PRO'}" class="plan-pill pill-pop">Популярный</span>
-                <span th:if="${plan == 'PRO'}"  class="plan-pill pill-curr">Текущий</span>
+            <div class="plan-card" th:classappend="${plan == 'PRO' ? 'is-current' : 'is-popular'}">
+                <span class="plan-pill pill-pop" th:if="${plan != 'PRO'}">Популярный</span>
+                <span class="plan-pill pill-curr" th:if="${plan == 'PRO'}">Текущий</span>
                 <div>
                     <div class="plan-card-name">Профессиональный</div>
                     <div class="plan-card-price"><strong>0 ₽</strong> / мес</div>
                 </div>
                 <div class="plan-features">
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Всё из Продвинутого</div>
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Неограниченные расписания</div>
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Расширенный учебный план</div>
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Будущие отчёты</div>
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Приоритетная поддержка</div>
-                    <div class="plan-feat soon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;flex-shrink:0;margin-top:.1rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>API-доступ — скоро</div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Всё из Продвинутого
+                    </div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Неограниченные расписания
+                    </div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Расширенный учебный план
+                    </div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Будущие отчёты
+                    </div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Приоритетная поддержка
+                    </div>
+                    <div class="plan-feat soon">
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             style="width:13px;height:13px;flex-shrink:0;margin-top:.1rem;"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" x2="12" y1="8" y2="12"/>
+                            <line x1="12" x2="12.01" y1="16" y2="16"/>
+                        </svg>
+                        API-доступ — скоро
+                    </div>
                 </div>
                 <div class="plan-card-actions" th:if="${plan != 'PRO'}">
-                    <form th:action="@{/users/subscription/checkout}" method="post">
-                        <input type="hidden" name="plan" value="PRO"/>
-                        <button type="submit" class="btn-plan-checkout">Перейти</button>
+                    <form method="post" th:action="@{/users/subscription/checkout}">
+                        <input name="plan" type="hidden" value="PRO"/>
+                        <button class="btn-plan-checkout" type="submit">Перейти</button>
                     </form>
                     <p class="plan-stub-note">Тестовый режим — 30 дней без списания</p>
                 </div>
             </div>
-            <div th:classappend="${plan == 'VIEWER' ? 'is-current' : ''}" class="plan-card">
-                <span th:if="${plan == 'VIEWER'}" class="plan-pill pill-curr">Текущий</span>
+            <div class="plan-card" th:classappend="${plan == 'VIEWER' ? 'is-current' : ''}">
+                <span class="plan-pill pill-curr" th:if="${plan == 'VIEWER'}">Текущий</span>
                 <div>
                     <div class="plan-card-name">Просмотрщик</div>
                     <div class="plan-card-price"><strong>0 ₽</strong> / мес</div>
                 </div>
                 <div class="plan-features">
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Просмотр готового расписания</div>
-                    <div class="plan-feat"><svg class="feat-ok" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Фильтрация по классу и учителю</div>
-                    <div class="plan-feat soon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;flex-shrink:0;margin-top:.1rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Уведомления — скоро</div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Просмотр готового расписания
+                    </div>
+                    <div class="plan-feat">
+                        <svg class="feat-ok"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2.5"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Фильтрация по классу и учителю
+                    </div>
+                    <div class="plan-feat soon">
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             style="width:13px;height:13px;flex-shrink:0;margin-top:.1rem;"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" x2="12" y1="8" y2="12"/>
+                            <line x1="12" x2="12.01" y1="16" y2="16"/>
+                        </svg>
+                        Уведомления — скоро
+                    </div>
                 </div>
                 <div class="plan-card-actions" th:if="${plan != 'VIEWER'}">
-                    <form th:action="@{/users/subscription/checkout}" method="post">
-                        <input type="hidden" name="plan" value="VIEWER"/>
-                        <button type="submit" class="btn-plan-checkout">Перейти</button>
+                    <form method="post" th:action="@{/users/subscription/checkout}">
+                        <input name="plan" type="hidden" value="VIEWER"/>
+                        <button class="btn-plan-checkout" type="submit">Перейти</button>
                     </form>
                     <p class="plan-stub-note">Тестовый режим — 30 дней без списания</p>
                 </div>
@@ -155,13 +356,18 @@
                 <div class="cancel-title">Отменить подписку</div>
                 <div class="cancel-desc">Переход на Базовый план. Роли пересчитаются автоматически.</div>
             </div>
-            <form th:action="@{/users/subscription/cancel}" method="post">
-                <button type="submit" class="btn-cancel-sub"
+            <form method="post" th:action="@{/users/subscription/cancel}">
+                <button class="btn-cancel-sub"
+                        type="submit"
                         onclick="return confirm('Отменить подписку и перейти на Базовый план?')">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="10"/>
-                        <line x1="15" y1="9" x2="9" y2="15"/>
-                        <line x1="9" y1="9" x2="15" y2="15"/>
+                        <line x1="15" x2="9" y1="9" y2="15"/>
+                        <line x1="9" x2="15" y1="9" y2="15"/>
                     </svg>
                     Отменить подписку
                 </button>
