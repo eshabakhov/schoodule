@@ -229,6 +229,7 @@
     <div class="pagination-wrap" id="req-pagination"></div>
     <div class="details-footer-actions" sec:authorize="hasRole('ADMIN')">
         <button class="btn-outline-action btn-delete-curriculum"
+                type="submit"
                 style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;"
                 th:data-id="${id}"
                 th:data-name="${title}">

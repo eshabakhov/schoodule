@@ -49,6 +49,7 @@
     </div>
     <div class="details-footer-actions" sec:authorize="hasRole('ADMIN')">
         <button class="btn-outline-action btn-delete-row"
+                type="submit"
                 title="Удалить"
                 style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;"
                 th:data-id="${school.uid()}" th:data-name="${school.name()}">
