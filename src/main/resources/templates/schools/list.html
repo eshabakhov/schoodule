@@ -45,7 +45,8 @@
             <input id="school-search"
                    type="text"
                    placeholder="Поиск школы..."
-                   th:value="${param.name != null ? param.name[0] : ''}"/>
+                   th:value="${param.name != null ? param.name[0] : ''}">
+            </input>
         </label>
     </div>
     <th:block th:fragment="schools-grid">

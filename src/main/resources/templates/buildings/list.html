@@ -45,7 +45,8 @@
             <input id="building-search"
                    type="text"
                    placeholder="Поиск корпуса..."
-                   th:value="${param.name != null ? param.name[0] : ''}"/>
+                   th:value="${param.name != null ? param.name[0] : ''}">
+            </input>
         </label>
     </div>
     <th:block th:fragment="buildings-grid">

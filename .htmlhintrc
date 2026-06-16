@@ -22,6 +22,7 @@
   "button-type-require": true,
   "form-method-require": true,
   "input-requires-label": true,
+  "empty-tag-not-self-closed": true,
   "tagname-lowercase": true,
   "spec-char-escape": false
 }

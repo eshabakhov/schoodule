@@ -9,7 +9,7 @@
     <meta charset="UTF-8">
     <meta name="description" content="Планирование нагрузки у школьных классов">
     <title th:text="|${schedule.name()} - План классов|">План классов</title>
-    <link rel="stylesheet" th:href="@{/css/planning.css}"/>
+    <link rel="stylesheet" th:href="@{/css/planning.css}"></link>
 </head>
 <body>
 <div layout:fragment="content">
@@ -91,8 +91,8 @@
                            type="number"
                            max="10"
                            min="1"
-                           required="required"
-                    />
+                           required="required">
+                    </input>
                 </label>
                 <button class="btn-submit" type="submit">Сохранить</button>
             </form>
