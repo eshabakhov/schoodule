@@ -12,121 +12,122 @@
     <link rel="canonical" href="https://schoodule.com/users/login">
 </head>
 <body>
-<div class="page-container">
-    <div class="login-card">
-        <div class="card-header">
-            <div class="logo-wrap">
+    <h1>Вход</h1>
+    <div class="page-container">
+        <div class="login-card">
+            <div class="card-header">
+                <div class="logo-wrap">
+                    <svg fill="none"
+                         stroke="currentColor"
+                         stroke-linecap="round"
+                         stroke-linejoin="round"
+                         stroke-width="2"
+                         viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <rect height="18" rx="2" ry="2" width="18" x="3" y="4"/>
+                        <line x1="16" x2="16" y1="2" y2="6"/>
+                        <line x1="8" x2="8" y1="2" y2="6"/>
+                        <line x1="3" x2="21" y1="10" y2="10"/>
+                    </svg>
+                </div>
+                <div class="card-title">Schoodule</div>
+                <div class="card-desc">Платформа управления школьными расписаниями</div>
+            </div>
+            <a class="btn-yandex" href="/oauth2/authorization/yandex">
                 <svg fill="none"
-                     stroke="currentColor"
-                     stroke-linecap="round"
-                     stroke-linejoin="round"
-                     stroke-width="2"
-                     viewBox="0 0 24 24"
+                     height="44"
+                     viewBox="0 0 44 44"
+                     width="44"
                      xmlns="http://www.w3.org/2000/svg">
-                    <rect height="18" rx="2" ry="2" width="18" x="3" y="4"/>
-                    <line x1="16" x2="16" y1="2" y2="6"/>
-                    <line x1="8" x2="8" y1="2" y2="6"/>
-                    <line x1="3" x2="21" y1="10" y2="10"/>
+                    <rect fill="#FC3F1D" height="44" rx="22" width="44"></rect>
+                    <path d="M25.2438 12.3208H23.0173C19.2005 12.3208 17.292 14.2292 17.292 17.0919C17.292 20.2726 18.5643 21.863 21.427 23.7714L23.6535 25.3618L17.292 35.222H12.2029L18.2463 26.316C14.7475 23.7714 12.839 21.5449 12.839 17.41C12.839 12.3208 16.3378 8.82202 23.0173 8.82202H29.6969V35.222H25.2438V12.3208Z"
+                          fill="white">
+                    </path>
                 </svg>
+                Войти через Яндекс
+            </a>
+            <div class="alert error"
+                 th:if="${param.error != null and param.error[0] == 'oauth_no_email'}">
+                Яндекс не передал email. Попробуйте войти по логину.
             </div>
-            <div class="card-title">Schoodule</div>
-            <div class="card-desc">Платформа управления школьными расписаниями</div>
-        </div>
-        <a class="btn-yandex" href="/oauth2/authorization/yandex">
-            <svg fill="none"
-                 height="44"
-                 viewBox="0 0 44 44"
-                 width="44"
-                 xmlns="http://www.w3.org/2000/svg">
-                <rect fill="#FC3F1D" height="44" rx="22" width="44"></rect>
-                <path d="M25.2438 12.3208H23.0173C19.2005 12.3208 17.292 14.2292 17.292 17.0919C17.292 20.2726 18.5643 21.863 21.427 23.7714L23.6535 25.3618L17.292 35.222H12.2029L18.2463 26.316C14.7475 23.7714 12.839 21.5449 12.839 17.41C12.839 12.3208 16.3378 8.82202 23.0173 8.82202H29.6969V35.222H25.2438V12.3208Z"
-                      fill="white">
-                </path>
-            </svg>
-            Войти через Яндекс
-        </a>
-        <div class="alert error"
-             th:if="${param.error != null and param.error[0] == 'oauth_no_email'}">
-            Яндекс не передал email. Попробуйте войти по логину.
-        </div>
-        <div class="divider"><span>или</span></div>
-        <form class="login-form" method="post" th:action="@{/login}">
-            <input type="hidden"
-                   th:if="${_csrf != null}"
-                   th:name="${_csrf.parameterName}"
-                   th:value="${_csrf.token}">
-            <div class="field">
-                <label for="username">Логин</label>
-                <input id="username"
-                       name="username"
-                       type="text"
-                       autofocus="autofocus"
-                       placeholder="Введите логин"
-                       required="required">
-                </input>
-            </div>
-            <div class="field">
-                <label for="password">Пароль</label>
-                <div class="input-wrap">
-                    <input id="password"
-                           name="password"
-                           type="password"
-                           placeholder="••••••••"
+            <div class="divider"><span>или</span></div>
+            <form class="login-form" method="post" th:action="@{/login}">
+                <input type="hidden"
+                       th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
+                <div class="field">
+                    <label for="username">Логин</label>
+                    <input id="username"
+                           name="username"
+                           type="text"
+                           autofocus="autofocus"
+                           placeholder="Введите логин"
                            required="required">
                     </input>
-                    <button class="eye-btn" type="button" aria-label="Показать пароль" data-target="password">
-                        <svg class="eye-icon eye-off"
-                             fill="none"
-                             stroke="currentColor"
-                             stroke-linecap="round"
-                             stroke-linejoin="round"
-                             stroke-width="2"
-                             viewBox="0 0 24 24"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                            <line x1="1" x2="23" y1="1" y2="23"/>
-                        </svg>
-                        <svg class="eye-icon eye-on"
-                             fill="none"
-                             stroke="currentColor"
-                             stroke-linecap="round"
-                             stroke-linejoin="round"
-                             stroke-width="2"
-                             style="display:none"
-                             viewBox="0 0 24 24"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                    </button>
                 </div>
+                <div class="field">
+                    <label for="password">Пароль</label>
+                    <div class="input-wrap">
+                        <input id="password"
+                               name="password"
+                               type="password"
+                               placeholder="••••••••"
+                               required="required">
+                        </input>
+                        <button class="eye-btn" type="button" aria-label="Показать пароль" data-target="password">
+                            <svg class="eye-icon eye-off"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 stroke-width="2"
+                                 viewBox="0 0 24 24"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                                <line x1="1" x2="23" y1="1" y2="23"/>
+                            </svg>
+                            <svg class="eye-icon eye-on"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 stroke-width="2"
+                                 style="display:none"
+                                 viewBox="0 0 24 24"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <button class="btn-submit" type="submit">Войти</button>
+            </form>
+            <div class="alert error"
+                 th:if="${param.error != null and param.error[0] == 'bad_credentials'}">
+                Неверный логин или пароль
             </div>
-            <button class="btn-submit" type="submit">Войти</button>
-        </form>
-        <div class="alert error"
-             th:if="${param.error != null and param.error[0] == 'bad_credentials'}">
-            Неверный логин или пароль
-        </div>
-        <div class="alert error"
-             th:if="${param.error != null and param.error[0] == 'user_not_found'}">
-            Пользователь не найден
-        </div>
-        <div class="alert success" th:if="${param.logout}">
-            Вы вышли из системы
-        </div>
-        <div class="alert success" th:if="${param.registered}">
-            Регистрация успешна! Войдите в систему.
-        </div>
+            <div class="alert error"
+                 th:if="${param.error != null and param.error[0] == 'user_not_found'}">
+                Пользователь не найден
+            </div>
+            <div class="alert success" th:if="${param.logout}">
+                Вы вышли из системы
+            </div>
+            <div class="alert success" th:if="${param.registered}">
+                Регистрация успешна! Войдите в систему.
+            </div>
 
-        <div class="divider"><span>или</span></div>
-        <div class="register-link">
-            Нет аккаунта? <a href="/users/register">Зарегистрироваться</a>
+            <div class="divider"><span>или</span></div>
+            <div class="register-link">
+                Нет аккаунта? <a href="/users/register">Зарегистрироваться</a>
+            </div>
         </div>
     </div>
-</div>
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script th:src="@{/js/security.js}"></script>
-<script th:src="@{/js/authentication.js}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script th:src="@{/js/security.js}"></script>
+    <script th:src="@{/js/authentication.js}"></script>
 </body>
 </html>

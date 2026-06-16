@@ -23,6 +23,8 @@
   "form-method-require": true,
   "input-requires-label": true,
   "empty-tag-not-self-closed": true,
+  "frame-title-require": true,
+  "h1-require": true,
   "tagname-lowercase": true,
   "spec-char-escape": false
 }
