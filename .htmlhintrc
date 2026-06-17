@@ -34,5 +34,7 @@
   "tagname-lowercase": true,
   "tagname-specialchars": true,
   "tags-check": true,
+  "id-class-ad-disabled": true,
+  "id-class-value": "dash",
   "spec-char-escape": false
 }
