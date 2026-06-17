@@ -19,6 +19,7 @@
         </div>
         <a class="btn-primary"
            href="/schools/create"
+           title="Добавить школу в систему"
            style="display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border-radius:var(--radius-sm);font-size:.875rem;font-weight:500;text-decoration:none;">
             <svg fill="none"
                  stroke="currentColor"
@@ -86,6 +87,7 @@
                 <div class="pagination-pages">
                     <a class="pagination-btn pagination-prev"
                        href="#"
+                       title="Предыдущая страница"
                        th:data-limit="${limit}"
                        th:data-offset="${page - 1}"
                        th:if="${hasPrev}">
@@ -103,6 +105,7 @@
                         <th:block th:if="${start > 1}">
                             <a class="pagination-btn"
                                href="#"
+                               title="Перейти на первую страницу"
                                th:data-limit="${limit}"
                                th:data-offset="1">1</a>
                             <span class="pagination-ellipsis" th:if="${start > 2}">…</span>
@@ -110,22 +113,27 @@
                         <th:block th:each="p : ${#numbers.sequence(start, end)}">
                             <a class="pagination-btn"
                                href="#"
+                               title="Перейти на указанную страницу"
                                th:classappend="${p == page} ? 'active' : ''"
                                th:data-limit="${limit}"
                                th:data-offset="${p}"
-                               th:text="${p}">1</a>
+                               th:text="${p}"
+                               th:title="${p == page} ? 'Текущая страница' : 'Перейти на страницу ' + p">1</a>
                         </th:block>
                         <th:block th:if="${end < totalPages}">
                             <span class="pagination-ellipsis" th:if="${end < totalPages - 1}">…</span>
                             <a class="pagination-btn"
                                href="#"
+                               title="Перейти на последнюю страницу"
                                th:data-limit="${limit}"
                                th:data-offset="${totalPages}"
-                               th:text="${totalPages}">N</a>
+                               th:text="${totalPages}"
+                               th:title="'Перейти на последнюю страницу (' + ${totalPages} + ')'">N</a>
                         </th:block>
                     </th:block>
                     <a class="pagination-btn pagination-next"
                        href="#"
+                       title="Следующая страница"
                        th:data-limit="${limit}"
                        th:data-offset="${page + 1}"
                        th:if="${hasNext}">
@@ -143,11 +151,13 @@
                     <span class="pagination-size-label">На странице:</span>
                     <a class="pagination-size-btn"
                        href="#"
+                       title="Показывать по 15 элементов на странице"
                        th:classappend="${limit == s} ? 'active' : ''"
                        th:data-limit="${s}"
                        th:data-offset="1"
                        th:each="s : ${#arrays.toArray({15, 30, 50})}"
-                       th:text="${s}">15</a>
+                       th:text="${s}"
+                       th:title="'Показывать по ' + ${s} + ' элементов'">15</a>
                 </div>
             </div>
         </div>

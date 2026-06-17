@@ -39,7 +39,10 @@
             </label>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
                 <a class="btn-outline-action"
-                   th:href="@{/schools/{s}/teachers/{t}(s=${school.uid()},t=${teacher.uid()})}">Отмена</a>
+                   href="javascript:history.back()"
+                   title="Отменить редактирование учителя">
+                    Отмена
+                </a>
                 <button class="btn-primary" type="submit">Сохранить</button>
             </div>
         </form>

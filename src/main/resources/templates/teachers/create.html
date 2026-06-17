@@ -39,7 +39,11 @@
             </label>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
                 <a class="btn-outline-action"
-                   th:href="@{/schools/{id}/teachers(id=${school.uid()})}">Отмена</a>
+                   href="#"
+                   title="Отменить создание учителя"
+                   th:href="@{/schools/{id}/teachers(id=${school.uid()})}">
+                    Отмена
+                </a>
                 <button class="btn-primary" type="submit">Добавить</button>
             </div>
         </form>

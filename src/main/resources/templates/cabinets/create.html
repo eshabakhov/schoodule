@@ -38,7 +38,12 @@
                        required="required">
             </label>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
-                <a class="btn-outline-action" th:href="@{/schools/{s}/buildings/{b}/cabinets(s=${school.uid()},b=${building.uid()})}">Отмена</a>
+                <a class="btn-outline-action"
+                   href="#"
+                   title="Отменить создание кабинета"
+                   th:href="@{/schools/{s}/buildings/{b}/cabinets(s=${school.uid()},b=${building.uid()})}">
+                    Отмена
+                </a>
                 <button class="btn-primary" type="submit">Создать</button>
             </div>
         </form>
