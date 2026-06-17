@@ -38,5 +38,6 @@
   "id-class-value": "dash",
   "id-unique": true,
   "inline-script-disabled": true,
-  "spec-char-escape": false
+  "space-tab-mixed-disabled": "space4",
+  "spec-char-escape": true
 }
