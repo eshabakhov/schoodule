@@ -18,6 +18,8 @@
             <p class="page-subtitle">Справочник нормативных учебных планов для школ</p>
         </div>
         <a class="btn-primary"
+           href="#"
+           title="Добавить федеральный учебный план в систему"
            style="display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border-radius:var(--radius-sm);font-size:.875rem;font-weight:500;text-decoration:none;"
            th:href="@{/federal/curriculums/create}">
             <svg fill="none"
@@ -55,10 +57,6 @@
                 <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted-fg);"
                      th:if="${#lists.isEmpty(curriculums)}">
                     Федеральные учебные планы не найдены.
-                    <a style="color:var(--primary);font-weight:600;text-decoration:underline;margin-left:.25rem;"
-                       th:href="@{/federal/curriculums/create}">
-                        Добавить первый
-                    </a>
                 </div>
                 <div class="card-item federal-curriculum-row"
                      style="cursor:pointer;"
@@ -95,6 +93,7 @@
                 <div class="pagination-pages">
                     <a class="pagination-btn pagination-prev"
                        href="#"
+                       title="Предыдущая страница"
                        th:data-limit="${limit}"
                        th:data-offset="${page - 1}"
                        th:if="${hasPrev}">
@@ -112,6 +111,7 @@
                         <th:block th:if="${start > 1}">
                             <a class="pagination-btn"
                                href="#"
+                               title="Перейти на первую страницу"
                                th:data-limit="${limit}"
                                th:data-offset="1">1</a>
                             <span class="pagination-ellipsis" th:if="${start > 2}">…</span>
@@ -119,22 +119,27 @@
                         <th:block th:each="p : ${#numbers.sequence(start, end)}">
                             <a class="pagination-btn"
                                href="#"
+                               title="Перейти на указанную страницу"
                                th:classappend="${p == page} ? 'active' : ''"
                                th:data-limit="${limit}"
                                th:data-offset="${p}"
-                               th:text="${p}">1</a>
+                               th:text="${p}"
+                               th:title="${p == page} ? 'Текущая страница' : 'Перейти на страницу ' + p">1</a>
                         </th:block>
                         <th:block th:if="${end < totalPages}">
                             <span class="pagination-ellipsis" th:if="${end < totalPages - 1}">…</span>
                             <a class="pagination-btn"
                                href="#"
+                               title="Перейти на последнюю страницу"
                                th:data-limit="${limit}"
                                th:data-offset="${totalPages}"
-                               th:text="${totalPages}">N</a>
+                               th:text="${totalPages}"
+                               th:title="'Перейти на последнюю страницу (' + ${totalPages} + ')'">N</a>
                         </th:block>
                     </th:block>
                     <a class="pagination-btn pagination-next"
                        href="#"
+                       title="Следующая страница"
                        th:data-limit="${limit}"
                        th:data-offset="${page + 1}"
                        th:if="${hasNext}">

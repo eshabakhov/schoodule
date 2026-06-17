@@ -17,6 +17,7 @@
             <h1 class="title-with-action">
                 <span th:text="${building.name()}">Корпус</span>
                 <a class="btn-icon-edit"
+                   href="#"
                    title="Редактировать"
                    aria-label="Редактировать"
                    th:href="@{/schools/{s}/buildings/{c}/edit(s=${school.uid()},c=${building.uid()})}">

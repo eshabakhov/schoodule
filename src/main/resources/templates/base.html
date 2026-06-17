@@ -18,7 +18,9 @@
     <h1>Главная</h1>
     <header class="app-header" id="app-header">
         <div class="app-header-inner">
-            <a class="app-header-logo" href="/">
+            <a class="app-header-logo"
+               href="/"
+               title="Перейти на главную страницу">
                 <svg fill="none"
                      stroke="currentColor"
                      stroke-width="2"
@@ -47,7 +49,9 @@
                 </svg>
                 Подписка
             </a>
-            <a class="logout-btn" href="/users/profile" title="Профиль">
+            <a class="logout-btn"
+               href="/users/profile"
+               title="Профиль">
                 <svg fill="none"
                      stroke="currentColor"
                      stroke-width="2"
@@ -65,7 +69,9 @@
             <aside class="sidebar" id="sidebar">
                 <nav class="sidebar-nav">
                     <div class="sidebar-section" sec:authorize="hasRole('ADMIN')">Общее</div>
-                    <a class="sidebar-link" href="/schools" title="Школы" sec:authorize="hasRole('ADMIN')">
+                    <a class="sidebar-link"
+                       href="/schools"
+                       title="Школы" sec:authorize="hasRole('ADMIN')">
                         <svg fill="none"
                              stroke="currentColor"
                              stroke-width="2"
@@ -97,12 +103,18 @@
                               th:with="schoolSchedules=${school.schedules().schedules(T(org.jooq.impl.DSL).trueCondition(), new com.eshabakhov.schoodule.page.PageRequest(2147483647, 1)).list()}">
                         <div class="sidebar-section">
                             <a class="sidebar-school-link"
+                               href="#"
+                               title="Перейти к школе"
                                th:href="@{/schools/{id}(id=${school.uid()})}"
-                               th:text="${school.name()}">
+                               th:text="${school.name()}"
+                               th:title="'Перейти к школе' + ${school.name()}">
                                 Школа
                             </a>
                         </div>
-                        <a class="sidebar-link" title="Расписания" th:href="@{/schools/{id}/schedules(id=${school.uid()})}">
+                        <a class="sidebar-link"
+                           href="#"
+                           title="Расписания"
+                           th:href="@{/schools/{id}/schedules(id=${school.uid()})}">
                             <svg fill="none"
                                  stroke="currentColor"
                                  stroke-width="2"
@@ -118,6 +130,8 @@
                         <div class="sidebar-subnav"
                              th:if="${!#lists.isEmpty(schoolSchedules)}">
                             <a class="sidebar-schedule-link"
+                               href="#"
+                               title="Расписание"
                                th:classappend="${schedule != null && schedule.uid() == item.uid()} ? ' active'"
                                th:each="item : ${schoolSchedules}"
                                th:href="@{/schools/{schoolId}/schedules/{scheduleId}(schoolId=${school.uid()},scheduleId=${item.uid()})}"
@@ -125,7 +139,10 @@
                                 <span th:text="${item.name()}">Расписание</span>
                             </a>
                         </div>
-                        <a class="sidebar-link" title="Учителя" th:href="@{/schools/{id}/teachers(id=${school.uid()})}">
+                        <a class="sidebar-link"
+                           href="#"
+                           title="Учителя"
+                           th:href="@{/schools/{id}/teachers(id=${school.uid()})}">
                             <svg fill="none"
                                  stroke="currentColor"
                                  stroke-width="2"
@@ -137,7 +154,10 @@
                             </svg>
                             <span class="sidebar-link-label">Учителя</span>
                         </a>
-                        <a class="sidebar-link" title="Классы" th:href="@{/schools/{id}/classes(id=${school.uid()})}">
+                        <a class="sidebar-link"
+                           href="#"
+                           title="Классы"
+                           th:href="@{/schools/{id}/classes(id=${school.uid()})}">
                             <svg fill="none"
                                  stroke="currentColor"
                                  stroke-width="2"
@@ -148,7 +168,10 @@
                             </svg>
                             <span class="sidebar-link-label">Классы</span>
                         </a>
-                        <a class="sidebar-link" title="Предметы" th:href="@{/schools/{id}/subjects(id=${school.uid()})}">
+                        <a class="sidebar-link"
+                           href="#"
+                           title="Предметы"
+                           th:href="@{/schools/{id}/subjects(id=${school.uid()})}">
                             <svg fill="none"
                                  stroke="currentColor"
                                  stroke-width="2"
@@ -159,7 +182,10 @@
                             </svg>
                             <span class="sidebar-link-label">Предметы</span>
                         </a>
-                        <a class="sidebar-link" title="Корпусы" th:href="@{/schools/{id}/buildings(id=${school.uid()})}">
+                        <a class="sidebar-link"
+                           href="#"
+                           title="Корпусы"
+                           th:href="@{/schools/{id}/buildings(id=${school.uid()})}">
                             <svg fill="none"
                                  stroke="currentColor"
                                  stroke-width="2"
@@ -174,11 +200,14 @@
                         <div class="sidebar-subnav"
                              th:if="${building != null && building.uid() != null}">
                             <a class="sidebar-subnav-link active"
+                               href="#"
+                               title="Перейти к корпусу"
                                th:href="@{/schools/{s}/buildings/{b}(s=${school.uid()},b=${building.uid()})}"
-                               th:title="${building.name()}">
+                               th:title="'Перейти к корпусу' + ${building.name()}">
                                 <span th:text="${building.name()}">Корпус</span>
                             </a>
                             <a class="sidebar-link"
+                               href="#"
                                title="Кабинеты"
                                th:href="@{/schools/{s}/buildings/{r}/cabinets(s=${school.uid()},r=${building.uid()})}">
                                 <svg fill="none"
@@ -194,8 +223,10 @@
                             <div class="sidebar-subnav"
                                  th:if="${cabinet != null && cabinet.uid() != null}">
                                 <a class="sidebar-subnav-link active"
+                                   href="#"
+                                   title="Перейти к кабинету"
                                    th:href="@{/schools/{s}/buildings/{b}/cabinets/{c}(s=${school.uid()},b=${building.uid()},c=${cabinet.uid()})}"
-                                   th:title="${cabinet.name()}">
+                                   th:title="'Перейти к кабинету' + ${cabinet.name()}">
                                     <span th:text="${cabinet.name()}">Кабинет</span>
                                 </a>
                             </div>
@@ -204,12 +235,15 @@
                     <th:block th:if="${schedule != null && schedule.uid() != null && school != null}">
                         <div class="sidebar-section">
                             <a class="sidebar-school-link"
+                               href="#"
+                               title="Перейти к расписаниям"
                                th:href="@{/schools/{s}/schedules/{r}(s=${school.uid()},r=${schedule.uid()})}"
                                th:text="${schedule.name()}">
                                 Расписание
                             </a>
                         </div>
                         <a class="sidebar-link"
+                           href="#"
                            title="План классов"
                            th:href="@{/schools/{s}/schedules/{r}/curriculum(s=${school.uid()},r=${schedule.uid()})}">
                             <svg fill="none"

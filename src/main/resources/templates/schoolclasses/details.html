@@ -17,6 +17,7 @@
             <h1 class="title-with-action">
                 <span th:text="${clazz.name()}">Класс</span>
                 <a class="btn-icon-edit"
+                   href="#"
                    title="Редактировать"
                    aria-label="Редактировать"
                    th:href="@{/schools/{s}/classes/{c}/edit(s=${school.uid()},c=${clazz.uid()})}">

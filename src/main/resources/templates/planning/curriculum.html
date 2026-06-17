@@ -19,6 +19,8 @@
         </div>
         <nav class="planning-tabs">
             <a class="tab-link active"
+               href="#"
+               title="Перейти к планированию учебной нагрузки для школьных классов"
                th:href="@{/schools/{schoolId}/schedules/{scheduleId}/curriculum(schoolId=${school.uid()},scheduleId=${schedule.uid()})}">
                 План классов
             </a>

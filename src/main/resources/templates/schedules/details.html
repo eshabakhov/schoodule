@@ -17,6 +17,7 @@
             <h1 class="title-with-action">
                 <span th:text="${schedule.name()}">Расписание</span>
                 <a class="btn-icon-edit"
+                   href="#"
                    title="Редактировать"
                    aria-label="Редактировать"
                    th:href="@{/schools/{s}/schedules/{r}/edit(s=${school.uid()},r=${schedule.uid()})}">
@@ -48,6 +49,8 @@
 
     <div class="tabs-list" style="margin-top:1.5rem;">
         <a class="tab-trigger"
+           href="#"
+           title="Планирование нагрузки учебных классов"
            th:href="@{/schools/{s}/schedules/{r}/curriculum(s=${school.uid()},r=${schedule.uid()})}">План классов</a>
     </div>
     <div class="stat-grid" style="margin-top:1.5rem;width:100%;">

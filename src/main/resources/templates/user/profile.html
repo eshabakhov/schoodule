@@ -52,6 +52,8 @@
                      th:if="${school!= null && school.name() != null}">
                     <span class="info-label">Школа</span>
                     <a class="info-value"
+                       href="#"
+                       title="Перейти к школе"
                        style="color:var(--fg);text-decoration:underline;text-underline-offset:2px;"
                        th:href="@{/schools/{id}(id=${user.info().school()})}"
                        th:text="${school.name()}">Школа</a>
