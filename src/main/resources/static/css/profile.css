@@ -1,0 +1,23 @@
+.logout-button {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .5rem 1rem;
+    font-size: .875rem;
+    font-weight: 500;
+    font-family: inherit;
+    border-radius: var(--radius-sm);
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #dc2626;
+    cursor: pointer;
+    transition: background 150ms ease,
+    border-color 150ms ease;
+    white-space: nowrap;
+}
+
+.logout-button:hover {
+    background: #fee2e2;
+}

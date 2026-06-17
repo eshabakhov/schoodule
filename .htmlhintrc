@@ -36,5 +36,7 @@
   "tags-check": true,
   "id-class-ad-disabled": true,
   "id-class-value": "dash",
+  "id-unique": true,
+  "inline-script-disabled": true,
   "spec-char-escape": false
 }
