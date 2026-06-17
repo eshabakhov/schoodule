@@ -351,9 +351,8 @@
                 <div class="cancel-desc">Переход на Базовый план. Роли пересчитаются автоматически.</div>
             </div>
             <form method="post" th:action="@{/users/subscription/cancel}">
-                <button class="btn-cancel-sub"
-                        type="submit"
-                        onclick="return confirm('Отменить подписку и перейти на Базовый план?')">
+                <button class="btn-cancel-sub" type="submit">
+                    Отменить подписку
                     <svg fill="none"
                          stroke="currentColor"
                          stroke-width="2"
@@ -369,5 +368,6 @@
         </div>
     </div>
 </div>
+<script th:src="@{/js/subscription.js}"></script>
 </body>
 </html>

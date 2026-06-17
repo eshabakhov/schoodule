@@ -73,9 +73,11 @@
             </label>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
                 <a class="btn-outline-action"
-                   href="javascript:history.back()"
+                   href="#"
                    title="Отменить редактирование федерального учебного плана"
-                >Отмена</a>
+                   th:href="@{/federal/curriculums/{cid}(cid=${id})}">
+                    Отмена
+                </a>
                 <button class="btn-primary" type="submit">Сохранить</button>
             </div>
         </form>

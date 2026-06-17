@@ -38,8 +38,9 @@
             </label>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
                 <a class="btn-outline-action"
-                   href="javascript:history.back()"
-                   title="Отменить редактирование школы">
+                   href="#"
+                   title="Отменить редактирование школы"
+                   th:href="@{/schools/{id}(s=${school.uid()})}">
                     Отмена
                 </a>
                 <button class="btn-primary" type="submit">Сохранить</button>
