@@ -31,31 +31,14 @@ $(() => {
             part: $tr.data('part')
         };
     }
-    function applyFiltersAndPaginate() {
-        $('#req-tbody tr.req-editing').each(function () {
-            cancelEdit($(this));
-        });
-        const filtered = $allRows.filter(function () {
-            const v = getRowValues($(this));
-            const gradeOk = !filterGrade || v.grade === filterGrade;
-            const subjectOk = !filterSubject || v.subject.includes(filterSubject.toLowerCase());
-            const partOk = !filterPart || v.part === filterPart;
-            return gradeOk && subjectOk && partOk;
-        });
-        const total = filtered.length;
-        const totalPages = Math.max(1, Math.ceil(total / pageSize));
-        if (currentPage > totalPages) currentPage = totalPages;
-        const start = (currentPage - 1) * pageSize;
-        const end = start + pageSize;
-        $allRows.hide();
-        filtered.slice(start, end).show();
-        const $emptyRow = $('#req-empty-row');
-        if (total === 0) {
-            $emptyRow.show();
-        } else {
-            $emptyRow.hide();
-        }
-        renderPagination(total, totalPages);
+    function cancelEdit($tr) {
+        if (!$tr.hasClass('req-editing')) return;
+        const orig = $tr.data('orig');
+        $tr.find('.view-grade').text(orig.grade);
+        $tr.find('.view-subject').text(orig.subject);
+        $tr.find('.view-hours').text(orig.hours);
+        $tr.find('.view-part').text(orig.part);
+        $tr.removeClass('req-editing');
     }
     function renderPagination(total, totalPages) {
         const $wrap = $('#req-pagination');
@@ -105,6 +88,32 @@ $(() => {
         }
         $wrap.html(html);
     }
+    function applyFiltersAndPaginate() {
+        $('#req-tbody tr.req-editing').each(function () {
+            cancelEdit($(this));
+        });
+        const filtered = $allRows.filter(function () {
+            const v = getRowValues($(this));
+            const gradeOk = !filterGrade || v.grade === filterGrade;
+            const subjectOk = !filterSubject || v.subject.includes(filterSubject.toLowerCase());
+            const partOk = !filterPart || v.part === filterPart;
+            return gradeOk && subjectOk && partOk;
+        });
+        const total = filtered.length;
+        const totalPages = Math.max(1, Math.ceil(total / pageSize));
+        if (currentPage > totalPages) currentPage = totalPages;
+        const start = (currentPage - 1) * pageSize;
+        const end = start + pageSize;
+        $allRows.hide();
+        filtered.slice(start, end).show();
+        const $emptyRow = $('#req-empty-row');
+        if (total === 0) {
+            $emptyRow.show();
+        } else {
+            $emptyRow.hide();
+        }
+        renderPagination(total, totalPages);
+    }
     $(document).on('click', '.req-page-btn', function (e) {
         e.preventDefault();
         currentPage = parseInt($(this).data('page'));
@@ -141,15 +150,6 @@ $(() => {
         applyFiltersAndPaginate();
     });
     applyFiltersAndPaginate();
-    function cancelEdit($tr) {
-        if (!$tr.hasClass('req-editing')) return;
-        const orig = $tr.data('orig');
-        $tr.find('.view-grade').text(orig.grade);
-        $tr.find('.view-subject').text(orig.subject);
-        $tr.find('.view-hours').text(orig.hours);
-        $tr.find('.view-part').text(orig.part);
-        $tr.removeClass('req-editing');
-    }
     $(document).on('click', '.req-row-edit', function () {
         const $tr = $(this).closest('tr');
         if ($tr.hasClass('req-editing')) return;
