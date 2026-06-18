@@ -7,12 +7,12 @@
     <meta name="_csrf" th:content="${_csrf.token}" th:if="${_csrf != null}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}" th:if="${_csrf != null}">
     <meta name="description" content="Регистрация на платформе">
-    <title>Регистрация — Schoodule</title>
+    <title>Schoodule - Регистрация</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/login.css}">
     <link rel="canonical" href="https://schoodule.com/users/register">
 </head>
 <body>
-    <h1>Регистрация</h1>
     <main>
         <div class="page-container">
             <div class="login-card">
@@ -31,7 +31,7 @@
                             <line x1="3" x2="21" y1="10" y2="10"/>
                         </svg>
                     </div>
-                    <div class="card-title">Schoodule</div>
+                    <h1 class="card-title">Schoodule - Регистрация</h1>
                     <div class="card-desc">Создайте аккаунт для доступа к платформе</div>
                 </div>
                 <form class="login-form" id="register-form" method="post">
