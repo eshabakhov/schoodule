@@ -23,7 +23,7 @@ $(() => {
     }
     $(document).on(
         'click',
-        '#federal-curriculums-pagination .pagination-btn',
+        '#federal-curriculums-pagination .pagination-btn, #federal-curriculums-pagination .pagination-size-btn',
         function(e) {
             e.preventDefault();
             const offset = $(this).data('offset') || 1;
@@ -40,6 +40,16 @@ $(() => {
             loadFragment(q, 1, parseInt(getParam('limit', '15')));
         }, 300);
     });
+    window.addEventListener('popstate', function() {
+        const title = getParam('title', '');
+        const offset = getParam('offset', '1');
+        const limit = getParam('limit', '15');
+        $('#federal-curriculum-search').val(title);
+        $.get(window.location.pathname + '/fragment', { title, offset, limit })
+            .done(function(html) {
+                $('#federal-curriculums-results').replaceWith(html);
+            });
+    });
     $(document).on('click', '.btn-delete-curriculum', function() {
         const id = $(this).data('id');
         const name = $(this).data('name');
@@ -54,7 +64,6 @@ $(() => {
             })
             .fail(() => alert('Не удалось удалить федеральный учебный план'));
     });
-
     $(document).on('click', '.btn-delete-requirement', function() {
         const id = $(this).data('id');
         const curriculum = $(this).data('curriculum');

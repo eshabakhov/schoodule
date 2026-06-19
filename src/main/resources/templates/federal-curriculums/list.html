@@ -153,6 +153,18 @@
                         </svg>
                     </a>
                 </div>
+                <div class="pagination-size" th:if="${limit >= 15}">
+                    <span class="pagination-size-label">На странице:</span>
+                    <a class="pagination-size-btn"
+                       href="#"
+                       title="Показывать по 15 элементов на странице"
+                       th:classappend="${limit == s} ? 'active' : ''"
+                       th:data-limit="${s}"
+                       th:data-offset="1"
+                       th:each="s : ${#arrays.toArray({15, 30, 50})}"
+                       th:text="${s}"
+                       th:title="'Показывать по ' + ${s} + ' элементов'">15</a>
+                </div>
             </div>
         </div>
     </th:block>
