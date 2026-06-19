@@ -40,7 +40,7 @@
                 <a class="btn-outline-action"
                    href="#"
                    title="Отменить редактирование предмета"
-                   th:href="@{/schools/{id}/subjects/{t}(s=${school.uid()},sub=${subject.uid()})}">
+                   th:href="@{/schools/{s}/subjects/{t}(s=${school.uid()},sub=${subject.uid()})}">
                     Отмена
                 </a>
                 <button class="btn-primary" type="submit">Сохранить</button>

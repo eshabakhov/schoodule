@@ -1,11 +1,18 @@
-/* ── Body ── */
+main {
+    max-width: var(--layout-w);
+    width: 100%;
+    margin: 0 auto;
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+}
+
 body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 
-/* ── App header ── */
 .app-header {
     width: 100%;
     height: var(--header-h);
@@ -114,7 +121,6 @@ body {
     color: var(--muted-fg);
 }
 
-/* ── Layout wrap (sidebar + content, centered) ── */
 .layout-wrap {
     max-width: var(--layout-w);
     width: 100%;
@@ -124,7 +130,6 @@ body {
     align-items: stretch;
 }
 
-/* ── Sidebar ── */
 .sidebar {
     width: var(--sidebar-w);
     flex-shrink: 0;
@@ -235,7 +240,6 @@ body {
     color: var(--fg);
 }
 
-/* ── App content area ── */
 .app-content {
     flex: 1;
     min-width: 0;
@@ -246,7 +250,6 @@ body {
     max-width: var(--content-w);
 }
 
-/* ── Top breadcrumb bar ── */
 .top-bar {
     height: var(--header-h);
     background: var(--card);
@@ -311,7 +314,6 @@ body {
     margin-top: .125rem;
 }
 
-/* ── Page container (centered pages) ── */
 .page-container {
     display: flex;
     flex-direction: column;
@@ -321,7 +323,6 @@ body {
     flex: 1;
 }
 
-/* ── Error pages ── */
 .error-page {
     min-height: 100vh;
     display: flex;
@@ -364,13 +365,11 @@ body {
     margin: 0;
 }
 
-/* ── Landing / login override ── */
 body:has(.landing),
 body:has(.login-card) {
     display: block;
 }
 
-/* ── Responsive ── */
 @media (width <= 768px) {
     .sidebar {
         display: none;

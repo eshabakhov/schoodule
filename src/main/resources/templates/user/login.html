@@ -7,12 +7,12 @@
     <meta name="_csrf" th:content="${_csrf.token}" th:if="${_csrf != null}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}" th:if="${_csrf != null}">
     <meta name="description" content="Вход на платформу">
-    <title>Вход - Schoodule</title>
+    <title>Schoodule - Вход</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/login.css}">
     <link rel="canonical" href="https://schoodule.com/users/login">
 </head>
 <body>
-    <h1>Вход</h1>
     <main>
         <div class="page-container">
             <div class="login-card">
@@ -31,7 +31,7 @@
                             <line x1="3" x2="21" y1="10" y2="10"/>
                         </svg>
                     </div>
-                    <div class="card-title">Schoodule</div>
+                    <h1 class="card-title">Schoodule - Вход</h1>
                     <div class="card-desc">Платформа управления школьными расписаниями</div>
                 </div>
                 <a class="btn-yandex" href="/oauth2/authorization/yandex" title="Авторизоваться в системе через Яндекс">
