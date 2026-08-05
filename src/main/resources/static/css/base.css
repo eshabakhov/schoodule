@@ -63,7 +63,7 @@ body:has(.login-card) {
     text-transform: uppercase;
     letter-spacing: .05em;
     color: var(--muted-fg);
-    min-width: 90px;
+    min-width: 120px;
 }
 
 .info-value {
