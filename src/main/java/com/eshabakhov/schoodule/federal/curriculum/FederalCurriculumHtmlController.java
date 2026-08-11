@@ -165,26 +165,27 @@ public class FederalCurriculumHtmlController {
         @RequestParam(name = "subject", required = false)
         final String subject,
         @RequestParam(name = "part", required = false)
-        final FederalCurriculumRequirement.PartType part
+        final FederalCurriculumRequirement.PartType part,
+        @RequestParam(name = "offset", defaultValue = "1")
+        final int offset,
+        @RequestParam(name = "limit", defaultValue = "15")
+        final int limit
     ) throws Exception {
         final FederalCurriculum found = new FcsPostgres(this.ctx).curriculum(curriculum);
         final Map<String, Object> data = ((ThymeleafMedia) found.print(new ThymeleafMedia())).map();
+        final PageableList<FederalCurriculumRequirement> result = found.requirements()
+            .requirements(
+                FederalCurriculumHtmlController.condition(grade, subject, part),
+                new PageRequest(limit, offset)
+            );
         return new ModelAndView("federal-curriculums/details")
             .addAllObjects(data)
             .addAllObjects(
-                Map.of(
-                    "pageTitle", data.getOrDefault("title", ""),
-                    "requirements", found.requirements()
-                        .requirements(
-                            FederalCurriculumHtmlController.condition(grade, subject, part),
-                            new PageRequest(Integer.MAX_VALUE, 1)
-                        )
-                        .list().stream()
-                        .map(req -> ((ThymeleafMedia) req.print(new ThymeleafMedia())).map())
-                        .toList(),
-                    "partTypes", FederalCurriculumRequirement.PartType.values()
+                FederalCurriculumHtmlController.requirementsModel(
+                    curriculum, result, offset, limit
                 )
-            );
+            )
+            .addObject("pageTitle", data.getOrDefault("title", ""));
     }
 
     @GetMapping(value = "/{curriculum}/requirements/fragment", produces = MediaType.TEXT_HTML_VALUE)
@@ -196,21 +197,23 @@ public class FederalCurriculumHtmlController {
         @RequestParam(name = "subject", required = false)
         final String subject,
         @RequestParam(name = "part", required = false)
-        final FederalCurriculumRequirement.PartType part
+        final FederalCurriculumRequirement.PartType part,
+        @RequestParam(name = "offset", defaultValue = "1")
+        final int offset,
+        @RequestParam(name = "limit", defaultValue = "15")
+        final int limit
     ) throws Exception {
-        return new ModelAndView("federal-curriculums/details :: requirements-rows")
+        final PageableList<FederalCurriculumRequirement> result = new FcsPostgres(this.ctx)
+            .curriculum(curriculum)
+            .requirements()
+            .requirements(
+                FederalCurriculumHtmlController.condition(grade, subject, part),
+                new PageRequest(limit, offset)
+            );
+        return new ModelAndView("federal-curriculums/details :: requirements-results")
             .addAllObjects(
-                Map.of(
-                    "id", curriculum,
-                    "requirements", new FcsPostgres(this.ctx).curriculum(curriculum).requirements()
-                        .requirements(
-                            FederalCurriculumHtmlController.condition(grade, subject, part),
-                            new PageRequest(Integer.MAX_VALUE, 1)
-                        )
-                        .list().stream()
-                        .map(req -> ((ThymeleafMedia) req.print(new ThymeleafMedia())).map())
-                        .toList(),
-                    "partTypes", FederalCurriculumRequirement.PartType.values()
+                FederalCurriculumHtmlController.requirementsModel(
+                    curriculum, result, offset, limit
                 )
             );
     }
@@ -259,6 +262,35 @@ public class FederalCurriculumHtmlController {
             .reyeared(year.trim())
             .redescriptioned(desc);
         return String.format("redirect:/federal/curriculums/%d", curriculum);
+    }
+
+    /**
+     * Builds requirements list model with pagination metadata.
+     *
+     * @param curriculum Curriculum ID
+     * @param result Requirements page
+     * @param offset Current page number
+     * @param limit Page size
+     * @return Model attributes
+     */
+    private static Map<String, Object> requirementsModel(
+        final long curriculum,
+        final PageableList<FederalCurriculumRequirement> result,
+        final int offset,
+        final int limit
+    ) {
+        return Map.of(
+            "id", curriculum,
+            "requirements", result.list().stream()
+                .map(req -> ((ThymeleafMedia) req.print(new ThymeleafMedia())).map())
+                .toList(),
+            "partTypes", FederalCurriculumRequirement.PartType.values(),
+            "page", offset,
+            "limit", limit,
+            "totalPages", (int) Math.ceil((double) result.total() / limit),
+            "hasNext", result.total() > (long) offset * limit,
+            "hasPrev", offset > 1
+        );
     }
 
     /**
