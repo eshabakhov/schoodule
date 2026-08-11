@@ -159,8 +159,10 @@
             <th style="text-align:right;padding-right:1rem;">Действия</th>
         </tr>
         </thead>
-        <tbody id="req-tbody">
-        <tr th:if="${#lists.isEmpty(requirements)}">
+        <tbody id="req-tbody"
+               th:data-search-url="@{/federal/curriculums/{cid}/requirements/fragment(cid=${id})}"
+               th:fragment="requirements-rows">
+        <tr id="req-empty-row" th:if="${#lists.isEmpty(requirements)}">
             <td class="empty-state" colspan="5">Требования пока не добавлены.</td>
         </tr>
         <tr class="req-data-row"
