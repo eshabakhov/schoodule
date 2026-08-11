@@ -4,18 +4,16 @@
 package com.eshabakhov.schoodule.user;
 
 import com.eshabakhov.schoodule.user.subscription.PgSubscriptions;
+import java.util.Map;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
-
-import java.util.Map;
 
 /**
  * HTTP endpoints for subscription management.

@@ -23,14 +23,7 @@ $(() => {
     let filterGrade = '';
     let filterSubject = '';
     let filterPart = '';
-    const $allRows = $('#req-tbody tr.req-data-row');
-    function getRowValues($tr) {
-        return {
-            grade: $tr.data('grade').toString(),
-            subject: $tr.data('subject').toLowerCase(),
-            part: $tr.data('part')
-        };
-    }
+    let $allRows = $('#req-tbody tr.req-data-row');
     function cancelEdit($tr) {
         if (!$tr.hasClass('req-editing')) return;
         const orig = $tr.data('orig');
@@ -92,13 +85,7 @@ $(() => {
         $('#req-tbody tr.req-editing').each(function () {
             cancelEdit($(this));
         });
-        const filtered = $allRows.filter(function () {
-            const v = getRowValues($(this));
-            const gradeOk = !filterGrade || v.grade === filterGrade;
-            const subjectOk = !filterSubject || v.subject.includes(filterSubject.toLowerCase());
-            const partOk = !filterPart || v.part === filterPart;
-            return gradeOk && subjectOk && partOk;
-        });
+        const filtered = $allRows;
         const total = filtered.length;
         const totalPages = Math.max(1, Math.ceil(total / pageSize));
         if (currentPage > totalPages) currentPage = totalPages;
@@ -113,6 +100,15 @@ $(() => {
             $emptyRow.hide();
         }
         renderPagination(total, totalPages);
+    }
+    function reloadRequirements() {
+        const url = $('#req-tbody').data('search-url');
+        $.get(url, { grade: filterGrade, subject: filterSubject, part: filterPart })
+            .done(html => {
+                $('#req-tbody').replaceWith(html);
+                $allRows = $('#req-tbody tr.req-data-row');
+                applyFiltersAndPaginate();
+            });
     }
     $(document).on('click', '.req-page-btn', function (e) {
         e.preventDefault();
@@ -132,7 +128,7 @@ $(() => {
         filterTimer = setTimeout(() => {
             filterGrade = v;
             currentPage = 1;
-            applyFiltersAndPaginate();
+            reloadRequirements();
         }, 250);
     });
     $('#filter-subject').on('input', function () {
@@ -141,13 +137,13 @@ $(() => {
         filterTimer = setTimeout(() => {
             filterSubject = v;
             currentPage = 1;
-            applyFiltersAndPaginate();
+            reloadRequirements();
         }, 250);
     });
     $('#filter-part').on('change', function () {
         filterPart = $(this).val();
         currentPage = 1;
-        applyFiltersAndPaginate();
+        reloadRequirements();
     });
     applyFiltersAndPaginate();
     $(document).on('click', '.req-row-edit', function () {

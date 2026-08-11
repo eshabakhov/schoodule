@@ -4,6 +4,7 @@
 package com.eshabakhov.schoodule.federal.curriculum;
 
 import com.eshabakhov.schoodule.PageableList;
+import com.eshabakhov.schoodule.enums.CurriculumPartType;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
 import com.eshabakhov.schoodule.media.ThymeleafMedia;
 import com.eshabakhov.schoodule.page.PageRequest;
@@ -41,6 +42,10 @@ public class FederalCurriculumHtmlController {
      */
     private static final com.eshabakhov.schoodule.tables.FederalCurriculum CURRICULUM =
         com.eshabakhov.schoodule.tables.FederalCurriculum.FEDERAL_CURRICULUM;
+
+    /** JOOQ Table for FederalCurriculumRequirement. */
+    private static final com.eshabakhov.schoodule.tables.FederalCurriculumRequirement REQUIREMENT =
+        com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
 
     /**
      * JOOQ DSL context for executing database queries.
@@ -152,7 +157,16 @@ public class FederalCurriculumHtmlController {
     }
 
     @GetMapping(value = "/{curriculum}", produces = MediaType.TEXT_HTML_VALUE)
-    public ModelAndView details(@PathVariable final long curriculum) throws Exception {
+    public ModelAndView details(
+        @PathVariable
+        final long curriculum,
+        @RequestParam(name = "grade", required = false)
+        final Integer grade,
+        @RequestParam(name = "subject", required = false)
+        final String subject,
+        @RequestParam(name = "part", required = false)
+        final FederalCurriculumRequirement.PartType part
+    ) throws Exception {
         final FederalCurriculum found = new FcsPostgres(this.ctx).curriculum(curriculum);
         final Map<String, Object> data = ((ThymeleafMedia) found.print(new ThymeleafMedia())).map();
         return new ModelAndView("federal-curriculums/details")
@@ -161,7 +175,38 @@ public class FederalCurriculumHtmlController {
                 Map.of(
                     "pageTitle", data.getOrDefault("title", ""),
                     "requirements", found.requirements()
-                        .requirements(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
+                        .requirements(
+                            FederalCurriculumHtmlController.condition(grade, subject, part),
+                            new PageRequest(Integer.MAX_VALUE, 1)
+                        )
+                        .list().stream()
+                        .map(req -> ((ThymeleafMedia) req.print(new ThymeleafMedia())).map())
+                        .toList(),
+                    "partTypes", FederalCurriculumRequirement.PartType.values()
+                )
+            );
+    }
+
+    @GetMapping(value = "/{curriculum}/requirements/fragment", produces = MediaType.TEXT_HTML_VALUE)
+    public ModelAndView requirements(
+        @PathVariable
+        final long curriculum,
+        @RequestParam(name = "grade", required = false)
+        final Integer grade,
+        @RequestParam(name = "subject", required = false)
+        final String subject,
+        @RequestParam(name = "part", required = false)
+        final FederalCurriculumRequirement.PartType part
+    ) throws Exception {
+        return new ModelAndView("federal-curriculums/details :: requirements-rows")
+            .addAllObjects(
+                Map.of(
+                    "id", curriculum,
+                    "requirements", new FcsPostgres(this.ctx).curriculum(curriculum).requirements()
+                        .requirements(
+                            FederalCurriculumHtmlController.condition(grade, subject, part),
+                            new PageRequest(Integer.MAX_VALUE, 1)
+                        )
                         .list().stream()
                         .map(req -> ((ThymeleafMedia) req.print(new ThymeleafMedia())).map())
                         .toList(),
@@ -214,5 +259,39 @@ public class FederalCurriculumHtmlController {
             .reyeared(year.trim())
             .redescriptioned(desc);
         return String.format("redirect:/federal/curriculums/%d", curriculum);
+    }
+
+    /**
+     * Builds requirements search condition.
+     *
+     * @param grade Grade number
+     * @param subject Subject name
+     * @param part Curriculum part
+     * @return JOOQ condition
+     */
+    private static Condition condition(
+        final Integer grade,
+        final String subject,
+        final FederalCurriculumRequirement.PartType part
+    ) {
+        Condition condition = DSL.trueCondition();
+        if (grade != null) {
+            condition = condition.and(FederalCurriculumHtmlController.REQUIREMENT.GRADE.eq(grade));
+        }
+        if (subject != null && !subject.isBlank()) {
+            condition = condition.and(
+                FederalCurriculumHtmlController.REQUIREMENT.SUBJECT_NAME.likeIgnoreCase(
+                    String.format("%%%s%%", subject.trim())
+                )
+            );
+        }
+        if (part != null) {
+            condition = condition.and(
+                FederalCurriculumHtmlController.REQUIREMENT.PART_TYPE.eq(
+                    CurriculumPartType.valueOf(part.name())
+                )
+            );
+        }
+        return condition;
     }
 }

@@ -4,6 +4,7 @@
 package com.eshabakhov.schoodule.federal.curriculum.requirement;
 
 import com.eshabakhov.schoodule.PageableList;
+import com.eshabakhov.schoodule.enums.CurriculumPartType;
 import com.eshabakhov.schoodule.federal.curriculum.FcsPostgres;
 import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.media.JsonMedia;
@@ -190,15 +191,37 @@ public class FederalCurriculumRequirementController {
     @Operation(summary = "Fetch federal curriculum requirements")
     //@checkstyle ParameterNumberCheck (1 line)
     public ResponseEntity<ObjectNode> requirements(
-        @PathVariable final long curriculum,
-        @RequestParam(name = "limit", required = false, defaultValue = "10") final int limit,
-        @RequestParam(name = "offset", required = false, defaultValue = "1") final int offset,
-        @RequestParam(name = "grade", required = false) final Integer grade
+        @PathVariable
+        final long curriculum,
+        @RequestParam(name = "limit", required = false, defaultValue = "10")
+        final int limit,
+        @RequestParam(name = "offset", required = false, defaultValue = "1")
+        final int offset,
+        @RequestParam(name = "grade", required = false)
+        final Integer grade,
+        @RequestParam(name = "subjectName", required = false)
+        final String subject,
+        @RequestParam(name = "partType", required = false)
+        final FederalCurriculumRequirement.PartType part
     ) throws Exception {
         Condition condition = DSL.trueCondition();
         if (grade != null) {
             condition = condition.and(
                 FederalCurriculumRequirementController.REQUIREMENT.GRADE.eq(grade)
+            );
+        }
+        if (subject != null && !subject.isBlank()) {
+            condition = condition.and(
+                FederalCurriculumRequirementController.REQUIREMENT.SUBJECT_NAME.likeIgnoreCase(
+                    String.format("%%%s%%", subject.trim())
+                )
+            );
+        }
+        if (part != null) {
+            condition = condition.and(
+                FederalCurriculumRequirementController.REQUIREMENT.PART_TYPE.eq(
+                    CurriculumPartType.valueOf(part.name())
+                )
             );
         }
         final PageableList<FederalCurriculumRequirement> result = new FcsPostgres(this.ctx)
