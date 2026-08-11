@@ -17,13 +17,17 @@ $(() => {
             $toggleIcon.html('<line x1="5" y1="12" x2="19" y2="12"/>');
         }
     });
-    const PAGE_SIZE_DEFAULT = 15;
-    let currentPage = 1;
-    let pageSize = PAGE_SIZE_DEFAULT;
-    let filterGrade = '';
-    let filterSubject = '';
-    let filterPart = '';
-    let $allRows = $('#req-tbody tr.req-data-row');
+    function getParam(key, fallback) {
+        return new URLSearchParams(window.location.search).get(key) || fallback;
+    }
+    let currentPage = parseInt(getParam('offset', '1'));
+    let pageSize = parseInt(getParam('limit', '15'));
+    let filterGrade = getParam('grade', '');
+    let filterSubject = getParam('subject', '');
+    let filterPart = getParam('part', '');
+    $('#filter-grade').val(filterGrade);
+    $('#filter-subject').val(filterSubject);
+    $('#filter-part').val(filterPart);
     function cancelEdit($tr) {
         if (!$tr.hasClass('req-editing')) return;
         const orig = $tr.data('orig');
@@ -33,94 +37,41 @@ $(() => {
         $tr.find('.view-part').text(orig.part);
         $tr.removeClass('req-editing');
     }
-    function renderPagination(total, totalPages) {
-        const $wrap = $('#req-pagination');
-        if (totalPages <= 1) {
-            $wrap.empty();
-            return;
-        }
-        const hasPrev = currentPage > 1;
-        const hasNext = currentPage < totalPages;
-        let start = Math.max(1, currentPage - 2);
-        let end = Math.min(totalPages, currentPage + 2);
-        if (end - start < 4) {
-            if (start === 1) end = Math.min(totalPages, 5);
-            else start = Math.max(1, end - 4);
-        }
-        let html = '<div class="pagination-pages">';
-        if (hasPrev) {
-            html += `<a href="#" class="pagination-btn pagination-prev req-page-btn" data-page="${currentPage - 1}">` +
-                `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">` +
-                `<polyline points="15 18 9 12 15 6"/></svg></a>`;
-        }
-        if (start > 1) {
-            html += `<a href="#" class="pagination-btn req-page-btn" data-page="1">1</a>`;
-            if (start > 2) html += `<span class="pagination-ellipsis">…</span>`;
-        }
-        for (let p = start; p <= end; p++) {
-            const active = p === currentPage ? ' active' : '';
-            html += `<a href="#" class="pagination-btn req-page-btn${active}" data-page="${p}">${p}</a>`;
-        }
-        if (end < totalPages) {
-            if (end < totalPages - 1) html += `<span class="pagination-ellipsis">…</span>`;
-            html += `<a href="#" class="pagination-btn req-page-btn" data-page="${totalPages}">${totalPages}</a>`;
-        }
-        if (hasNext) {
-            html += `<a href="#" class="pagination-btn pagination-next req-page-btn" data-page="${currentPage + 1}">` +
-                `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">` +
-                `<polyline points="9 18 15 12 9 6"/></svg></a>`;
-        }
-        html += '</div>';
-        if (total > 15) {
-            html += '<div class="pagination-size"><span class="pagination-size-label">На странице:</span>';
-            [15, 30, 50].forEach(s => {
-                const active = s === pageSize ? ' active' : '';
-                html += `<a href="#" class="pagination-size-btn req-pagesize-btn${active}" data-size="${s}">${s}</a>`;
-            });
-            html += '</div>';
-        }
-        $wrap.html(html);
+    function updateUrl() {
+        const params = new URLSearchParams();
+        if (filterGrade) params.set('grade', filterGrade);
+        if (filterSubject) params.set('subject', filterSubject);
+        if (filterPart) params.set('part', filterPart);
+        params.set('offset', currentPage);
+        params.set('limit', pageSize);
+        history.pushState(null, '', window.location.pathname + '?' + params.toString());
     }
-    function applyFiltersAndPaginate() {
+    function loadRequirements(pushState = true) {
         $('#req-tbody tr.req-editing').each(function () {
             cancelEdit($(this));
         });
-        const filtered = $allRows;
-        const total = filtered.length;
-        const totalPages = Math.max(1, Math.ceil(total / pageSize));
-        if (currentPage > totalPages) currentPage = totalPages;
-        const start = (currentPage - 1) * pageSize;
-        const end = start + pageSize;
-        $allRows.hide();
-        filtered.slice(start, end).show();
-        const $emptyRow = $('#req-empty-row');
-        if (total === 0) {
-            $emptyRow.show();
-        } else {
-            $emptyRow.hide();
-        }
-        renderPagination(total, totalPages);
-    }
-    function reloadRequirements() {
+        if (pushState) updateUrl();
         const url = $('#req-tbody').data('search-url');
-        $.get(url, { grade: filterGrade, subject: filterSubject, part: filterPart })
-            .done(html => {
-                $('#req-tbody').replaceWith(html);
-                $allRows = $('#req-tbody tr.req-data-row');
-                applyFiltersAndPaginate();
-            });
+        $.get(url, {
+            grade: filterGrade,
+            subject: filterSubject,
+            part: filterPart,
+            offset: currentPage,
+            limit: pageSize
+        }).done(html => {
+            $('#req-results').replaceWith(html);
+        });
     }
-    $(document).on('click', '.req-page-btn', function (e) {
-        e.preventDefault();
-        currentPage = parseInt($(this).data('page'));
-        applyFiltersAndPaginate();
-    });
-    $(document).on('click', '.req-pagesize-btn', function (e) {
-        e.preventDefault();
-        pageSize = parseInt($(this).data('size'));
-        currentPage = 1;
-        applyFiltersAndPaginate();
-    });
+    $(document).on(
+        'click',
+        '#req-pagination .pagination-btn, #req-pagination .pagination-size-btn',
+        function (e) {
+            e.preventDefault();
+            currentPage = parseInt($(this).data('offset')) || 1;
+            pageSize = parseInt($(this).data('limit')) || pageSize;
+            loadRequirements();
+        }
+    );
     let filterTimer;
     $('#filter-grade').on('input', function () {
         clearTimeout(filterTimer);
@@ -128,7 +79,7 @@ $(() => {
         filterTimer = setTimeout(() => {
             filterGrade = v;
             currentPage = 1;
-            reloadRequirements();
+            loadRequirements();
         }, 250);
     });
     $('#filter-subject').on('input', function () {
@@ -137,15 +88,25 @@ $(() => {
         filterTimer = setTimeout(() => {
             filterSubject = v;
             currentPage = 1;
-            reloadRequirements();
+            loadRequirements();
         }, 250);
     });
     $('#filter-part').on('change', function () {
         filterPart = $(this).val();
         currentPage = 1;
-        reloadRequirements();
+        loadRequirements();
     });
-    applyFiltersAndPaginate();
+    window.addEventListener('popstate', function () {
+        currentPage = parseInt(getParam('offset', '1'));
+        pageSize = parseInt(getParam('limit', '15'));
+        filterGrade = getParam('grade', '');
+        filterSubject = getParam('subject', '');
+        filterPart = getParam('part', '');
+        $('#filter-grade').val(filterGrade);
+        $('#filter-subject').val(filterSubject);
+        $('#filter-part').val(filterPart);
+        loadRequirements(false);
+    });
     $(document).on('click', '.req-row-edit', function () {
         const $tr = $(this).closest('tr');
         if ($tr.hasClass('req-editing')) return;
