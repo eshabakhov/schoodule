@@ -38,7 +38,13 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 @RequestMapping("/federal/curriculums")
 @PreAuthorize("hasRole('ADMIN')")
-@SuppressWarnings("PMD.UseObjectForClearerAPI")
+@SuppressWarnings(
+    {
+        "PMD.AvoidDuplicateLiterals",
+        "PMD.TooManyMethods",
+        "PMD.UseObjectForClearerAPI"
+    }
+)
 public class FederalCurriculumHtmlController {
 
     /**
