@@ -48,7 +48,7 @@ public class FederalCurriculumRequirementHtmlController {
             .curriculum(curriculum)
             .requirements()
             .create(grade, subject.trim(), hours, part);
-        return String.format("redirect:/federal/curriculums/%d", curriculum);
+        return String.format("redirect:/federal/curriculums/%d/requirements", curriculum);
     }
 
     @PostMapping("/{curriculum}/requirements/{requirement}/edit")
@@ -68,6 +68,6 @@ public class FederalCurriculumRequirementHtmlController {
             .resubjected(subject.trim())
             .reweekled(hours)
             .reparted(part);
-        return String.format("redirect:/federal/curriculums/%d", curriculum);
+        return String.format("redirect:/federal/curriculums/%d/requirements", curriculum);
     }
 }

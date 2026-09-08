@@ -1,13 +1,123 @@
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .375rem;
+    margin-bottom: 1rem;
+    color: var(--muted-fg);
+    font-size: .8125rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.breadcrumb-link {
+    color: var(--muted-fg);
+    transition: color var(--ease);
+}
+
+.breadcrumb-link:hover {
+    color: var(--fg);
+}
+
+.breadcrumb-separator {
+    color: var(--border);
+}
+
+.breadcrumb-current {
+    color: var(--fg);
+}
+
+.req-info-link {
+    color: var(--fg);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.req-info-link:hover {
+    color: var(--muted-fg);
+}
+
 .req-add-panel {
-    display: none;
-    grid-template-columns: 80px 1fr 140px 170px auto;
-    gap: .75rem;
-    margin-top: 1rem;
+    display: block;
+    margin-top: 0;
     margin-bottom: 1rem;
 }
 
-.req-add-panel.open {
+.req-form-group {
+    width: 100%;
+    min-width: 0;
+    min-inline-size: 0;
+    margin: 0 0 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+}
+
+.req-add-group {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+}
+
+.req-search-panel {
+    border-color: #fde68a;
+    background: #fffbeb;
+}
+
+.req-form-group legend {
+    padding: 0 .375rem;
+    color: var(--muted-fg);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: .8125rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.req-form-grid {
     display: grid;
+    width: 100%;
+    align-items: center;
+    gap: .75rem;
+}
+
+.req-form-grid-add {
+    grid-template-columns: 90px minmax(180px, 1fr) 140px 180px auto;
+}
+
+.req-form-grid-search {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.req-field {
+    display: block;
+    min-width: 0;
+}
+
+.req-field-grade {
+    width: 90px;
+}
+
+.req-field-hours {
+    width: 140px;
+}
+
+.req-form-group input[type='number'],
+.req-form-group input[type='text'],
+.req-form-group select,
+.req-form-group button {
+    box-sizing: border-box;
+    height: 38px;
+    margin: 0;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: .875rem;
+    line-height: 1;
+}
+
+.req-form-group input[type='number'],
+.req-form-group input[type='text'],
+.req-form-group select {
+    width: 100%;
+    padding: .5rem .75rem;
 }
 
 .td-icon-btn {
@@ -52,6 +162,38 @@
     height: 14px;
 }
 
+.req-sort-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    max-width: 100%;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.req-sort-btn:hover,
+.req-sort-btn.active {
+    color: var(--fg);
+}
+
+.req-sort-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1em;
+    color: var(--muted-fg);
+    font-size: .8125rem;
+    line-height: 1;
+}
+
+.req-sort-btn.active .req-sort-icon {
+    color: var(--fg);
+}
+
 .req-inline-input {
     width: 100%;
     box-sizing: border-box;
@@ -86,22 +228,14 @@ tr.req-editing .req-row-cancel {
     display: inline-flex;
 }
 
-.req-filter-bar {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    flex-wrap: wrap;
-    margin-bottom: 1rem;
-}
+@media (width <= 760px) {
+    .req-form-grid-add,
+    .req-form-grid-search {
+        grid-template-columns: 1fr;
+    }
 
-.req-filter-bar input[type='number'],
-.req-filter-bar input[type='text'],
-.req-filter-bar select {
-    width: auto;
-}
-
-.req-filter-bar .search-wrap {
-    flex: 1;
-    min-width: 160px;
-    max-width: 260px;
+    .req-field-grade,
+    .req-field-hours {
+        width: 100%;
+    }
 }
