@@ -1,22 +1,4 @@
 $(() => {
-    const $panel = $('#req-add-panel');
-    const $toggleBtn = $('#btn-toggle-add');
-    const $toggleLabel = $('#toggle-add-label');
-    const $toggleIcon = $('#toggle-add-icon');
-    $toggleBtn.on('click', () => {
-        const isOpen = $panel.hasClass('open');
-        $panel.toggleClass('open', !isOpen);
-        if (isOpen) {
-            $toggleLabel.text('Добавить требование');
-            $toggleIcon.html(
-                '<line x1="12" y1="5" x2="12" y2="19"/>' +
-                '<line x1="5" y1="12" x2="19" y2="12"/>'
-            );
-        } else {
-            $toggleLabel.text('Скрыть');
-            $toggleIcon.html('<line x1="5" y1="12" x2="19" y2="12"/>');
-        }
-    });
     function getParam(key, fallback) {
         return new URLSearchParams(window.location.search).get(key) || fallback;
     }
@@ -25,6 +7,8 @@ $(() => {
     let filterGrade = getParam('grade', '');
     let filterSubject = getParam('subject', '');
     let filterPart = getParam('part', '');
+    let sortBy = getParam('sortBy', '');
+    let sortDir = getParam('sortDir', '');
     $('#filter-grade').val(filterGrade);
     $('#filter-subject').val(filterSubject);
     $('#filter-part').val(filterPart);
@@ -42,6 +26,10 @@ $(() => {
         if (filterGrade) params.set('grade', filterGrade);
         if (filterSubject) params.set('subject', filterSubject);
         if (filterPart) params.set('part', filterPart);
+        if (sortBy && sortDir) {
+            params.set('sortBy', sortBy);
+            params.set('sortDir', sortDir);
+        }
         params.set('offset', currentPage);
         params.set('limit', pageSize);
         history.pushState(null, '', window.location.pathname + '?' + params.toString());
@@ -56,6 +44,8 @@ $(() => {
             grade: filterGrade,
             subject: filterSubject,
             part: filterPart,
+            sortBy,
+            sortDir,
             offset: currentPage,
             limit: pageSize
         }).done(html => {
@@ -72,6 +62,20 @@ $(() => {
             loadRequirements();
         }
     );
+    $(document).on('click', '.req-sort-btn', function () {
+        const nextSortBy = $(this).data('sort');
+        if (sortBy !== nextSortBy) {
+            sortBy = nextSortBy;
+            sortDir = 'asc';
+        } else if (sortDir === 'asc') {
+            sortDir = 'desc';
+        } else {
+            sortBy = '';
+            sortDir = '';
+        }
+        currentPage = 1;
+        loadRequirements();
+    });
     let filterTimer;
     $('#filter-grade').on('input', function () {
         clearTimeout(filterTimer);
@@ -102,6 +106,8 @@ $(() => {
         filterGrade = getParam('grade', '');
         filterSubject = getParam('subject', '');
         filterPart = getParam('part', '');
+        sortBy = getParam('sortBy', '');
+        sortDir = getParam('sortDir', '');
         $('#filter-grade').val(filterGrade);
         $('#filter-subject').val(filterSubject);
         $('#filter-part').val(filterPart);
