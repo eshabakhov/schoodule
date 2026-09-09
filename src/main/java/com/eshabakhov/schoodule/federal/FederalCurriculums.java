@@ -5,7 +5,7 @@ package com.eshabakhov.schoodule.federal;
 
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
-import org.jooq.Condition;
+import com.eshabakhov.schoodule.filter.FlConditional;
 
 /**
  * Interface for managing {@link FederalCurriculum} entities.
@@ -49,12 +49,13 @@ public interface FederalCurriculums {
     /**
      * Returns a paginated list of federal curriculums.
      *
-     * @param condition Jooq condition for filtering
+     * @param filter Filter for selecting federal curriculums
      * @param page Pagination (contains limit and offset)
      * @return List of {@link FederalCurriculum} instances
      * @throws Exception if listing fails
      */
-    PageableList<FederalCurriculum> curriculums(Condition condition, Page page) throws Exception;
+    PageableList<FederalCurriculum> curriculums(FlConditional filter, Page page)
+        throws Exception;
 
     /**
      * Removes a federal curriculum by its ID.

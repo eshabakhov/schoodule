@@ -4,9 +4,12 @@
 package com.eshabakhov.schoodule.federal.curriculum.requirement;
 
 import com.eshabakhov.schoodule.PageableList;
-import com.eshabakhov.schoodule.enums.CurriculumPartType;
 import com.eshabakhov.schoodule.federal.curriculum.FcsPostgres;
 import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByGrade;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByPart;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrBySubject;
+import com.eshabakhov.schoodule.filter.FlCdTrue;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,9 +25,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
-import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.impl.DSL;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -53,11 +54,9 @@ import org.springframework.web.bind.annotation.RestController;
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.AvoidFieldNameMatchingMethodName"})
 public class FederalCurriculumRequirementController {
 
-    /** JOOQ Table for FederalCurriculumRequirement. */
-    private static final com.eshabakhov.schoodule.tables.FederalCurriculumRequirement REQUIREMENT =
-        com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
-
-    /** JOOQ DSL context for executing database queries.*/
+    /**
+     * JOOQ DSL context for executing database queries.
+     */
     private final DSLContext ctx;
 
     FederalCurriculumRequirementController(final DSLContext ctx) {
@@ -204,30 +203,22 @@ public class FederalCurriculumRequirementController {
         @RequestParam(name = "partType", required = false)
         final FederalCurriculumRequirement.PartType part
     ) throws Exception {
-        Condition condition = DSL.trueCondition();
-        if (grade != null) {
-            condition = condition.and(
-                FederalCurriculumRequirementController.REQUIREMENT.GRADE.eq(grade)
-            );
-        }
-        if (subject != null && !subject.isBlank()) {
-            condition = condition.and(
-                FederalCurriculumRequirementController.REQUIREMENT.SUBJECT_NAME.likeIgnoreCase(
-                    String.format("%%%s%%", subject.trim())
-                )
-            );
-        }
-        if (part != null) {
-            condition = condition.and(
-                FederalCurriculumRequirementController.REQUIREMENT.PART_TYPE.eq(
-                    CurriculumPartType.valueOf(part.name())
-                )
-            );
-        }
         final PageableList<FederalCurriculumRequirement> result = new FcsPostgres(this.ctx)
             .curriculum(curriculum)
             .requirements()
-            .requirements(condition, new PageRequest(limit, offset));
+            .requirements(
+                new FlCdFcrByPart(
+                    new FlCdFcrBySubject(
+                        new FlCdFcrByGrade(
+                            new FlCdTrue(),
+                            grade
+                        ),
+                        subject
+                    ),
+                    part
+                ),
+                new PageRequest(limit, offset)
+            );
         final ArrayNode items = JsonNodeFactory.instance.arrayNode();
         result.list().forEach(
             req -> {

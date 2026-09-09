@@ -8,6 +8,7 @@ import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.enums.CurriculumPartType;
 import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirements;
+import com.eshabakhov.schoodule.filter.FlConditional;
 import com.eshabakhov.schoodule.page.ResponsePageableList;
 import com.eshabakhov.schoodule.tables.records.FederalCurriculumRequirementRecord;
 import lombok.EqualsAndHashCode;
@@ -24,14 +25,20 @@ import org.jooq.impl.DSL;
 @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public final class FcrsPostgres implements FederalCurriculumRequirements {
 
-    /** JOOQ Table for FederalCurriculumRequirement. */
+    /**
+     * JOOQ Table for FederalCurriculumRequirement.
+     */
     private static final com.eshabakhov.schoodule.tables.FederalCurriculumRequirement REQUIREMENT =
         com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
 
-    /** JOOQ DSL context for executing database queries. */
+    /**
+     * JOOQ DSL context for executing database queries.
+     */
     private final DSLContext ctx;
 
-    /** Federal curriculum ID. */
+    /**
+     * Federal curriculum ID.
+     */
     private final Long fid;
 
     public FcrsPostgres(final DSLContext ctx, final Long fid) {
@@ -106,12 +113,12 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
 
     @Override
     public PageableList<FederalCurriculumRequirement> requirements(
-        final Condition condition,
+        final FlConditional filter,
         final Page page
     ) throws Exception {
         final Condition scoped = FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
             .and(FcrsPostgres.REQUIREMENT.IS_DELETED.eq(false))
-            .and(condition);
+            .and(filter.condition());
         return new ResponsePageableList<>(
             this.ctx
                 .selectFrom(FcrsPostgres.REQUIREMENT)

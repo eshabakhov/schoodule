@@ -5,6 +5,8 @@ package com.eshabakhov.schoodule.federal.curriculum;
 
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
+import com.eshabakhov.schoodule.federal.curriculum.filter.FlCdFcByTitle;
+import com.eshabakhov.schoodule.filter.FlCdTrue;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,9 +22,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
-import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.impl.DSL;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -51,11 +51,9 @@ import org.springframework.web.bind.annotation.RestController;
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.AvoidFieldNameMatchingMethodName"})
 public class FederalCurriculumController {
 
-    /** JOOQ Table for FederalCurriculum. */
-    private static final com.eshabakhov.schoodule.tables.FederalCurriculum CURRICULUM =
-        com.eshabakhov.schoodule.tables.FederalCurriculum.FEDERAL_CURRICULUM;
-
-    /** JOOQ DSL context for executing database queries.*/
+    /**
+     * JOOQ DSL context for executing database queries.
+     */
     private final DSLContext ctx;
 
     FederalCurriculumController(final DSLContext ctx) {
@@ -233,16 +231,14 @@ public class FederalCurriculumController {
         @RequestParam(name = "offset", required = false, defaultValue = "1") final int offset,
         @RequestParam(value = "title_ct", required = false) final String title
     ) throws Exception {
-        Condition condition = DSL.trueCondition();
-        if (title != null && !title.isBlank()) {
-            condition = condition.and(
-                FederalCurriculumController.CURRICULUM.TITLE.likeIgnoreCase(
-                    String.format("%%%s%%", title)
-                )
+        final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
+            .curriculums(
+                new FlCdFcByTitle(
+                    new FlCdTrue(),
+                    title
+                ),
+                new PageRequest(limit, offset)
             );
-        }
-        final PageableList<FederalCurriculum> result =
-            new FcsPostgres(this.ctx).curriculums(condition, new PageRequest(limit, offset));
         final ArrayNode items = JsonNodeFactory.instance.arrayNode();
         result.list().forEach(
             fc -> {

@@ -4,9 +4,14 @@
 package com.eshabakhov.schoodule.federal.curriculum;
 
 import com.eshabakhov.schoodule.PageableList;
-import com.eshabakhov.schoodule.enums.CurriculumPartType;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
+import com.eshabakhov.schoodule.federal.curriculum.filter.FlCdFcByTitle;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.FcrPostgres;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByGrade;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByPart;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrBySubject;
+import com.eshabakhov.schoodule.filter.FlCdTrue;
+import com.eshabakhov.schoodule.filter.FlConditional;
 import com.eshabakhov.schoodule.media.ThymeleafMedia;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.page.ResponsePageableList;
@@ -16,7 +21,6 @@ import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SortField;
-import org.jooq.impl.DSL;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -48,12 +52,8 @@ import org.springframework.web.servlet.ModelAndView;
 public class FederalCurriculumHtmlController {
 
     /**
-     * JOOQ Table for FederalCurriculum.
+     * JOOQ Table for FederalCurriculumRequirement.
      */
-    private static final com.eshabakhov.schoodule.tables.FederalCurriculum CURRICULUM =
-        com.eshabakhov.schoodule.tables.FederalCurriculum.FEDERAL_CURRICULUM;
-
-    /** JOOQ Table for FederalCurriculumRequirement. */
     private static final com.eshabakhov.schoodule.tables.FederalCurriculumRequirement REQUIREMENT =
         com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
 
@@ -72,16 +72,11 @@ public class FederalCurriculumHtmlController {
         @RequestParam(name = "limit", defaultValue = "15") final int limit,
         @RequestParam(name = "title", required = false) final String title
     ) throws Exception {
-        Condition condition = DSL.trueCondition();
-        if (title != null && !title.isBlank()) {
-            condition = condition.and(
-                FederalCurriculumHtmlController.CURRICULUM.TITLE.likeIgnoreCase(
-                    String.format("%%%s%%", title)
-                )
-            );
-        }
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
-            .curriculums(condition, new PageRequest(limit, offset));
+            .curriculums(
+                new FlCdFcByTitle(new FlCdTrue(), title),
+                new PageRequest(limit, offset)
+            );
         return new ModelAndView("federal-curriculums/list")
             .addAllObjects(
                 Map.of(
@@ -104,16 +99,9 @@ public class FederalCurriculumHtmlController {
         @RequestParam(name = "offset", defaultValue = "1") final int offset,
         @RequestParam(name = "limit", defaultValue = "15") final int limit
     ) throws Exception {
-        Condition condition = DSL.trueCondition();
-        if (title != null && !title.isBlank()) {
-            condition = condition.and(
-                FederalCurriculumHtmlController.CURRICULUM.TITLE.likeIgnoreCase(
-                    String.format("%%%s%%", title)
-                )
-            );
-        }
+        final FlConditional filter = new FlCdFcByTitle(new FlCdTrue(), title);
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
-            .curriculums(condition, new PageRequest(limit, offset));
+            .curriculums(filter, new PageRequest(limit, offset));
         final List<Map<String, Object>> curriculums = result.list().stream()
             .map(fc -> ((ThymeleafMedia) fc.print(new ThymeleafMedia())).map())
             .toList();
@@ -199,7 +187,7 @@ public class FederalCurriculumHtmlController {
         final Map<String, Object> data = ((ThymeleafMedia) found.print(new ThymeleafMedia())).map();
         final PageableList<FederalCurriculumRequirement> result = this.requirements(
             curriculum,
-            FederalCurriculumHtmlController.condition(grade, subject, part),
+            new FlCdFcrByPart(new FlCdFcrBySubject(new FlCdFcrByGrade(new FlCdTrue(), grade), subject), part),
             new PageRequest(limit, offset),
             sort,
             direction
@@ -238,7 +226,7 @@ public class FederalCurriculumHtmlController {
     ) throws Exception {
         final PageableList<FederalCurriculumRequirement> result = this.requirements(
             curriculum,
-            FederalCurriculumHtmlController.condition(grade, subject, part),
+            new FlCdFcrByPart(new FlCdFcrBySubject(new FlCdFcrByGrade(new FlCdTrue(), grade), subject), part),
             new PageRequest(limit, offset),
             sort,
             direction
@@ -336,7 +324,7 @@ public class FederalCurriculumHtmlController {
      * Fetches requirements with optional sorting.
      *
      * @param curriculum Curriculum ID
-     * @param condition Search condition
+     * @param filter Search filter
      * @param page Page request
      * @param sort Sort field
      * @param direction Sort direction
@@ -344,7 +332,7 @@ public class FederalCurriculumHtmlController {
      */
     private PageableList<FederalCurriculumRequirement> requirements(
         final long curriculum,
-        final Condition condition,
+        final FlConditional filter,
         final PageRequest page,
         final String sort,
         final String direction
@@ -352,7 +340,7 @@ public class FederalCurriculumHtmlController {
         final Condition scoped = FederalCurriculumHtmlController.REQUIREMENT.FEDERAL_CURRICULUM_ID
             .eq(curriculum)
             .and(FederalCurriculumHtmlController.REQUIREMENT.IS_DELETED.eq(false))
-            .and(condition);
+            .and(filter.condition());
         final SortField<?> order = FederalCurriculumHtmlController.sortField(sort, direction);
         final List<FederalCurriculumRequirement> list;
         if (order == null) {
@@ -442,39 +430,5 @@ public class FederalCurriculumHtmlController {
             dir = "";
         }
         return dir;
-    }
-
-    /**
-     * Builds requirements search condition.
-     *
-     * @param grade Grade number
-     * @param subject Subject name
-     * @param part Curriculum part
-     * @return JOOQ condition
-     */
-    private static Condition condition(
-        final Integer grade,
-        final String subject,
-        final FederalCurriculumRequirement.PartType part
-    ) {
-        Condition condition = DSL.trueCondition();
-        if (grade != null) {
-            condition = condition.and(FederalCurriculumHtmlController.REQUIREMENT.GRADE.eq(grade));
-        }
-        if (subject != null && !subject.isBlank()) {
-            condition = condition.and(
-                FederalCurriculumHtmlController.REQUIREMENT.SUBJECT_NAME.likeIgnoreCase(
-                    String.format("%%%s%%", subject.trim())
-                )
-            );
-        }
-        if (part != null) {
-            condition = condition.and(
-                FederalCurriculumHtmlController.REQUIREMENT.PART_TYPE.eq(
-                    CurriculumPartType.valueOf(part.name())
-                )
-            );
-        }
-        return condition;
     }
 }
