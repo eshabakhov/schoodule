@@ -9,6 +9,7 @@ import com.eshabakhov.schoodule.enums.EducationLevelType;
 import com.eshabakhov.schoodule.enums.StudyWeekType;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
 import com.eshabakhov.schoodule.federal.FederalCurriculums;
+import com.eshabakhov.schoodule.filter.FlConditional;
 import com.eshabakhov.schoodule.page.ResponsePageableList;
 import com.eshabakhov.schoodule.tables.records.FederalCurriculumRecord;
 import lombok.EqualsAndHashCode;
@@ -30,11 +31,15 @@ import org.jooq.impl.DSL;
 )
 public final class FcsPostgres implements FederalCurriculums {
 
-    /** JOOQ Table for FederalCurriculum. */
+    /**
+     * JOOQ Table for FederalCurriculum.
+     */
     private static final com.eshabakhov.schoodule.tables.FederalCurriculum CURRICULUM =
         com.eshabakhov.schoodule.tables.FederalCurriculum.FEDERAL_CURRICULUM;
 
-    /** JOOQ DSL context for executing database queries. */
+    /**
+     * JOOQ DSL context for executing database queries.
+     */
     private final DSLContext ctx;
 
     public FcsPostgres(final DSLContext ctx) {
@@ -109,9 +114,12 @@ public final class FcsPostgres implements FederalCurriculums {
     }
 
     @Override
-    public PageableList<FederalCurriculum> curriculums(final Condition condition, final Page page)
+    public PageableList<FederalCurriculum> curriculums(
+        final FlConditional filter,
+        final Page page
+    )
         throws Exception {
-        final Condition scoped = condition.and(
+        final Condition scoped = filter.condition().and(
             FcsPostgres.CURRICULUM.IS_DELETED.eq(false)
         );
         return new ResponsePageableList<>(
