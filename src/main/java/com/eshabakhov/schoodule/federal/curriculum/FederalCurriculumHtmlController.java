@@ -3,6 +3,7 @@
  */
 package com.eshabakhov.schoodule.federal.curriculum;
 
+import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
 import com.eshabakhov.schoodule.federal.curriculum.filter.FlCdFcByTitle;
@@ -13,7 +14,6 @@ import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByS
 import com.eshabakhov.schoodule.filter.FlCdTrue;
 import com.eshabakhov.schoodule.filter.FlConditional;
 import com.eshabakhov.schoodule.media.ThymeleafMedia;
-import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.page.ResponsePageableList;
 import java.util.List;
 import java.util.Map;
@@ -68,14 +68,13 @@ public class FederalCurriculumHtmlController {
 
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView list(
-        @RequestParam(name = "offset", defaultValue = "1") final int offset,
-        @RequestParam(name = "limit", defaultValue = "15") final int limit,
+        final Page page,
         @RequestParam(name = "title", required = false) final String title
     ) throws Exception {
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
             .curriculums(
                 new FlCdFcByTitle(new FlCdTrue(), title),
-                new PageRequest(limit, offset)
+                page
             );
         return new ModelAndView("federal-curriculums/list")
             .addAllObjects(
@@ -84,11 +83,11 @@ public class FederalCurriculumHtmlController {
                     "curriculums", result.list().stream()
                         .map(fc -> ((ThymeleafMedia) fc.print(new ThymeleafMedia())).map())
                         .toList(),
-                    "page", offset,
-                    "limit", limit,
-                    "totalPages", (int) Math.ceil((double) result.total() / limit),
-                    "hasNext", result.total() > (long) offset * limit,
-                    "hasPrev", offset > 1
+                    "page", page.offset(),
+                    "limit", page.limit(),
+                    "totalPages", (int) Math.ceil((double) result.total() / page.limit()),
+                    "hasNext", result.total() > (long) page.offset() * page.limit(),
+                    "hasPrev", page.offset() > 1
                 )
             );
     }
@@ -96,12 +95,11 @@ public class FederalCurriculumHtmlController {
     @GetMapping(value = "/fragment", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView fragment(
         @RequestParam(name = "title", required = false) final String title,
-        @RequestParam(name = "offset", defaultValue = "1") final int offset,
-        @RequestParam(name = "limit", defaultValue = "15") final int limit
+        final Page page
     ) throws Exception {
         final FlConditional filter = new FlCdFcByTitle(new FlCdTrue(), title);
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
-            .curriculums(filter, new PageRequest(limit, offset));
+            .curriculums(filter, page);
         final List<Map<String, Object>> curriculums = result.list().stream()
             .map(fc -> ((ThymeleafMedia) fc.print(new ThymeleafMedia())).map())
             .toList();
@@ -109,11 +107,11 @@ public class FederalCurriculumHtmlController {
             .addAllObjects(
                 Map.of(
                     "curriculums", curriculums,
-                    "page", offset,
-                    "limit", limit,
-                    "totalPages", (int) Math.ceil((double) result.total() / limit),
-                    "hasNext", result.total() > (long) offset * limit,
-                    "hasPrev", offset > 1
+                    "page", page.offset(),
+                    "limit", page.limit(),
+                    "totalPages", (int) Math.ceil((double) result.total() / page.limit()),
+                    "hasNext", result.total() > (long) page.offset() * page.limit(),
+                    "hasPrev", page.offset() > 1
                 )
             );
     }
@@ -178,17 +176,20 @@ public class FederalCurriculumHtmlController {
         final String sort,
         @RequestParam(name = "sortDir", required = false)
         final String direction,
-        @RequestParam(name = "offset", defaultValue = "1")
-        final int offset,
-        @RequestParam(name = "limit", defaultValue = "15")
-        final int limit
+        final Page page
     ) throws Exception {
         final FederalCurriculum found = new FcsPostgres(this.ctx).curriculum(curriculum);
         final Map<String, Object> data = ((ThymeleafMedia) found.print(new ThymeleafMedia())).map();
         final PageableList<FederalCurriculumRequirement> result = this.requirements(
             curriculum,
-            new FlCdFcrByPart(new FlCdFcrBySubject(new FlCdFcrByGrade(new FlCdTrue(), grade), subject), part),
-            new PageRequest(limit, offset),
+            new FlCdFcrByPart(
+                new FlCdFcrBySubject(
+                    new FlCdFcrByGrade(new FlCdTrue(), grade),
+                    subject
+                ),
+                part
+            ),
+            page,
             sort,
             direction
         );
@@ -196,7 +197,7 @@ public class FederalCurriculumHtmlController {
             .addAllObjects(data)
             .addAllObjects(
                 FederalCurriculumHtmlController.requirementsModel(
-                    curriculum, result, offset, limit, sort, direction
+                    curriculum, result, page, sort, direction
                 )
             )
             .addObject(
@@ -219,22 +220,25 @@ public class FederalCurriculumHtmlController {
         final String sort,
         @RequestParam(name = "sortDir", required = false)
         final String direction,
-        @RequestParam(name = "offset", defaultValue = "1")
-        final int offset,
-        @RequestParam(name = "limit", defaultValue = "15")
-        final int limit
+        final Page page
     ) throws Exception {
         final PageableList<FederalCurriculumRequirement> result = this.requirements(
             curriculum,
-            new FlCdFcrByPart(new FlCdFcrBySubject(new FlCdFcrByGrade(new FlCdTrue(), grade), subject), part),
-            new PageRequest(limit, offset),
+            new FlCdFcrByPart(
+                new FlCdFcrBySubject(
+                    new FlCdFcrByGrade(new FlCdTrue(), grade),
+                    subject
+                ),
+                part
+            ),
+            page,
             sort,
             direction
         );
         return new ModelAndView("federal-curriculums/requirements :: requirements-results")
             .addAllObjects(
                 FederalCurriculumHtmlController.requirementsModel(
-                    curriculum, result, offset, limit, sort, direction
+                    curriculum, result, page, sort, direction
                 )
             );
     }
@@ -290,8 +294,7 @@ public class FederalCurriculumHtmlController {
      *
      * @param curriculum Curriculum ID
      * @param result Requirements page
-     * @param offset Current page number
-     * @param limit Page size
+     * @param page Page request
      * @param sort Sort field
      * @param direction Sort direction
      * @return Model attributes
@@ -299,8 +302,7 @@ public class FederalCurriculumHtmlController {
     private static Map<String, Object> requirementsModel(
         final long curriculum,
         final PageableList<FederalCurriculumRequirement> result,
-        final int offset,
-        final int limit,
+        final Page page,
         final String sort,
         final String direction
     ) {
@@ -310,11 +312,11 @@ public class FederalCurriculumHtmlController {
                 .map(req -> ((ThymeleafMedia) req.print(new ThymeleafMedia())).map())
                 .toList(),
             "partTypes", FederalCurriculumRequirement.PartType.values(),
-            "page", offset,
-            "limit", limit,
-            "totalPages", (int) Math.ceil((double) result.total() / limit),
-            "hasNext", result.total() > (long) offset * limit,
-            "hasPrev", offset > 1,
+            "page", page.offset(),
+            "limit", page.limit(),
+            "totalPages", (int) Math.ceil((double) result.total() / page.limit()),
+            "hasNext", result.total() > (long) page.offset() * page.limit(),
+            "hasPrev", page.offset() > 1,
             "sortBy", FederalCurriculumHtmlController.sortName(sort),
             "sortDir", FederalCurriculumHtmlController.sortDirection(direction)
         );
@@ -333,7 +335,7 @@ public class FederalCurriculumHtmlController {
     private PageableList<FederalCurriculumRequirement> requirements(
         final long curriculum,
         final FlConditional filter,
-        final PageRequest page,
+        final Page page,
         final String sort,
         final String direction
     ) {

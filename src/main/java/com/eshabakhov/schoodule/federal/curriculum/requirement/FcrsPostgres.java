@@ -41,6 +41,13 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
      */
     private final Long fid;
 
+    /**
+     * Ctor.
+     *
+     * @param ctx JOOQ DSL context
+     * @param fid Federal curriculum ID
+     * @since 0.0.1
+     */
     public FcrsPostgres(final DSLContext ctx, final Long fid) {
         this.ctx = ctx;
         this.fid = fid;

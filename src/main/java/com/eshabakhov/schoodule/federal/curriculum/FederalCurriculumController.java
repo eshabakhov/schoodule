@@ -3,12 +3,12 @@
  */
 package com.eshabakhov.schoodule.federal.curriculum;
 
+import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
 import com.eshabakhov.schoodule.federal.curriculum.filter.FlCdFcByTitle;
 import com.eshabakhov.schoodule.filter.FlCdTrue;
 import com.eshabakhov.schoodule.media.JsonMedia;
-import com.eshabakhov.schoodule.page.PageRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -227,8 +227,7 @@ public class FederalCurriculumController {
     @Operation(summary = "Fetch list of federal curriculums")
     //@checkstyle ParameterNumberCheck (1 line)
     public ResponseEntity<ObjectNode> list(
-        @RequestParam(name = "limit", required = false, defaultValue = "10") final int limit,
-        @RequestParam(name = "offset", required = false, defaultValue = "1") final int offset,
+        final Page page,
         @RequestParam(value = "title_ct", required = false) final String title
     ) throws Exception {
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
@@ -237,7 +236,7 @@ public class FederalCurriculumController {
                     new FlCdTrue(),
                     title
                 ),
-                new PageRequest(limit, offset)
+                page
             );
         final ArrayNode items = JsonNodeFactory.instance.arrayNode();
         result.list().forEach(
