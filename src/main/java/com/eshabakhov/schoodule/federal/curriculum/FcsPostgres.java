@@ -42,6 +42,12 @@ public final class FcsPostgres implements FederalCurriculums {
      */
     private final DSLContext ctx;
 
+    /**
+     * Ctor.
+     *
+     * @param ctx JOOQ DSL context
+     * @since 0.0.1
+     */
     public FcsPostgres(final DSLContext ctx) {
         this.ctx = ctx;
     }

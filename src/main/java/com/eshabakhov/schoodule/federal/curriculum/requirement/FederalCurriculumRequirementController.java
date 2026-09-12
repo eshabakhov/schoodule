@@ -3,6 +3,7 @@
  */
 package com.eshabakhov.schoodule.federal.curriculum.requirement;
 
+import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.federal.curriculum.FcsPostgres;
 import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
@@ -11,7 +12,6 @@ import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByP
 import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrBySubject;
 import com.eshabakhov.schoodule.filter.FlCdTrue;
 import com.eshabakhov.schoodule.media.JsonMedia;
-import com.eshabakhov.schoodule.page.PageRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -192,10 +192,7 @@ public class FederalCurriculumRequirementController {
     public ResponseEntity<ObjectNode> requirements(
         @PathVariable
         final long curriculum,
-        @RequestParam(name = "limit", required = false, defaultValue = "10")
-        final int limit,
-        @RequestParam(name = "offset", required = false, defaultValue = "1")
-        final int offset,
+        final Page page,
         @RequestParam(name = "grade", required = false)
         final Integer grade,
         @RequestParam(name = "subjectName", required = false)
@@ -217,7 +214,7 @@ public class FederalCurriculumRequirementController {
                     ),
                     part
                 ),
-                new PageRequest(limit, offset)
+                page
             );
         final ArrayNode items = JsonNodeFactory.instance.arrayNode();
         result.list().forEach(
