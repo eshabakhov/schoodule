@@ -2,6 +2,15 @@
 
 <img src="src/main/resources/static/favicon.svg" alt="Schoodule" height="64">
 
+[![Build And Deploy](https://github.com/eshabakhov/schoodule/actions/workflows/deploy.yml/badge.svg)](https://github.com/eshabakhov/schoodule/actions/workflows/deploy.yml)
+[![actionlint](https://github.com/eshabakhov/schoodule/actions/workflows/actionlint.yml/badge.svg)](https://github.com/eshabakhov/schoodule/actions/workflows/actionlint.yml)
+[![yamllint](https://github.com/eshabakhov/schoodule/actions/workflows/yamllint.yml/badge.svg)](https://github.com/eshabakhov/schoodule/actions/workflows/yamllint.yml)
+[![shellcheck](https://github.com/eshabakhov/schoodule/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/eshabakhov/schoodule/actions/workflows/shellcheck.yml)
+[![trufflehog-oss](https://github.com/eshabakhov/schoodule/actions/workflows/trufflehog-oss.yml/badge.svg)](https://github.com/eshabakhov/schoodule/actions/workflows/trufflehog-oss.yml)
+[![Lines-of-Code](https://img.shields.io/tokei/lines/github/eshabakhov/schoodule)](https://github.com/eshabakhov/schoodule)
+[![Hits-of-Code](https://hitsofcode.com/github/eshabakhov/schoodule)](https://hitsofcode.com/view/github/eshabakhov/schoodule)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/eshabakhov/schoodule/blob/main/LICENSE.txt)
+
 ![Java 21](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot 3.5](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-Build-C71A36?logo=apachemaven&logoColor=white)
