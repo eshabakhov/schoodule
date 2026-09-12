@@ -10,10 +10,13 @@ import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirements;
 import com.eshabakhov.schoodule.filter.FlConditional;
 import com.eshabakhov.schoodule.page.ResponsePageableList;
+import com.eshabakhov.schoodule.sort.StsJooq;
 import com.eshabakhov.schoodule.tables.records.FederalCurriculumRequirementRecord;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.SortField;
 import org.jooq.impl.DSL;
 
 /**
@@ -121,20 +124,24 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
     @Override
     public PageableList<FederalCurriculumRequirement> requirements(
         final FlConditional filter,
-        final Page page
+        final Page page,
+        final StsJooq sort
     ) throws Exception {
         final Condition scoped = FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
             .and(FcrsPostgres.REQUIREMENT.IS_DELETED.eq(false))
             .and(filter.condition());
+        final List<SortField<?>> fields = sort.fields();
+        if (fields.isEmpty()) {
+            fields.add(FcrsPostgres.REQUIREMENT.GRADE.asc());
+            fields.add(FcrsPostgres.REQUIREMENT.SUBJECT_NAME.asc());
+            fields.add(FcrsPostgres.REQUIREMENT.WEEKLY_HOURS.asc());
+            fields.add(FcrsPostgres.REQUIREMENT.PART_TYPE.asc());
+        }
         return new ResponsePageableList<>(
             this.ctx
                 .selectFrom(FcrsPostgres.REQUIREMENT)
                 .where(scoped)
-                .orderBy(
-                    FcrsPostgres.REQUIREMENT.GRADE.asc(),
-                    FcrsPostgres.REQUIREMENT.SUBJECT_NAME.asc(),
-                    FcrsPostgres.REQUIREMENT.PART_TYPE.asc()
-                )
+                .orderBy(fields)
                 .limit(page.limit())
                 .offset((page.offset() - 1) * page.limit())
                 .fetch(

@@ -6,6 +6,7 @@ package com.eshabakhov.schoodule.federal.curriculum;
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.filter.FlConditional;
+import com.eshabakhov.schoodule.sort.StsJooq;
 
 /**
  * Interface for managing {@link FederalCurriculumRequirement} entities.
@@ -46,11 +47,15 @@ public interface FederalCurriculumRequirements {
      *
      * @param filter Filter for selecting federal curriculum requirements
      * @param page Pagination (contains limit and offset)
+     * @param sort Sorting parameters
      * @return List of {@link FederalCurriculumRequirement} instances
      * @throws Exception if listing fails
      */
-    PageableList<FederalCurriculumRequirement> requirements(FlConditional filter, Page page)
-        throws Exception;
+    PageableList<FederalCurriculumRequirement> requirements(
+        FlConditional filter,
+        Page page,
+        StsJooq sort
+    ) throws Exception;
 
     /**
      * Removes a federal curriculum requirement by its ID.

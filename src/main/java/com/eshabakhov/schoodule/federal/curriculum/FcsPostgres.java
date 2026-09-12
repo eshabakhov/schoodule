@@ -11,10 +11,13 @@ import com.eshabakhov.schoodule.federal.FederalCurriculum;
 import com.eshabakhov.schoodule.federal.FederalCurriculums;
 import com.eshabakhov.schoodule.filter.FlConditional;
 import com.eshabakhov.schoodule.page.ResponsePageableList;
+import com.eshabakhov.schoodule.sort.StsJooq;
 import com.eshabakhov.schoodule.tables.records.FederalCurriculumRecord;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.SortField;
 import org.jooq.impl.DSL;
 
 /**
@@ -122,20 +125,23 @@ public final class FcsPostgres implements FederalCurriculums {
     @Override
     public PageableList<FederalCurriculum> curriculums(
         final FlConditional filter,
-        final Page page
+        final Page page,
+        final StsJooq sort
     )
         throws Exception {
         final Condition scoped = filter.condition().and(
             FcsPostgres.CURRICULUM.IS_DELETED.eq(false)
         );
+        final List<SortField<?>> fields = sort.fields();
+        if (fields.isEmpty()) {
+            fields.add(FcsPostgres.CURRICULUM.ACADEMIC_YEAR.desc());
+            fields.add(FcsPostgres.CURRICULUM.TITLE.asc());
+        }
         return new ResponsePageableList<>(
             this.ctx
                 .selectFrom(FcsPostgres.CURRICULUM)
                 .where(scoped)
-                .orderBy(
-                    FcsPostgres.CURRICULUM.ACADEMIC_YEAR.desc(),
-                    FcsPostgres.CURRICULUM.TITLE.asc()
-                )
+                .orderBy(fields)
                 .limit(page.limit())
                 .offset((page.offset() - 1) * page.limit())
                 .fetch(selected -> new FcPostgres(this.ctx, selected.getId())),

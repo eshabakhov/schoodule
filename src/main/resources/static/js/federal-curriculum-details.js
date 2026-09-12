@@ -7,11 +7,31 @@ $(() => {
     let filterGrade = getParam('grade', '');
     let filterSubject = getParam('subject', '');
     let filterPart = getParam('part', '');
-    let sortBy = getParam('sortBy', '');
-    let sortDir = getParam('sortDir', '');
+    const sortFields = ['grade', 'subject', 'hours', 'part'];
+    function currentSorts() {
+        const params = new URLSearchParams(window.location.search);
+        const sorts = {};
+        params.getAll('sort').forEach(item => {
+            const parts = item.split(':');
+            if (sortFields.includes(parts[0]) && parts[1]) {
+                sorts[parts[0]] = parts[1];
+            }
+        });
+        return sorts;
+    }
+    let sorts = currentSorts();
     $('#filter-grade').val(filterGrade);
     $('#filter-subject').val(filterSubject);
     $('#filter-part').val(filterPart);
+    function renderSorts() {
+        $('.req-sort-btn').each(function () {
+            const field = $(this).data('sort');
+            const direction = sorts[field] || '';
+            const icon = direction === 'asc' ? '↑' : (direction === 'desc' ? '↓' : '↕');
+            $(this).toggleClass('active', !!direction);
+            $(this).find('.req-sort-icon').text(icon);
+        });
+    }
     function cancelEdit($tr) {
         if (!$tr.hasClass('req-editing')) return;
         const orig = $tr.data('orig');
@@ -26,10 +46,9 @@ $(() => {
         if (filterGrade) params.set('grade', filterGrade);
         if (filterSubject) params.set('subject', filterSubject);
         if (filterPart) params.set('part', filterPart);
-        if (sortBy && sortDir) {
-            params.set('sortBy', sortBy);
-            params.set('sortDir', sortDir);
-        }
+        sortFields.forEach(field => {
+            if (sorts[field]) params.append('sort', `${field}:${sorts[field]}`);
+        });
         params.set('offset', currentPage);
         params.set('limit', pageSize);
         history.pushState(null, '', window.location.pathname + '?' + params.toString());
@@ -40,18 +59,21 @@ $(() => {
         });
         if (pushState) updateUrl();
         const url = $('#req-tbody').data('search-url');
-        $.get(url, {
-            grade: filterGrade,
-            subject: filterSubject,
-            part: filterPart,
-            sortBy,
-            sortDir,
-            offset: currentPage,
-            limit: pageSize
-        }).done(html => {
+        const params = new URLSearchParams();
+        if (filterGrade) params.set('grade', filterGrade);
+        if (filterSubject) params.set('subject', filterSubject);
+        if (filterPart) params.set('part', filterPart);
+        sortFields.forEach(field => {
+            if (sorts[field]) params.append('sort', `${field}:${sorts[field]}`);
+        });
+        params.set('offset', currentPage);
+        params.set('limit', pageSize);
+        $.get(`${url}?${params.toString()}`).done(html => {
             $('#req-results').replaceWith(html);
+            renderSorts();
         });
     }
+    renderSorts();
     $(document).on(
         'click',
         '#req-pagination .pagination-btn, #req-pagination .pagination-size-btn',
@@ -63,15 +85,13 @@ $(() => {
         }
     );
     $(document).on('click', '.req-sort-btn', function () {
-        const nextSortBy = $(this).data('sort');
-        if (sortBy !== nextSortBy) {
-            sortBy = nextSortBy;
-            sortDir = 'asc';
-        } else if (sortDir === 'asc') {
-            sortDir = 'desc';
+        const field = $(this).data('sort');
+        if (!sorts[field]) {
+            sorts[field] = 'asc';
+        } else if (sorts[field] === 'asc') {
+            sorts[field] = 'desc';
         } else {
-            sortBy = '';
-            sortDir = '';
+            delete sorts[field];
         }
         currentPage = 1;
         loadRequirements();
@@ -106,11 +126,11 @@ $(() => {
         filterGrade = getParam('grade', '');
         filterSubject = getParam('subject', '');
         filterPart = getParam('part', '');
-        sortBy = getParam('sortBy', '');
-        sortDir = getParam('sortDir', '');
+        sorts = currentSorts();
         $('#filter-grade').val(filterGrade);
         $('#filter-subject').val(filterSubject);
         $('#filter-part').val(filterPart);
+        renderSorts();
         loadRequirements(false);
     });
     $(document).on('click', '.req-row-edit', function () {

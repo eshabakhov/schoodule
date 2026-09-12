@@ -110,44 +110,44 @@
                     <button class="req-sort-btn"
                             type="button"
                             title="Сортировать по классу"
-                            th:classappend="${sortBy == 'grade'} ? ' active' : ''"
+                            th:classappend="${gradeSort != ''} ? ' active' : ''"
                             data-sort="grade">
                         <span>Класс</span>
                         <span class="req-sort-icon"
-                              th:text="${sortBy == 'grade' ? (sortDir == 'asc' ? '↑' : (sortDir == 'desc' ? '↓' : '↕')) : '↕'}">↕</span>
+                              th:text="${gradeSort == 'asc' ? '↑' : (gradeSort == 'desc' ? '↓' : '↕')}">↕</span>
                     </button>
                 </th>
                 <th>
                     <button class="req-sort-btn"
                             type="button"
                             title="Сортировать по предмету"
-                            th:classappend="${sortBy == 'subject'} ? ' active' : ''"
+                            th:classappend="${subjectSort != ''} ? ' active' : ''"
                             data-sort="subject">
                         <span>Предмет</span>
                         <span class="req-sort-icon"
-                              th:text="${sortBy == 'subject' ? (sortDir == 'asc' ? '↑' : (sortDir == 'desc' ? '↓' : '↕')) : '↕'}">↕</span>
+                              th:text="${subjectSort == 'asc' ? '↑' : (subjectSort == 'desc' ? '↓' : '↕')}">↕</span>
                     </button>
                 </th>
                 <th>
                     <button class="req-sort-btn"
                             type="button"
                             title="Сортировать по часам в неделю"
-                            th:classappend="${sortBy == 'hours'} ? ' active' : ''"
+                            th:classappend="${hoursSort != ''} ? ' active' : ''"
                             data-sort="hours">
                         <span>Часов/нед.</span>
                         <span class="req-sort-icon"
-                              th:text="${sortBy == 'hours' ? (sortDir == 'asc' ? '↑' : (sortDir == 'desc' ? '↓' : '↕')) : '↕'}">↕</span>
+                              th:text="${hoursSort == 'asc' ? '↑' : (hoursSort == 'desc' ? '↓' : '↕')}">↕</span>
                     </button>
                 </th>
                 <th>
                     <button class="req-sort-btn"
                             type="button"
                             title="Сортировать по части"
-                            th:classappend="${sortBy == 'part'} ? ' active' : ''"
+                            th:classappend="${partSort != ''} ? ' active' : ''"
                             data-sort="part">
                         <span>Часть</span>
                         <span class="req-sort-icon"
-                              th:text="${sortBy == 'part' ? (sortDir == 'asc' ? '↑' : (sortDir == 'desc' ? '↓' : '↕')) : '↕'}">↕</span>
+                              th:text="${partSort == 'asc' ? '↑' : (partSort == 'desc' ? '↓' : '↕')}">↕</span>
                     </button>
                 </th>
                 <th style="text-align:right;padding-right:1rem;">Действия</th>
