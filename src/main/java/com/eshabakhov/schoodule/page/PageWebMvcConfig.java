@@ -3,6 +3,7 @@
  */
 package com.eshabakhov.schoodule.page;
 
+import com.eshabakhov.schoodule.filter.FiltersArgumentResolver;
 import com.eshabakhov.schoodule.sort.SortsArgumentResolver;
 import java.util.List;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,11 @@ public final class PageWebMvcConfig implements WebMvcConfigurer {
     private final PageArgumentResolver page;
 
     /**
+     * Filters argument resolver.
+     */
+    private final FiltersArgumentResolver filters;
+
+    /**
      * Sorts argument resolver.
      */
     private final SortsArgumentResolver sorts;
@@ -31,20 +37,24 @@ public final class PageWebMvcConfig implements WebMvcConfigurer {
      * Ctor.
      *
      * @param page Page argument resolver
+     * @param filters Filters argument resolver
      * @param sorts Sorts argument resolver
      * @since 0.0.1
      */
     public PageWebMvcConfig(
         final PageArgumentResolver page,
+        final FiltersArgumentResolver filters,
         final SortsArgumentResolver sorts
     ) {
         this.page = page;
+        this.filters = filters;
         this.sorts = sorts;
     }
 
     @Override
     public void addArgumentResolvers(final List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(this.page);
+        resolvers.add(this.filters);
         resolvers.add(this.sorts);
     }
 }

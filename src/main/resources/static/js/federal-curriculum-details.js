@@ -2,11 +2,23 @@ $(() => {
     function getParam(key, fallback) {
         return new URLSearchParams(window.location.search).get(key) || fallback;
     }
+    function currentFilters() {
+        const params = new URLSearchParams(window.location.search);
+        const filters = {};
+        params.getAll('filter').forEach(item => {
+            const pos = item.indexOf(':');
+            if (pos > 0) {
+                filters[item.substring(0, pos)] = item.substring(pos + 1);
+            }
+        });
+        return filters;
+    }
     let currentPage = parseInt(getParam('offset', '1'));
     let pageSize = parseInt(getParam('limit', '15'));
-    let filterGrade = getParam('grade', '');
-    let filterSubject = getParam('subject', '');
-    let filterPart = getParam('part', '');
+    let filters = currentFilters();
+    let filterGrade = filters.grade || '';
+    let filterSubject = filters.subject || '';
+    let filterPart = filters.part || '';
     const sortFields = ['grade', 'subject', 'hours', 'part'];
     function currentSorts() {
         const params = new URLSearchParams(window.location.search);
@@ -43,9 +55,9 @@ $(() => {
     }
     function updateUrl() {
         const params = new URLSearchParams();
-        if (filterGrade) params.set('grade', filterGrade);
-        if (filterSubject) params.set('subject', filterSubject);
-        if (filterPart) params.set('part', filterPart);
+        if (filterGrade) params.append('filter', `grade:${filterGrade}`);
+        if (filterSubject) params.append('filter', `subject:${filterSubject}`);
+        if (filterPart) params.append('filter', `part:${filterPart}`);
         sortFields.forEach(field => {
             if (sorts[field]) params.append('sort', `${field}:${sorts[field]}`);
         });
@@ -60,9 +72,9 @@ $(() => {
         if (pushState) updateUrl();
         const url = $('#req-tbody').data('search-url');
         const params = new URLSearchParams();
-        if (filterGrade) params.set('grade', filterGrade);
-        if (filterSubject) params.set('subject', filterSubject);
-        if (filterPart) params.set('part', filterPart);
+        if (filterGrade) params.append('filter', `grade:${filterGrade}`);
+        if (filterSubject) params.append('filter', `subject:${filterSubject}`);
+        if (filterPart) params.append('filter', `part:${filterPart}`);
         sortFields.forEach(field => {
             if (sorts[field]) params.append('sort', `${field}:${sorts[field]}`);
         });
@@ -123,9 +135,10 @@ $(() => {
     window.addEventListener('popstate', function () {
         currentPage = parseInt(getParam('offset', '1'));
         pageSize = parseInt(getParam('limit', '15'));
-        filterGrade = getParam('grade', '');
-        filterSubject = getParam('subject', '');
-        filterPart = getParam('part', '');
+        filters = currentFilters();
+        filterGrade = filters.grade || '';
+        filterSubject = filters.subject || '';
+        filterPart = filters.part || '';
         sorts = currentSorts();
         $('#filter-grade').val(filterGrade);
         $('#filter-subject').val(filterSubject);

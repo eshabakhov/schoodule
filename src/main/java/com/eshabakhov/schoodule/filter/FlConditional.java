@@ -13,6 +13,16 @@ import org.jooq.Condition;
  */
 public interface FlConditional extends Filter {
 
+    @Override
+    default String name() {
+        return "";
+    }
+
+    @Override
+    default String value() {
+        return "";
+    }
+
     /**
      * Builds condition for filtering.
      *

@@ -4,6 +4,7 @@
 package com.eshabakhov.schoodule.federal.curriculum.requirement.filter;
 
 import com.eshabakhov.schoodule.filter.FlConditional;
+import java.util.Optional;
 import org.jooq.Condition;
 
 /**
@@ -27,9 +28,20 @@ public final class FlCdFcrByGrade implements FlConditional {
     /**
      * Grade to search.
      */
-    private final Integer grade;
+    private final Optional<Integer> grade;
 
     public FlCdFcrByGrade(final FlConditional origin, final Integer grade) {
+        this(origin, Optional.ofNullable(grade));
+    }
+
+    public FlCdFcrByGrade(final FlConditional origin, final String grade) {
+        this(
+            origin,
+            Optional.ofNullable(grade).filter(item -> !item.isBlank()).map(Integer::valueOf)
+        );
+    }
+
+    private FlCdFcrByGrade(final FlConditional origin, final Optional<Integer> grade) {
         this.origin = origin;
         this.grade = grade;
     }
@@ -37,8 +49,8 @@ public final class FlCdFcrByGrade implements FlConditional {
     @Override
     public Condition condition() {
         Condition condition = this.origin.condition();
-        if (this.grade != null) {
-            condition = condition.and(FlCdFcrByGrade.REQUIREMENT.GRADE.eq(this.grade));
+        if (this.grade.isPresent()) {
+            condition = condition.and(FlCdFcrByGrade.REQUIREMENT.GRADE.eq(this.grade.get()));
         }
         return condition;
     }

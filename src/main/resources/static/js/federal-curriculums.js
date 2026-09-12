@@ -7,20 +7,35 @@ $(() => {
     function getParam(key, fallback) {
         return new URLSearchParams(window.location.search).get(key) || fallback;
     }
+    function getFilter(key, fallback) {
+        let result = fallback;
+        new URLSearchParams(window.location.search).getAll('filter').forEach(item => {
+            const pos = item.indexOf(':');
+            if (pos > 0 && item.substring(0, pos) === key) {
+                result = item.substring(pos + 1);
+            }
+        });
+        return result;
+    }
     function updateUrl(title, offset, limit) {
         const params = new URLSearchParams();
-        if (title) params.set('title', title);
+        if (title) params.append('filter', `title:${title}`);
         params.set('offset', offset);
         params.set('limit', limit);
         history.pushState(null, '', window.location.pathname + '?' + params.toString());
     }
     function loadFragment(title, offset, limit) {
         updateUrl(title, offset, limit);
-        $.get(window.location.pathname + '/fragment', { title, offset, limit })
+        const params = new URLSearchParams();
+        if (title) params.append('filter', `title:${title}`);
+        params.set('offset', offset);
+        params.set('limit', limit);
+        $.get(window.location.pathname + '/fragment?' + params.toString())
             .done(function(html) {
                 $('#federal-curriculums-results').replaceWith(html);
             });
     }
+    $('#federal-curriculum-search').val(getFilter('title', ''));
     $(document).on(
         'click',
         '#federal-curriculums-pagination .pagination-btn, #federal-curriculums-pagination .pagination-size-btn',
@@ -41,11 +56,15 @@ $(() => {
         }, 300);
     });
     window.addEventListener('popstate', function() {
-        const title = getParam('title', '');
+        const title = getFilter('title', '');
         const offset = getParam('offset', '1');
         const limit = getParam('limit', '15');
+        const params = new URLSearchParams();
+        if (title) params.append('filter', `title:${title}`);
+        params.set('offset', offset);
+        params.set('limit', limit);
         $('#federal-curriculum-search').val(title);
-        $.get(window.location.pathname + '/fragment', { title, offset, limit })
+        $.get(window.location.pathname + '/fragment?' + params.toString())
             .done(function(html) {
                 $('#federal-curriculums-results').replaceWith(html);
             });
