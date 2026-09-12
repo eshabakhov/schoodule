@@ -1,0 +1,28 @@
+name: trufflehog-oss
+
+'on':
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: trufflehog-oss-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  trufflehog:
+    timeout-minutes: 25
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Secret scanning
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified

@@ -31,7 +31,7 @@ services:
 
   schoodule:
     container_name: schoodule
-    image: ghcr.io/eshabakhov/schoodule:latest
+    image: ${IMAGE:-ghcr.io/eshabakhov/schoodule:latest}
     build:
       context: .
       args:
