@@ -5,8 +5,10 @@ package com.eshabakhov.schoodule.federal.curriculum;
 
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
+import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
 import com.eshabakhov.schoodule.federal.curriculum.filter.FlCdFcByTitle;
+import com.eshabakhov.schoodule.federal.curriculum.sort.FcStsJooq;
 import com.eshabakhov.schoodule.filter.FlCdTrue;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -228,6 +230,7 @@ public class FederalCurriculumController {
     //@checkstyle ParameterNumberCheck (1 line)
     public ResponseEntity<ObjectNode> list(
         final Page page,
+        final Sorts sort,
         @RequestParam(value = "title_ct", required = false) final String title
     ) throws Exception {
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
@@ -236,7 +239,8 @@ public class FederalCurriculumController {
                     new FlCdTrue(),
                     title
                 ),
-                page
+                page,
+                new FcStsJooq(sort)
             );
         final ArrayNode items = JsonNodeFactory.instance.arrayNode();
         result.list().forEach(

@@ -5,11 +5,13 @@ package com.eshabakhov.schoodule.federal.curriculum.requirement;
 
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
+import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.curriculum.FcsPostgres;
 import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByGrade;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByPart;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrBySubject;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.sort.FcrStsJooq;
 import com.eshabakhov.schoodule.filter.FlCdTrue;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -193,6 +195,7 @@ public class FederalCurriculumRequirementController {
         @PathVariable
         final long curriculum,
         final Page page,
+        final Sorts sort,
         @RequestParam(name = "grade", required = false)
         final Integer grade,
         @RequestParam(name = "subjectName", required = false)
@@ -214,7 +217,8 @@ public class FederalCurriculumRequirementController {
                     ),
                     part
                 ),
-                page
+                page,
+                new FcrStsJooq(sort)
             );
         final ArrayNode items = JsonNodeFactory.instance.arrayNode();
         result.list().forEach(

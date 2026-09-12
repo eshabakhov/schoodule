@@ -5,22 +5,22 @@ package com.eshabakhov.schoodule.federal.curriculum;
 
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
+import com.eshabakhov.schoodule.Sort;
+import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
 import com.eshabakhov.schoodule.federal.curriculum.filter.FlCdFcByTitle;
-import com.eshabakhov.schoodule.federal.curriculum.requirement.FcrPostgres;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByGrade;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByPart;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrBySubject;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.sort.FcrStsJooq;
+import com.eshabakhov.schoodule.federal.curriculum.sort.FcStsJooq;
 import com.eshabakhov.schoodule.filter.FlCdTrue;
 import com.eshabakhov.schoodule.filter.FlConditional;
 import com.eshabakhov.schoodule.media.ThymeleafMedia;
-import com.eshabakhov.schoodule.page.ResponsePageableList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.Field;
-import org.jooq.SortField;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -52,12 +52,6 @@ import org.springframework.web.servlet.ModelAndView;
 public class FederalCurriculumHtmlController {
 
     /**
-     * JOOQ Table for FederalCurriculumRequirement.
-     */
-    private static final com.eshabakhov.schoodule.tables.FederalCurriculumRequirement REQUIREMENT =
-        com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
-
-    /**
      * JOOQ DSL context for executing database queries.
      */
     private final DSLContext ctx;
@@ -69,12 +63,14 @@ public class FederalCurriculumHtmlController {
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView list(
         final Page page,
+        final Sorts sort,
         @RequestParam(name = "title", required = false) final String title
     ) throws Exception {
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
             .curriculums(
                 new FlCdFcByTitle(new FlCdTrue(), title),
-                page
+                page,
+                new FcStsJooq(sort)
             );
         return new ModelAndView("federal-curriculums/list")
             .addAllObjects(
@@ -95,11 +91,12 @@ public class FederalCurriculumHtmlController {
     @GetMapping(value = "/fragment", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView fragment(
         @RequestParam(name = "title", required = false) final String title,
-        final Page page
+        final Page page,
+        final Sorts sort
     ) throws Exception {
         final FlConditional filter = new FlCdFcByTitle(new FlCdTrue(), title);
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
-            .curriculums(filter, page);
+            .curriculums(filter, page, new FcStsJooq(sort));
         final List<Map<String, Object>> curriculums = result.list().stream()
             .map(fc -> ((ThymeleafMedia) fc.print(new ThymeleafMedia())).map())
             .toList();
@@ -172,11 +169,8 @@ public class FederalCurriculumHtmlController {
         final String subject,
         @RequestParam(name = "part", required = false)
         final FederalCurriculumRequirement.PartType part,
-        @RequestParam(name = "sortBy", required = false)
-        final String sort,
-        @RequestParam(name = "sortDir", required = false)
-        final String direction,
-        final Page page
+        final Page page,
+        final Sorts sort
     ) throws Exception {
         final FederalCurriculum found = new FcsPostgres(this.ctx).curriculum(curriculum);
         final Map<String, Object> data = ((ThymeleafMedia) found.print(new ThymeleafMedia())).map();
@@ -190,14 +184,13 @@ public class FederalCurriculumHtmlController {
                 part
             ),
             page,
-            sort,
-            direction
+            sort
         );
         return new ModelAndView("federal-curriculums/requirements")
             .addAllObjects(data)
             .addAllObjects(
                 FederalCurriculumHtmlController.requirementsModel(
-                    curriculum, result, page, sort, direction
+                    curriculum, result, page, sort
                 )
             )
             .addObject(
@@ -216,11 +209,8 @@ public class FederalCurriculumHtmlController {
         final String subject,
         @RequestParam(name = "part", required = false)
         final FederalCurriculumRequirement.PartType part,
-        @RequestParam(name = "sortBy", required = false)
-        final String sort,
-        @RequestParam(name = "sortDir", required = false)
-        final String direction,
-        final Page page
+        final Page page,
+        final Sorts sort
     ) throws Exception {
         final PageableList<FederalCurriculumRequirement> result = this.requirements(
             curriculum,
@@ -232,13 +222,12 @@ public class FederalCurriculumHtmlController {
                 part
             ),
             page,
-            sort,
-            direction
+            sort
         );
         return new ModelAndView("federal-curriculums/requirements :: requirements-results")
             .addAllObjects(
                 FederalCurriculumHtmlController.requirementsModel(
-                    curriculum, result, page, sort, direction
+                    curriculum, result, page, sort
                 )
             );
     }
@@ -295,30 +284,54 @@ public class FederalCurriculumHtmlController {
      * @param curriculum Curriculum ID
      * @param result Requirements page
      * @param page Page request
-     * @param sort Sort field
-     * @param direction Sort direction
+     * @param sort Sorting parameters
      * @return Model attributes
      */
     private static Map<String, Object> requirementsModel(
         final long curriculum,
         final PageableList<FederalCurriculumRequirement> result,
         final Page page,
-        final String sort,
-        final String direction
+        final Sorts sort
     ) {
-        return Map.of(
-            "id", curriculum,
-            "requirements", result.list().stream()
-                .map(req -> ((ThymeleafMedia) req.print(new ThymeleafMedia())).map())
-                .toList(),
-            "partTypes", FederalCurriculumRequirement.PartType.values(),
-            "page", page.offset(),
-            "limit", page.limit(),
-            "totalPages", (int) Math.ceil((double) result.total() / page.limit()),
-            "hasNext", result.total() > (long) page.offset() * page.limit(),
-            "hasPrev", page.offset() > 1,
-            "sortBy", FederalCurriculumHtmlController.sortName(sort),
-            "sortDir", FederalCurriculumHtmlController.sortDirection(direction)
+        String grade = "";
+        String subject = "";
+        String hours = "";
+        String part = "";
+        for (final Sort item : sort.sorts()) {
+            final String direction;
+            if (Sort.Direction.NONE.equals(item.direction())) {
+                direction = "";
+            } else {
+                direction = item.direction().name().toLowerCase(Locale.ROOT);
+            }
+            if ("grade".equals(item.name())) {
+                grade = direction;
+            } else if ("subject".equals(item.name())) {
+                subject = direction;
+            } else if ("hours".equals(item.name())) {
+                hours = direction;
+            } else if ("part".equals(item.name())) {
+                part = direction;
+            }
+        }
+        return Map.ofEntries(
+            Map.entry("id", curriculum),
+            Map.entry(
+                "requirements",
+                result.list().stream()
+                    .map(req -> ((ThymeleafMedia) req.print(new ThymeleafMedia())).map())
+                    .toList()
+            ),
+            Map.entry("partTypes", FederalCurriculumRequirement.PartType.values()),
+            Map.entry("page", page.offset()),
+            Map.entry("limit", page.limit()),
+            Map.entry("totalPages", (int) Math.ceil((double) result.total() / page.limit())),
+            Map.entry("hasNext", result.total() > (long) page.offset() * page.limit()),
+            Map.entry("hasPrev", page.offset() > 1),
+            Map.entry("gradeSort", grade),
+            Map.entry("subjectSort", subject),
+            Map.entry("hoursSort", hours),
+            Map.entry("partSort", part)
         );
     }
 
@@ -328,109 +341,19 @@ public class FederalCurriculumHtmlController {
      * @param curriculum Curriculum ID
      * @param filter Search filter
      * @param page Page request
-     * @param sort Sort field
-     * @param direction Sort direction
+     * @param sort Sorting parameters
      * @return Requirements page
+     * @throws Exception if listing fails
      */
     private PageableList<FederalCurriculumRequirement> requirements(
         final long curriculum,
         final FlConditional filter,
         final Page page,
-        final String sort,
-        final String direction
-    ) {
-        final Condition scoped = FederalCurriculumHtmlController.REQUIREMENT.FEDERAL_CURRICULUM_ID
-            .eq(curriculum)
-            .and(FederalCurriculumHtmlController.REQUIREMENT.IS_DELETED.eq(false))
-            .and(filter.condition());
-        final SortField<?> order = FederalCurriculumHtmlController.sortField(sort, direction);
-        final List<FederalCurriculumRequirement> list;
-        if (order == null) {
-            list = this.ctx
-                .selectFrom(FederalCurriculumHtmlController.REQUIREMENT)
-                .where(scoped)
-                .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit())
-                .fetch(selected -> new FcrPostgres(this.ctx, selected.getId()));
-        } else {
-            list = this.ctx
-                .selectFrom(FederalCurriculumHtmlController.REQUIREMENT)
-                .where(scoped)
-                .orderBy(order)
-                .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit())
-                .fetch(selected -> new FcrPostgres(this.ctx, selected.getId()));
-        }
-        return new ResponsePageableList<>(
-            list,
-            this.ctx.fetchCount(
-                this.ctx.selectFrom(FederalCurriculumHtmlController.REQUIREMENT).where(scoped)
-            ),
-            page
-        );
-    }
-
-    /**
-     * Builds sort field from request parameters.
-     *
-     * @param sort Sort field name
-     * @param direction Sort direction
-     * @return JOOQ sort field
-     */
-    private static SortField<?> sortField(final String sort, final String direction) {
-        final Field<?> field = switch (FederalCurriculumHtmlController.sortName(sort)) {
-            case "grade" -> FederalCurriculumHtmlController.REQUIREMENT.GRADE;
-            case "subject" -> FederalCurriculumHtmlController.REQUIREMENT.SUBJECT_NAME;
-            case "hours" -> FederalCurriculumHtmlController.REQUIREMENT.WEEKLY_HOURS;
-            case "part" -> FederalCurriculumHtmlController.REQUIREMENT.PART_TYPE;
-            default -> null;
-        };
-        final String dir = FederalCurriculumHtmlController.sortDirection(direction);
-        final SortField<?> order;
-        if (field == null || dir.isBlank()) {
-            order = null;
-        } else if ("asc".equals(dir)) {
-            order = field.asc();
-        } else {
-            order = field.desc();
-        }
-        return order;
-    }
-
-    /**
-     * Normalizes sort field name.
-     *
-     * @param sort Raw sort field name
-     * @return Normalized sort field name
-     */
-    private static String sortName(final String sort) {
-        final String name;
-        if (
-            "grade".equals(sort)
-                || "subject".equals(sort)
-                || "hours".equals(sort)
-                || "part".equals(sort)
-        ) {
-            name = sort;
-        } else {
-            name = "";
-        }
-        return name;
-    }
-
-    /**
-     * Normalizes sort direction.
-     *
-     * @param direction Raw sort direction
-     * @return Normalized sort direction
-     */
-    private static String sortDirection(final String direction) {
-        final String dir;
-        if ("asc".equals(direction) || "desc".equals(direction)) {
-            dir = direction;
-        } else {
-            dir = "";
-        }
-        return dir;
+        final Sorts sort
+    ) throws Exception {
+        return new FcsPostgres(this.ctx)
+            .curriculum(curriculum)
+            .requirements()
+            .requirements(filter, page, new FcrStsJooq(sort));
     }
 }
