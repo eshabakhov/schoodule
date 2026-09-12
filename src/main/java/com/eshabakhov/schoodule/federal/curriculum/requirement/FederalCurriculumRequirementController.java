@@ -3,16 +3,14 @@
  */
 package com.eshabakhov.schoodule.federal.curriculum.requirement;
 
+import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.curriculum.FcsPostgres;
 import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
-import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByGrade;
-import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByPart;
-import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrBySubject;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FcrFlsConditional;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.sort.FcrStsJooq;
-import com.eshabakhov.schoodule.filter.FlCdTrue;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -40,7 +38,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -196,27 +193,13 @@ public class FederalCurriculumRequirementController {
         final long curriculum,
         final Page page,
         final Sorts sort,
-        @RequestParam(name = "grade", required = false)
-        final Integer grade,
-        @RequestParam(name = "subjectName", required = false)
-        final String subject,
-        @RequestParam(name = "partType", required = false)
-        final FederalCurriculumRequirement.PartType part
+        final Filters filters
     ) throws Exception {
         final PageableList<FederalCurriculumRequirement> result = new FcsPostgres(this.ctx)
             .curriculum(curriculum)
             .requirements()
             .requirements(
-                new FlCdFcrByPart(
-                    new FlCdFcrBySubject(
-                        new FlCdFcrByGrade(
-                            new FlCdTrue(),
-                            grade
-                        ),
-                        subject
-                    ),
-                    part
-                ),
+                new FcrFlsConditional(filters),
                 page,
                 new FcrStsJooq(sort)
             );

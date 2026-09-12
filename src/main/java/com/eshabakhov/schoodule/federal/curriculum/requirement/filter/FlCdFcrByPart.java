@@ -6,6 +6,7 @@ package com.eshabakhov.schoodule.federal.curriculum.requirement.filter;
 import com.eshabakhov.schoodule.enums.CurriculumPartType;
 import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.filter.FlConditional;
+import java.util.Optional;
 import org.jooq.Condition;
 
 /**
@@ -29,11 +30,27 @@ public final class FlCdFcrByPart implements FlConditional {
     /**
      * Part to search.
      */
-    private final FederalCurriculumRequirement.PartType part;
+    private final Optional<FederalCurriculumRequirement.PartType> part;
 
     public FlCdFcrByPart(
         final FlConditional origin,
         final FederalCurriculumRequirement.PartType part
+    ) {
+        this(origin, Optional.ofNullable(part));
+    }
+
+    public FlCdFcrByPart(final FlConditional origin, final String part) {
+        this(
+            origin,
+            Optional.ofNullable(part)
+                .filter(item -> !item.isBlank())
+                .map(FederalCurriculumRequirement.PartType::valueOf)
+        );
+    }
+
+    private FlCdFcrByPart(
+        final FlConditional origin,
+        final Optional<FederalCurriculumRequirement.PartType> part
     ) {
         this.origin = origin;
         this.part = part;
@@ -42,9 +59,11 @@ public final class FlCdFcrByPart implements FlConditional {
     @Override
     public Condition condition() {
         Condition condition = this.origin.condition();
-        if (this.part != null) {
+        if (this.part.isPresent()) {
             condition = condition.and(
-                FlCdFcrByPart.REQUIREMENT.PART_TYPE.eq(CurriculumPartType.valueOf(this.part.name()))
+                FlCdFcrByPart.REQUIREMENT.PART_TYPE.eq(
+                    CurriculumPartType.valueOf(this.part.get().name())
+                )
             );
         }
         return condition;

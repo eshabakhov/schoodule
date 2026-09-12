@@ -3,19 +3,16 @@
  */
 package com.eshabakhov.schoodule.federal.curriculum;
 
+import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.Sort;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
-import com.eshabakhov.schoodule.federal.curriculum.filter.FlCdFcByTitle;
-import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByGrade;
-import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrByPart;
-import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlCdFcrBySubject;
+import com.eshabakhov.schoodule.federal.curriculum.filter.FcFlsConditional;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FcrFlsConditional;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.sort.FcrStsJooq;
 import com.eshabakhov.schoodule.federal.curriculum.sort.FcStsJooq;
-import com.eshabakhov.schoodule.filter.FlCdTrue;
-import com.eshabakhov.schoodule.filter.FlConditional;
 import com.eshabakhov.schoodule.media.ThymeleafMedia;
 import java.util.List;
 import java.util.Locale;
@@ -64,11 +61,11 @@ public class FederalCurriculumHtmlController {
     public ModelAndView list(
         final Page page,
         final Sorts sort,
-        @RequestParam(name = "title", required = false) final String title
+        final Filters filters
     ) throws Exception {
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
             .curriculums(
-                new FlCdFcByTitle(new FlCdTrue(), title),
+                new FcFlsConditional(filters),
                 page,
                 new FcStsJooq(sort)
             );
@@ -90,13 +87,12 @@ public class FederalCurriculumHtmlController {
 
     @GetMapping(value = "/fragment", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView fragment(
-        @RequestParam(name = "title", required = false) final String title,
+        final Filters filters,
         final Page page,
         final Sorts sort
     ) throws Exception {
-        final FlConditional filter = new FlCdFcByTitle(new FlCdTrue(), title);
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
-            .curriculums(filter, page, new FcStsJooq(sort));
+            .curriculums(new FcFlsConditional(filters), page, new FcStsJooq(sort));
         final List<Map<String, Object>> curriculums = result.list().stream()
             .map(fc -> ((ThymeleafMedia) fc.print(new ThymeleafMedia())).map())
             .toList();
@@ -163,26 +159,15 @@ public class FederalCurriculumHtmlController {
     @GetMapping(value = "/{curriculum}/requirements", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView requirementsPage(
         @PathVariable final long curriculum,
-        @RequestParam(name = "grade", required = false)
-        final Integer grade,
-        @RequestParam(name = "subject", required = false)
-        final String subject,
-        @RequestParam(name = "part", required = false)
-        final FederalCurriculumRequirement.PartType part,
+        final Filters filters,
         final Page page,
         final Sorts sort
     ) throws Exception {
         final FederalCurriculum found = new FcsPostgres(this.ctx).curriculum(curriculum);
         final Map<String, Object> data = ((ThymeleafMedia) found.print(new ThymeleafMedia())).map();
-        final PageableList<FederalCurriculumRequirement> result = this.requirements(
+        final PageableList<FederalCurriculumRequirement> result = this.requirementsPageData(
             curriculum,
-            new FlCdFcrByPart(
-                new FlCdFcrBySubject(
-                    new FlCdFcrByGrade(new FlCdTrue(), grade),
-                    subject
-                ),
-                part
-            ),
+            filters,
             page,
             sort
         );
@@ -203,24 +188,13 @@ public class FederalCurriculumHtmlController {
     public ModelAndView requirements(
         @PathVariable
         final long curriculum,
-        @RequestParam(name = "grade", required = false)
-        final Integer grade,
-        @RequestParam(name = "subject", required = false)
-        final String subject,
-        @RequestParam(name = "part", required = false)
-        final FederalCurriculumRequirement.PartType part,
+        final Filters filters,
         final Page page,
         final Sorts sort
     ) throws Exception {
-        final PageableList<FederalCurriculumRequirement> result = this.requirements(
+        final PageableList<FederalCurriculumRequirement> result = this.requirementsPageData(
             curriculum,
-            new FlCdFcrByPart(
-                new FlCdFcrBySubject(
-                    new FlCdFcrByGrade(new FlCdTrue(), grade),
-                    subject
-                ),
-                part
-            ),
+            filters,
             page,
             sort
         );
@@ -339,21 +313,21 @@ public class FederalCurriculumHtmlController {
      * Fetches requirements with optional sorting.
      *
      * @param curriculum Curriculum ID
-     * @param filter Search filter
+     * @param filters Search filters
      * @param page Page request
      * @param sort Sorting parameters
      * @return Requirements page
      * @throws Exception if listing fails
      */
-    private PageableList<FederalCurriculumRequirement> requirements(
+    private PageableList<FederalCurriculumRequirement> requirementsPageData(
         final long curriculum,
-        final FlConditional filter,
+        final Filters filters,
         final Page page,
         final Sorts sort
     ) throws Exception {
         return new FcsPostgres(this.ctx)
             .curriculum(curriculum)
             .requirements()
-            .requirements(filter, page, new FcrStsJooq(sort));
+            .requirements(new FcrFlsConditional(filters), page, new FcrStsJooq(sort));
     }
 }

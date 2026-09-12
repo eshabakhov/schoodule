@@ -3,13 +3,13 @@
  */
 package com.eshabakhov.schoodule.federal.curriculum;
 
+import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
-import com.eshabakhov.schoodule.federal.curriculum.filter.FlCdFcByTitle;
+import com.eshabakhov.schoodule.federal.curriculum.filter.FcFlsConditional;
 import com.eshabakhov.schoodule.federal.curriculum.sort.FcStsJooq;
-import com.eshabakhov.schoodule.filter.FlCdTrue;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -231,14 +230,11 @@ public class FederalCurriculumController {
     public ResponseEntity<ObjectNode> list(
         final Page page,
         final Sorts sort,
-        @RequestParam(value = "title_ct", required = false) final String title
+        final Filters filters
     ) throws Exception {
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
             .curriculums(
-                new FlCdFcByTitle(
-                    new FlCdTrue(),
-                    title
-                ),
+                new FcFlsConditional(filters),
                 page,
                 new FcStsJooq(sort)
             );
