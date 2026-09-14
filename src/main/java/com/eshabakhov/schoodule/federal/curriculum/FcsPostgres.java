@@ -3,12 +3,16 @@
  */
 package com.eshabakhov.schoodule.federal.curriculum;
 
+import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
+import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.enums.EducationLevelType;
 import com.eshabakhov.schoodule.enums.StudyWeekType;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
 import com.eshabakhov.schoodule.federal.FederalCurriculums;
+import com.eshabakhov.schoodule.federal.curriculum.filter.FcFlsConditional;
+import com.eshabakhov.schoodule.federal.curriculum.sort.FcStsJooq;
 import com.eshabakhov.schoodule.filter.FlConditional;
 import com.eshabakhov.schoodule.page.ResponsePageableList;
 import com.eshabakhov.schoodule.sort.StsJooq;
@@ -124,11 +128,13 @@ public final class FcsPostgres implements FederalCurriculums {
 
     @Override
     public PageableList<FederalCurriculum> curriculums(
-        final FlConditional filter,
+        final Filters filters,
         final Page page,
-        final StsJooq sort
+        final Sorts sorts
     )
         throws Exception {
+        final FlConditional filter = new FcFlsConditional(filters);
+        final StsJooq sort = new FcStsJooq(sorts);
         final Condition scoped = filter.condition().and(
             FcsPostgres.CURRICULUM.IS_DELETED.eq(false)
         );

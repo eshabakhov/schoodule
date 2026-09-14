@@ -9,8 +9,6 @@ import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.curriculum.FcsPostgres;
 import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
-import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FcrFlsConditional;
-import com.eshabakhov.schoodule.federal.curriculum.requirement.sort.FcrStsJooq;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -199,9 +197,9 @@ public class FederalCurriculumRequirementController {
             .curriculum(curriculum)
             .requirements()
             .requirements(
-                new FcrFlsConditional(filters),
+                filters,
                 page,
-                new FcrStsJooq(sort)
+                sort
             );
         final ArrayNode items = JsonNodeFactory.instance.arrayNode();
         result.list().forEach(

@@ -3,10 +3,10 @@
  */
 package com.eshabakhov.schoodule.federal;
 
+import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
-import com.eshabakhov.schoodule.filter.FlConditional;
-import com.eshabakhov.schoodule.sort.StsJooq;
+import com.eshabakhov.schoodule.Sorts;
 
 /**
  * Interface for managing {@link FederalCurriculum} entities.
@@ -50,13 +50,13 @@ public interface FederalCurriculums {
     /**
      * Returns a paginated list of federal curriculums.
      *
-     * @param filter Filter for selecting federal curriculums
+     * @param filters Filters for selecting federal curriculums
      * @param page Pagination (contains limit and offset)
-     * @param sort Sorting parameters
+     * @param sorts Sorting parameters
      * @return List of {@link FederalCurriculum} instances
      * @throws Exception if listing fails
      */
-    PageableList<FederalCurriculum> curriculums(FlConditional filter, Page page, StsJooq sort)
+    PageableList<FederalCurriculum> curriculums(Filters filters, Page page, Sorts sorts)
         throws Exception;
 
     /**

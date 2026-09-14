@@ -8,8 +8,6 @@ import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
-import com.eshabakhov.schoodule.federal.curriculum.filter.FcFlsConditional;
-import com.eshabakhov.schoodule.federal.curriculum.sort.FcStsJooq;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -234,9 +232,9 @@ public class FederalCurriculumController {
     ) throws Exception {
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
             .curriculums(
-                new FcFlsConditional(filters),
+                filters,
                 page,
-                new FcStsJooq(sort)
+                sort
             );
         final ArrayNode items = JsonNodeFactory.instance.arrayNode();
         result.list().forEach(
