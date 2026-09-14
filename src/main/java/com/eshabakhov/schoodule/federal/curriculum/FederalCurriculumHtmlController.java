@@ -9,10 +9,6 @@ import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.Sort;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
-import com.eshabakhov.schoodule.federal.curriculum.filter.FcFlsConditional;
-import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FcrFlsConditional;
-import com.eshabakhov.schoodule.federal.curriculum.requirement.sort.FcrStsJooq;
-import com.eshabakhov.schoodule.federal.curriculum.sort.FcStsJooq;
 import com.eshabakhov.schoodule.media.ThymeleafMedia;
 import java.util.List;
 import java.util.Locale;
@@ -65,9 +61,9 @@ public class FederalCurriculumHtmlController {
     ) throws Exception {
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
             .curriculums(
-                new FcFlsConditional(filters),
+                filters,
                 page,
-                new FcStsJooq(sort)
+                sort
             );
         return new ModelAndView("federal-curriculums/list")
             .addAllObjects(
@@ -92,7 +88,7 @@ public class FederalCurriculumHtmlController {
         final Sorts sort
     ) throws Exception {
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
-            .curriculums(new FcFlsConditional(filters), page, new FcStsJooq(sort));
+            .curriculums(filters, page, sort);
         final List<Map<String, Object>> curriculums = result.list().stream()
             .map(fc -> ((ThymeleafMedia) fc.print(new ThymeleafMedia())).map())
             .toList();
@@ -328,6 +324,6 @@ public class FederalCurriculumHtmlController {
         return new FcsPostgres(this.ctx)
             .curriculum(curriculum)
             .requirements()
-            .requirements(new FcrFlsConditional(filters), page, new FcrStsJooq(sort));
+            .requirements(filters, page, sort);
     }
 }
