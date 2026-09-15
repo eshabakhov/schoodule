@@ -66,7 +66,7 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                final var existing = ttx.selectFrom(FcrsPostgres.REQUIREMENT)
+                if (ttx.selectFrom(FcrsPostgres.REQUIREMENT)
                     .where(FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
                         .and(FcrsPostgres.REQUIREMENT.GRADE.eq(grade))
                         .and(FcrsPostgres.REQUIREMENT.SUBJECT_NAME.eq(subject))
@@ -77,8 +77,7 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
                         )
                         .and(FcrsPostgres.REQUIREMENT.IS_DELETED.eq(false))
                     )
-                    .fetchOne();
-                if (existing != null) {
+                    .fetchOne() != null) {
                     throw new RequirementAlreadyExistsException();
                 }
                 final FederalCurriculumRequirementRecord created = ttx
@@ -150,15 +149,14 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
 
     @Override
     public void remove(final long id) throws Exception {
-        final FederalCurriculumRequirementRecord selected = this.ctx
+        if (this.ctx
             .selectFrom(FcrsPostgres.REQUIREMENT)
             .where(
                 FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
                     .and(FcrsPostgres.REQUIREMENT.IS_DELETED.eq(false))
                     .and(FcrsPostgres.REQUIREMENT.ID.eq(id))
             )
-            .fetchOne();
-        if (selected == null) {
+            .fetchOne() == null) {
             throw new RequirementNotFoundException(
                 String.format(
                     "FederalCurriculumRequirement with id=%d not found",

@@ -10,9 +10,9 @@ import com.eshabakhov.schoodule.Sort;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
 import com.eshabakhov.schoodule.media.ThymeleafMedia;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -89,13 +89,12 @@ public class FederalCurriculumHtmlController {
     ) throws Exception {
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
             .curriculums(filters, page, sort);
-        final List<Map<String, Object>> curriculums = result.list().stream()
-            .map(fc -> ((ThymeleafMedia) fc.print(new ThymeleafMedia())).map())
-            .toList();
         return new ModelAndView("federal-curriculums/list :: curriculums-grid")
             .addAllObjects(
                 Map.of(
-                    "curriculums", curriculums,
+                    "curriculums", result.list().stream()
+                        .map(fc -> ((ThymeleafMedia) fc.print(new ThymeleafMedia())).map())
+                        .toList(),
                     "page", page.offset(),
                     "limit", page.limit(),
                     "totalPages", (int) Math.ceil((double) result.total() / page.limit()),
@@ -126,17 +125,16 @@ public class FederalCurriculumHtmlController {
         @RequestParam(name = "year") final String year,
         @RequestParam(required = false) final String description
     ) throws Exception {
-        final String desc;
-        if (description == null) {
-            desc = null;
-        } else {
-            desc = description.trim();
-        }
         return String.format(
             "redirect:/federal/curriculums/%d",
             new FcsPostgres(this.ctx)
                 .create(
-                    title.trim(), level, week, version.trim(), year.trim(), desc
+                    title.trim(),
+                    level,
+                    week,
+                    version.trim(),
+                    year.trim(),
+                    Optional.ofNullable(description).map(String::trim).orElse(null)
                 ).uid()
         );
     }
@@ -145,8 +143,11 @@ public class FederalCurriculumHtmlController {
     public ModelAndView details(
         @PathVariable final long curriculum
     ) throws Exception {
-        final FederalCurriculum found = new FcsPostgres(this.ctx).curriculum(curriculum);
-        final Map<String, Object> data = ((ThymeleafMedia) found.print(new ThymeleafMedia())).map();
+        final Map<String, Object> data = (
+            (ThymeleafMedia) new FcsPostgres(this.ctx)
+                .curriculum(curriculum)
+                .print(new ThymeleafMedia())
+        ).map();
         return new ModelAndView("federal-curriculums/details")
             .addAllObjects(data)
             .addObject("pageTitle", data.getOrDefault("title", ""));
@@ -159,8 +160,11 @@ public class FederalCurriculumHtmlController {
         final Page page,
         final Sorts sort
     ) throws Exception {
-        final FederalCurriculum found = new FcsPostgres(this.ctx).curriculum(curriculum);
-        final Map<String, Object> data = ((ThymeleafMedia) found.print(new ThymeleafMedia())).map();
+        final Map<String, Object> data = (
+            (ThymeleafMedia) new FcsPostgres(this.ctx)
+                .curriculum(curriculum)
+                .print(new ThymeleafMedia())
+        ).map();
         final PageableList<FederalCurriculumRequirement> result = this.requirementsPageData(
             curriculum,
             filters,
@@ -188,16 +192,13 @@ public class FederalCurriculumHtmlController {
         final Page page,
         final Sorts sort
     ) throws Exception {
-        final PageableList<FederalCurriculumRequirement> result = this.requirementsPageData(
-            curriculum,
-            filters,
-            page,
-            sort
-        );
         return new ModelAndView("federal-curriculums/requirements :: requirements-results")
             .addAllObjects(
                 FederalCurriculumHtmlController.requirementsModel(
-                    curriculum, result, page, sort
+                    curriculum,
+                    this.requirementsPageData(curriculum, filters, page, sort),
+                    page,
+                    sort
                 )
             );
     }
@@ -231,12 +232,6 @@ public class FederalCurriculumHtmlController {
         @RequestParam(name = "year") final String year,
         @RequestParam(required = false) final String description
     ) throws Exception {
-        final String desc;
-        if (description == null) {
-            desc = null;
-        } else {
-            desc = description.trim();
-        }
         new FcsPostgres(this.ctx)
             .curriculum(curriculum)
             .retitled(title.trim())
@@ -244,7 +239,7 @@ public class FederalCurriculumHtmlController {
             .reweeked(week)
             .reversioned(version.trim())
             .reyeared(year.trim())
-            .redescriptioned(desc);
+            .redescriptioned(Optional.ofNullable(description).map(String::trim).orElse(null));
         return String.format("redirect:/federal/curriculums/%d", curriculum);
     }
 
