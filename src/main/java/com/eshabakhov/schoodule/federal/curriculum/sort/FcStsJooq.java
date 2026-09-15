@@ -19,6 +19,12 @@ import org.jooq.SortField;
 public final class FcStsJooq implements StsJooq {
 
     /**
+     * JOOQ Table for FederalCurriculum.
+     */
+    private static final com.eshabakhov.schoodule.tables.FederalCurriculum CURRICULUM =
+        com.eshabakhov.schoodule.tables.FederalCurriculum.FEDERAL_CURRICULUM;
+
+    /**
      * Origin sorting parameters.
      */
     private final Sorts origin;
@@ -46,6 +52,10 @@ public final class FcStsJooq implements StsJooq {
             if (field.field() != null) {
                 fields.add(field.field());
             }
+        }
+        if (fields.isEmpty()) {
+            fields.add(FcStsJooq.CURRICULUM.ACADEMIC_YEAR.desc());
+            fields.add(FcStsJooq.CURRICULUM.TITLE.asc());
         }
         return fields;
     }
