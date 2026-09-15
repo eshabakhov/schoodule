@@ -12,15 +12,11 @@ import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirements;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FcrFlsConditional;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.sort.FcrStsJooq;
-import com.eshabakhov.schoodule.filter.FlConditional;
 import com.eshabakhov.schoodule.page.ResponsePageableList;
-import com.eshabakhov.schoodule.sort.StsJooq;
 import com.eshabakhov.schoodule.tables.records.FederalCurriculumRequirementRecord;
-import java.util.List;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.SortField;
 import org.jooq.impl.DSL;
 
 /**
@@ -131,23 +127,14 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
         final Page page,
         final Sorts sorts
     ) throws Exception {
-        final FlConditional filter = new FcrFlsConditional(filters);
-        final StsJooq sort = new FcrStsJooq(sorts);
         final Condition scoped = FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
             .and(FcrsPostgres.REQUIREMENT.IS_DELETED.eq(false))
-            .and(filter.condition());
-        final List<SortField<?>> fields = sort.fields();
-        if (fields.isEmpty()) {
-            fields.add(FcrsPostgres.REQUIREMENT.GRADE.asc());
-            fields.add(FcrsPostgres.REQUIREMENT.SUBJECT_NAME.asc());
-            fields.add(FcrsPostgres.REQUIREMENT.WEEKLY_HOURS.asc());
-            fields.add(FcrsPostgres.REQUIREMENT.PART_TYPE.asc());
-        }
+            .and(new FcrFlsConditional(filters).condition());
         return new ResponsePageableList<>(
             this.ctx
                 .selectFrom(FcrsPostgres.REQUIREMENT)
                 .where(scoped)
-                .orderBy(fields)
+                .orderBy(new FcrStsJooq(sorts).fields())
                 .limit(page.limit())
                 .offset((page.offset() - 1) * page.limit())
                 .fetch(

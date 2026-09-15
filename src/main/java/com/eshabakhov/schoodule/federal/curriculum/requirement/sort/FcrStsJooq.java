@@ -19,6 +19,12 @@ import org.jooq.SortField;
 public final class FcrStsJooq implements StsJooq {
 
     /**
+     * JOOQ Table for FederalCurriculumRequirement.
+     */
+    private static final com.eshabakhov.schoodule.tables.FederalCurriculumRequirement REQUIREMENT =
+        com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
+
+    /**
      * Origin sorting parameters.
      */
     private final Sorts origin;
@@ -50,6 +56,12 @@ public final class FcrStsJooq implements StsJooq {
                     }
                 }
             }
+        }
+        if (fields.isEmpty()) {
+            fields.add(FcrStsJooq.REQUIREMENT.GRADE.asc());
+            fields.add(FcrStsJooq.REQUIREMENT.SUBJECT_NAME.asc());
+            fields.add(FcrStsJooq.REQUIREMENT.WEEKLY_HOURS.asc());
+            fields.add(FcrStsJooq.REQUIREMENT.PART_TYPE.asc());
         }
         return fields;
     }
