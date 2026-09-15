@@ -67,7 +67,7 @@ public final class FcsPostgres implements FederalCurriculums {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                final var existing = ttx.selectFrom(FcsPostgres.CURRICULUM)
+                if (ttx.selectFrom(FcsPostgres.CURRICULUM)
                     .where(
                         FcsPostgres.CURRICULUM.EDUCATION_LEVEL.eq(
                             EducationLevelType.valueOf(level.name())
@@ -79,8 +79,7 @@ public final class FcsPostgres implements FederalCurriculums {
                             .and(FcsPostgres.CURRICULUM.ACADEMIC_YEAR.eq(year))
                             .and(FcsPostgres.CURRICULUM.IS_DELETED.eq(false))
                     )
-                    .fetchOne();
-                if (existing != null) {
+                    .fetchOne() != null) {
                     throw new CurriculumAlreadyExistsException(title);
                 }
                 final FederalCurriculumRecord created = ttx
@@ -149,14 +148,13 @@ public final class FcsPostgres implements FederalCurriculums {
 
     @Override
     public void remove(final long id) throws Exception {
-        final FederalCurriculumRecord selected = this.ctx
+        if (this.ctx
             .selectFrom(FcsPostgres.CURRICULUM)
             .where(
                 FcsPostgres.CURRICULUM.ID.eq(id)
                     .and(FcsPostgres.CURRICULUM.IS_DELETED.eq(false))
             )
-            .fetchOne();
-        if (selected == null) {
+            .fetchOne() == null) {
             throw new CurriculumNotFoundException(
                 String.format("FederalCurriculum with id=%d not found", id)
             );

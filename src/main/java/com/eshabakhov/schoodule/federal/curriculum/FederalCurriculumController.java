@@ -578,7 +578,7 @@ public class FederalCurriculumController {
                     )
                     .body(media.json());
             };
-        } catch (final FcsPostgres.CurriculumNotFoundException ex) {
+        } catch (final FcsPostgres.CurriculumNotFoundException ignored) {
             final var created = new FcsPostgres(this.ctx)
                 .create(
                     request.required("title").asText(),

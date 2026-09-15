@@ -290,13 +290,14 @@ public class FederalCurriculumRequirementController {
         @PathVariable final long requirement
     ) throws Exception {
         final JsonMedia media = new JsonMedia();
-        final FederalCurriculumRequirement fcr = new FcsPostgres(this.ctx)
-            .curriculum(curriculum)
-            .requirements()
-            .requirement(requirement);
         return switch (version) {
             case SIMPLE -> {
-                new FcrSimple(fcr).print(media);
+                new FcrSimple(
+                    new FcsPostgres(this.ctx)
+                        .curriculum(curriculum)
+                        .requirements()
+                        .requirement(requirement)
+                ).print(media);
                 yield ResponseEntity
                     .status(HttpStatus.OK)
                     .contentType(
@@ -398,21 +399,22 @@ public class FederalCurriculumRequirementController {
         ResponseEntity<ObjectNode> response;
         final JsonMedia media = new JsonMedia();
         try {
-            final FederalCurriculumRequirement fcr = new FcsPostgres(this.ctx)
-                .curriculum(curriculum)
-                .requirements()
-                .requirement(requirement)
-                .regraded(request.required("grade").asInt())
-                .resubjected(request.required("subjectName").asText())
-                .reweekled(request.required("weeklyHours").asInt())
-                .reparted(
-                    FederalCurriculumRequirement.PartType.valueOf(
-                        request.required("partType").asText()
-                    )
-                );
             response = switch (version) {
                 case SIMPLE -> {
-                    new FcrSimple(fcr).print(media);
+                    new FcrSimple(
+                        new FcsPostgres(this.ctx)
+                            .curriculum(curriculum)
+                            .requirements()
+                            .requirement(requirement)
+                            .regraded(request.required("grade").asInt())
+                            .resubjected(request.required("subjectName").asText())
+                            .reweekled(request.required("weeklyHours").asInt())
+                            .reparted(
+                                FederalCurriculumRequirement.PartType.valueOf(
+                                    request.required("partType").asText()
+                                )
+                            )
+                    ).print(media);
                     yield ResponseEntity
                         .status(HttpStatus.OK)
                         .contentType(
@@ -423,7 +425,7 @@ public class FederalCurriculumRequirementController {
                         .body(media.json());
                 }
             };
-        } catch (final FcrsPostgres.RequirementNotFoundException ex) {
+        } catch (final FcrsPostgres.RequirementNotFoundException ignored) {
             final var created =  new FcsPostgres(this.ctx)
                 .curriculum(curriculum)
                 .requirements()

@@ -5,6 +5,7 @@ package com.eshabakhov.schoodule.federal.curriculum.sort;
 
 import com.eshabakhov.schoodule.Sort;
 import com.eshabakhov.schoodule.sort.StJooq;
+import java.util.Optional;
 import org.jooq.Field;
 import org.jooq.SortField;
 
@@ -56,14 +57,10 @@ public final class FcStJooq implements StJooq {
             case "year" -> FcStJooq.CURRICULUM.ACADEMIC_YEAR;
             default -> null;
         };
-        final SortField<?> sort;
-        if (field == null || Sort.Direction.NONE.equals(this.origin.direction())) {
-            sort = null;
-        } else if (Sort.Direction.ASC.equals(this.origin.direction())) {
-            sort = field.asc();
-        } else {
-            sort = field.desc();
-        }
-        return sort;
+        return switch (this.origin.direction()) {
+            case NONE -> null;
+            case ASC -> Optional.ofNullable(field).map(Field::asc).orElse(null);
+            case DESC -> Optional.ofNullable(field).map(Field::desc).orElse(null);
+        };
     }
 }
