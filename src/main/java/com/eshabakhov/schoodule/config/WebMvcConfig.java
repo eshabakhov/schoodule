@@ -1,9 +1,10 @@
 /*
  * © 2025-2026 Eset Shabakhov. Schoodule
  */
-package com.eshabakhov.schoodule.page;
+package com.eshabakhov.schoodule.config;
 
 import com.eshabakhov.schoodule.filter.FiltersArgumentResolver;
+import com.eshabakhov.schoodule.page.PageArgumentResolver;
 import com.eshabakhov.schoodule.sort.SortsArgumentResolver;
 import java.util.List;
 import org.springframework.context.annotation.Configuration;
@@ -11,12 +12,12 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Pagination web MVC configuration.
+ * Web MVC configuration.
  *
  * @since 0.0.1
  */
 @Configuration(proxyBeanMethods = false)
-public final class PageWebMvcConfig implements WebMvcConfigurer {
+public final class WebMvcConfig implements WebMvcConfigurer {
 
     /**
      * Page argument resolver.
@@ -41,7 +42,7 @@ public final class PageWebMvcConfig implements WebMvcConfigurer {
      * @param sorts Sorts argument resolver
      * @since 0.0.1
      */
-    public PageWebMvcConfig(
+    public WebMvcConfig(
         final PageArgumentResolver page,
         final FiltersArgumentResolver filters,
         final SortsArgumentResolver sorts
