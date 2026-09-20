@@ -50,8 +50,8 @@ public final class FcrPostgres implements FederalCurriculumRequirement {
     }
 
     @Override
-    public Media print(final Media media) {
-        return this.ctx.selectFrom(FcrPostgres.REQUIREMENT)
+    public <M extends Media> M print(final M media) {
+        this.ctx.selectFrom(FcrPostgres.REQUIREMENT)
             .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
             .fetchOne(
                 record -> media
@@ -61,6 +61,7 @@ public final class FcrPostgres implements FederalCurriculumRequirement {
                     .with("weeklyHours", record.getWeeklyHours())
                     .with("partType", record.getPartType().name())
             );
+        return media;
     }
 
     @Override

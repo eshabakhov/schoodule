@@ -15,7 +15,8 @@ public interface Printable {
      * Prints this object's data into the given media.
      *
      * @param media Target media to print into
+     * @param <M> Media type
      * @return Media filled with this object's data
      */
-    Media print(Media media);
+    <M extends Media> M print(M media);
 }

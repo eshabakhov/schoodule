@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
     <meta name="description" content="Справочная информация о федеральном учебном плане">
-    <title th:text="${pageTitle}">Федеральный учебный план</title>
+    <title th:text="${curriculum['title']}">Федеральный учебный план</title>
     <link rel="stylesheet" th:href="@{/css/federal-curriculum-details.css}">
 </head>
 <body>
@@ -22,18 +22,18 @@
             Федеральные учебные планы
         </a>
         <span class="breadcrumb-separator">-&gt;</span>
-        <span class="breadcrumb-current" th:text="${title}">Федеральный учебный план</span>
+        <span class="breadcrumb-current" th:text="${curriculum['title']}">Федеральный учебный план</span>
     </nav>
     <div class="page-title-row" style="margin-bottom:1.5rem;">
         <div>
             <h1 class="title-with-action">
-                <span th:text="${title}">Федеральный учебный план</span>
+                <span th:text="${curriculum['title']}">Федеральный учебный план</span>
                 <a class="btn-icon-edit"
                    href="#"
                    title="Редактировать"
                    aria-label="Редактировать"
                    sec:authorize="hasRole('ADMIN')"
-                   th:href="@{/federal/curriculums/{cid}/edit(cid=${id})}">
+                   th:href="@{/federal/curriculums/{cid}/edit(cid=${curriculum['id']})}">
                     <svg fill="none"
                          height="15"
                          stroke="currentColor"
@@ -52,27 +52,27 @@
     <div class="school-info">
         <div class="info-row">
             <span class="info-label">ID:</span>
-            <span class="info-value" th:text="${id}">1</span>
+            <span class="info-value" th:text="${curriculum['id']}">1</span>
         </div>
         <div class="info-row">
             <span class="info-label">Уровень:</span>
-            <span class="info-value" th:text="${level}">BASIC</span>
+            <span class="info-value" th:text="${curriculum['level']}">BASIC</span>
         </div>
         <div class="info-row">
             <span class="info-label">Неделя:</span>
-            <span class="info-value" th:text="${week}">FIVE_DAYS</span>
+            <span class="info-value" th:text="${curriculum['week']}">FIVE_DAYS</span>
         </div>
         <div class="info-row">
             <span class="info-label">Версия:</span>
-            <span class="info-value" th:text="${version}">v1</span>
+            <span class="info-value" th:text="${curriculum['version']}">v1</span>
         </div>
         <div class="info-row">
             <span class="info-label">Учебный год:</span>
-            <span class="info-value" th:text="${year}">2026/2027</span>
+            <span class="info-value" th:text="${curriculum['year']}">2026/2027</span>
         </div>
         <div class="info-row">
             <span class="info-label">Описание:</span>
-            <span class="info-value" th:text="${description} ?: '—'">—</span>
+            <span class="info-value" th:text="${curriculum['description']} ?: '—'">—</span>
         </div>
         <div class="info-row">
             <span class="info-label">Требования:</span>
@@ -80,7 +80,7 @@
                 <a class="req-info-link"
                    href="#"
                    title="Перейти к требованиям учебного плана"
-                   th:href="@{/federal/curriculums/{cid}/requirements(cid=${id})}">
+                   th:href="@{/federal/curriculums/{cid}/requirements(cid=${curriculum['id']})}">
                     Перейти к требованиям учебного плана
                 </a>
             </span>
@@ -90,8 +90,8 @@
         <button class="btn-outline-action btn-delete-curriculum"
                 type="submit"
                 style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;"
-                th:data-id="${id}"
-                th:data-name="${title}">
+                th:data-id="${curriculum['id']}"
+                th:data-name="${curriculum['title']}">
             Удалить план
         </button>
     </div>

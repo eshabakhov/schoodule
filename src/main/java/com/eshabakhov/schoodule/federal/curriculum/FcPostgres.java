@@ -52,8 +52,8 @@ public final class FcPostgres implements FederalCurriculum {
     }
 
     @Override
-    public Media print(final Media media) {
-        return this.ctx.selectFrom(FcPostgres.CURRICULUM)
+    public <M extends Media> M print(final M media) {
+        this.ctx.selectFrom(FcPostgres.CURRICULUM)
             .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
             .fetchOne(
                 record -> media
@@ -65,6 +65,7 @@ public final class FcPostgres implements FederalCurriculum {
                     .with("year", record.getAcademicYear())
                     .with("description", record.getDescription())
             );
+        return media;
     }
 
     @Override

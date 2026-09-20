@@ -34,9 +34,10 @@ public final class FcFull implements FederalCurriculum {
     }
 
     @Override
-    public Media print(final Media media) {
-        return this.origin.print(media)
+    public <M extends Media> M print(final M media) {
+        this.origin.print(media)
             .include("id", "title", "level", "week", "version", "year", "description");
+        return media;
     }
 
     @Override

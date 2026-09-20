@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.web.servlet.ModelAndView;
 
 /**
  * A {@link Media} implementation that collects printed data
@@ -15,14 +16,24 @@ import java.util.Set;
  *
  * <p>Usage in a controller:
  * <pre>
- *   ThymeleafMedia media = new ThymeleafMedia();
+ *   ThymeleafMedia media = new ThymeleafMedia("curriculums/details", "curriculum");
  *   curriculum.print(media);
- *   modelAndView.addAllObjects(media.map());
+ *   return media.view();
  * </pre>
  *
  * @since 0.0.1
  */
-public final class ThymeleafMedia implements Media {
+public final class ThymeleafMedia implements ViewMedia {
+
+    /**
+     * Template name.
+     */
+    private final String template;
+
+    /**
+     * Model attribute name.
+     */
+    private final String attribute;
 
     /**
      * Collected key-value pairs.
@@ -30,54 +41,65 @@ public final class ThymeleafMedia implements Media {
     private final Map<String, Object> data;
 
     /**
-     * Creates an empty ThymeleafMedia.
+     * Page model attributes.
      */
-    public ThymeleafMedia() {
-        this(new LinkedHashMap<>());
-    }
+    private final Map<String, Object> model;
 
     /**
-     * Creates a ThymeleafMedia with pre-filled data (for immutable chaining).
-     *
-     * @param data Existing data map
+     * Page title format.
      */
-    private ThymeleafMedia(final Map<String, Object> data) {
-        this.data = data;
+    private String pattern;
+
+    /**
+     * Creates media for a Thymeleaf view.
+     *
+     * @param template Template name
+     * @param attribute Model attribute name
+     */
+    public ThymeleafMedia(final String template, final String attribute) {
+        this.template = template;
+        this.attribute = attribute;
+        this.data = new LinkedHashMap<>();
+        this.model = new LinkedHashMap<>();
+        this.pattern = "%s";
     }
 
     @Override
-    public Media with(final String name, final String value) {
-        final Map<String, Object> copy = new LinkedHashMap<>(this.data);
-        copy.put(name, value);
-        return new ThymeleafMedia(copy);
+    public ThymeleafMedia attributes(
+        final Map<String, Object> values
+    ) {
+        this.model.putAll(values);
+        return this;
     }
 
     @Override
-    public Media with(final String name, final Long value) {
-        final Map<String, Object> copy = new LinkedHashMap<>(this.data);
-        copy.put(name, value);
-        return new ThymeleafMedia(copy);
+    public ThymeleafMedia title(final String format) {
+        this.pattern = format;
+        return this;
     }
 
     @Override
-    public Media with(final String name, final Integer value) {
-        final Map<String, Object> copy = new LinkedHashMap<>(this.data);
-        copy.put(name, value);
-        return new ThymeleafMedia(copy);
+    public ThymeleafMedia with(final String name, final String value) {
+        this.data.put(name, value);
+        return this;
     }
 
     @Override
-    public Media include(final String... names) {
-        final var allowed = Set.of(names);
-        final Map<String, Object> copy = new LinkedHashMap<>(this.data);
-        copy.keySet().stream().iterator().forEachRemaining(
-            field -> {
-                if (!allowed.contains(field)) {
-                    copy.remove(field);
-                }
-            }
-        );
-        return new ThymeleafMedia(copy);
+    public ThymeleafMedia with(final String name, final Long value) {
+        this.data.put(name, value);
+        return this;
+    }
+
+    @Override
+    public ThymeleafMedia with(final String name, final Integer value) {
+        this.data.put(name, value);
+        return this;
+    }
+
+    @Override
+    public ThymeleafMedia include(final String... names) {
+        this.data.keySet().retainAll(Set.of(names));
+        return this;
     }
 
     /**
@@ -88,5 +110,26 @@ public final class ThymeleafMedia implements Media {
      */
     public Map<String, Object> map() {
         return Collections.unmodifiableMap(this.data);
+    }
+
+    @Override
+    public ModelAndView view() {
+        final ModelAndView view = new ModelAndView(this.template)
+            .addAllObjects(this.model);
+        if (this.attribute.isBlank()) {
+            view.addAllObjects(this.data);
+        } else {
+            view.addObject(this.attribute, this.map());
+        }
+        if (
+            this.data.containsKey("title")
+                && !this.model.containsKey("pageTitle")
+        ) {
+            view.addObject(
+                "pageTitle",
+                String.format(this.pattern, this.data.get("title"))
+            );
+        }
+        return view;
     }
 }
