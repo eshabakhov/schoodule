@@ -34,9 +34,10 @@ public final class FcrSimple implements FederalCurriculumRequirement {
     }
 
     @Override
-    public Media print(final Media media) {
-        return this.origin.print(media)
+    public <M extends Media> M print(final M media) {
+        this.origin.print(media)
             .include("id", "grade", "subjectName", "weeklyHours", "partType");
+        return media;
     }
 
     @Override

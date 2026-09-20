@@ -65,12 +65,12 @@ public class FederalCurriculumHtmlController {
                 page,
                 sort
             );
-        return new ModelAndView("federal-curriculums/list")
-            .addAllObjects(
+        return new ThymeleafMedia("federal-curriculums/list", "")
+            .attributes(
                 Map.of(
                     "pageTitle", "Федеральные учебные планы",
                     "curriculums", result.list().stream()
-                        .map(fc -> ((ThymeleafMedia) fc.print(new ThymeleafMedia())).map())
+                        .map(fc -> fc.print(new ThymeleafMedia("", "")).map())
                         .toList(),
                     "page", page.offset(),
                     "limit", page.limit(),
@@ -78,7 +78,8 @@ public class FederalCurriculumHtmlController {
                     "hasNext", result.total() > (long) page.offset() * page.limit(),
                     "hasPrev", page.offset() > 1
                 )
-            );
+            )
+            .view();
     }
 
     @GetMapping(value = "/fragment", produces = MediaType.TEXT_HTML_VALUE)
@@ -89,11 +90,14 @@ public class FederalCurriculumHtmlController {
     ) throws Exception {
         final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
             .curriculums(filters, page, sort);
-        return new ModelAndView("federal-curriculums/list :: curriculums-grid")
-            .addAllObjects(
+        return new ThymeleafMedia(
+            "federal-curriculums/list :: curriculums-grid",
+            ""
+        )
+            .attributes(
                 Map.of(
                     "curriculums", result.list().stream()
-                        .map(fc -> ((ThymeleafMedia) fc.print(new ThymeleafMedia())).map())
+                        .map(fc -> fc.print(new ThymeleafMedia("", "")).map())
                         .toList(),
                     "page", page.offset(),
                     "limit", page.limit(),
@@ -101,19 +105,21 @@ public class FederalCurriculumHtmlController {
                     "hasNext", result.total() > (long) page.offset() * page.limit(),
                     "hasPrev", page.offset() > 1
                 )
-            );
+            )
+            .view();
     }
 
     @GetMapping(value = "/create", produces = MediaType.TEXT_HTML_VALUE)
     public static ModelAndView createForm() {
-        return new ModelAndView("federal-curriculums/create")
-            .addAllObjects(
+        return new ThymeleafMedia("federal-curriculums/create", "")
+            .attributes(
                 Map.of(
                     "pageTitle", "Новый федеральный учебный план",
                     "levels", FederalCurriculum.Level.values(),
                     "studyWeeks", FederalCurriculum.Week.values()
                 )
-            );
+            )
+            .view();
     }
 
     @PostMapping("/create")
@@ -143,14 +149,15 @@ public class FederalCurriculumHtmlController {
     public ModelAndView details(
         @PathVariable final long curriculum
     ) throws Exception {
-        final Map<String, Object> data = (
-            (ThymeleafMedia) new FcsPostgres(this.ctx)
-                .curriculum(curriculum)
-                .print(new ThymeleafMedia())
-        ).map();
-        return new ModelAndView("federal-curriculums/details")
-            .addAllObjects(data)
-            .addObject("pageTitle", data.getOrDefault("title", ""));
+        return new FcsPostgres(this.ctx)
+            .curriculum(curriculum)
+            .print(
+                new ThymeleafMedia(
+                    "federal-curriculums/details",
+                    "curriculum"
+                )
+            )
+            .view();
     }
 
     @GetMapping(value = "/{curriculum}/requirements", produces = MediaType.TEXT_HTML_VALUE)
@@ -160,28 +167,24 @@ public class FederalCurriculumHtmlController {
         final Page page,
         final Sorts sort
     ) throws Exception {
-        final Map<String, Object> data = (
-            (ThymeleafMedia) new FcsPostgres(this.ctx)
-                .curriculum(curriculum)
-                .print(new ThymeleafMedia())
-        ).map();
-        final PageableList<FederalCurriculumRequirement> result = this.requirementsPageData(
-            curriculum,
-            filters,
-            page,
-            sort
-        );
-        return new ModelAndView("federal-curriculums/requirements")
-            .addAllObjects(data)
-            .addAllObjects(
-                FederalCurriculumHtmlController.requirementsModel(
-                    curriculum, result, page, sort
+        return new FcsPostgres(this.ctx)
+            .curriculum(curriculum)
+            .print(
+                new ThymeleafMedia(
+                    "federal-curriculums/requirements",
+                    ""
                 )
             )
-            .addObject(
-                "pageTitle",
-                String.format("Требования: %s", data.getOrDefault("title", ""))
-            );
+            .title("Требования: %s")
+            .attributes(
+                FederalCurriculumHtmlController.requirementsModel(
+                    curriculum,
+                    this.requirementsPageData(curriculum, filters, page, sort),
+                    page,
+                    sort
+                )
+            )
+            .view();
     }
 
     @GetMapping(value = "/{curriculum}/requirements/fragment", produces = MediaType.TEXT_HTML_VALUE)
@@ -192,34 +195,39 @@ public class FederalCurriculumHtmlController {
         final Page page,
         final Sorts sort
     ) throws Exception {
-        return new ModelAndView("federal-curriculums/requirements :: requirements-results")
-            .addAllObjects(
+        return new ThymeleafMedia(
+            "federal-curriculums/requirements :: requirements-results",
+            ""
+        )
+            .attributes(
                 FederalCurriculumHtmlController.requirementsModel(
                     curriculum,
                     this.requirementsPageData(curriculum, filters, page, sort),
                     page,
                     sort
                 )
-            );
+            )
+            .view();
     }
 
     @GetMapping(value = "/{curriculum}/edit", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView editForm(@PathVariable final long curriculum) throws Exception {
-        return new ModelAndView("federal-curriculums/edit")
-            .addAllObjects(
-                (
-                    (ThymeleafMedia) new FcsPostgres(this.ctx)
-                        .curriculum(curriculum)
-                        .print(new ThymeleafMedia())
-                ).map()
+        return new FcsPostgres(this.ctx)
+            .curriculum(curriculum)
+            .print(
+                new ThymeleafMedia(
+                    "federal-curriculums/edit",
+                    ""
+                )
             )
-            .addAllObjects(
+            .attributes(
                 Map.of(
                     "pageTitle", "Редактировать федеральный учебный план",
                     "levels", FederalCurriculum.Level.values(),
                     "studyWeeks", FederalCurriculum.Week.values()
                 )
-            );
+            )
+            .view();
     }
 
     @PostMapping("/{curriculum}/edit")
@@ -284,7 +292,7 @@ public class FederalCurriculumHtmlController {
             Map.entry(
                 "requirements",
                 result.list().stream()
-                    .map(req -> ((ThymeleafMedia) req.print(new ThymeleafMedia())).map())
+                    .map(req -> req.print(new ThymeleafMedia("", "")).map())
                     .toList()
             ),
             Map.entry("partTypes", FederalCurriculumRequirement.PartType.values()),

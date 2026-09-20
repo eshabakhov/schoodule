@@ -183,10 +183,8 @@ public class FederalCurriculumController {
                 request.required("year").asText(),
                 request.get("description").asText("")
             );
-        final JsonMedia media = new JsonMedia();
         return switch (version) {
             case SIMPLE -> {
-                new FcSimple(pgcur).print(media);
                 yield ResponseEntity
                     .created(URI.create(String.format("/api/federal/curriculums/%d", pgcur.uid())))
                     .contentType(
@@ -194,10 +192,9 @@ public class FederalCurriculumController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.simple+json"
                         )
                     )
-                    .body(media.json());
+                    .body(new FcSimple(pgcur).print(new JsonMedia()).json());
             }
             case FULL -> {
-                new FcFull(pgcur).print(media);
                 yield ResponseEntity
                     .created(URI.create(String.format("/api/federal/curriculums/%d", pgcur.uid())))
                     .contentType(
@@ -205,7 +202,7 @@ public class FederalCurriculumController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.full+json"
                         )
                     )
-                    .body(media.json());
+                    .body(new FcFull(pgcur).print(new JsonMedia()).json());
             }
         };
     }
@@ -238,11 +235,7 @@ public class FederalCurriculumController {
             );
         final ArrayNode items = JsonNodeFactory.instance.arrayNode();
         result.list().forEach(
-            fc -> {
-                final JsonMedia media = new JsonMedia();
-                fc.print(media);
-                items.add(media.json());
-            }
+            fc -> items.add(fc.print(new JsonMedia()).json())
         );
         final ObjectNode response = JsonNodeFactory.instance.objectNode();
         response.set("items", items);
@@ -354,10 +347,8 @@ public class FederalCurriculumController {
         @PathVariable final long curriculum
     ) throws Exception {
         final FederalCurriculum pgcur = new FcsPostgres(this.ctx).curriculum(curriculum);
-        final JsonMedia media = new JsonMedia();
         return switch (version) {
             case SIMPLE -> {
-                new FcSimple(pgcur).print(media);
                 yield ResponseEntity
                     .status(HttpStatus.OK)
                     .contentType(
@@ -365,10 +356,9 @@ public class FederalCurriculumController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.simple+json"
                         )
                     )
-                    .body(media.json());
+                    .body(new FcSimple(pgcur).print(new JsonMedia()).json());
             }
             case FULL -> {
-                new FcFull(pgcur).print(media);
                 yield ResponseEntity
                     .status(HttpStatus.OK)
                     .contentType(
@@ -376,7 +366,7 @@ public class FederalCurriculumController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.full+json"
                         )
                     )
-                    .body(media.json());
+                    .body(new FcFull(pgcur).print(new JsonMedia()).json());
             }
         };
     }
@@ -546,9 +536,9 @@ public class FederalCurriculumController {
         @RequestBody final JsonNode request
     ) throws Exception {
         ResponseEntity<ObjectNode> response;
-        final JsonMedia media = new JsonMedia();
         try {
-            new FcsPostgres(this.ctx).curriculum(curriculum)
+            final FederalCurriculum changed = new FcsPostgres(this.ctx)
+                .curriculum(curriculum)
                 .retitled(request.required("title").asText())
                 .releveled(
                     FederalCurriculum.Level.valueOf(request.required("level").asText())
@@ -558,8 +548,7 @@ public class FederalCurriculumController {
                 )
                 .reversioned(request.required("version").asText())
                 .reyeared(request.required("year").asText())
-                .redescriptioned(request.get("description").asText(""))
-                .print(media);
+                .redescriptioned(request.get("description").asText(""));
             response = switch (version) {
                 case SIMPLE -> ResponseEntity
                     .status(HttpStatus.OK)
@@ -568,7 +557,7 @@ public class FederalCurriculumController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.simple+json"
                         )
                     )
-                    .body(media.json());
+                    .body(changed.print(new JsonMedia()).json());
                 case FULL -> ResponseEntity
                     .status(HttpStatus.OK)
                     .contentType(
@@ -576,7 +565,7 @@ public class FederalCurriculumController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.full+json"
                         )
                     )
-                    .body(media.json());
+                    .body(changed.print(new JsonMedia()).json());
             };
         } catch (final FcsPostgres.CurriculumNotFoundException ignored) {
             final var created = new FcsPostgres(this.ctx)
@@ -588,7 +577,6 @@ public class FederalCurriculumController {
                     request.required("year").asText(),
                     request.get("description").asText("")
                 );
-            created.print(media);
             response = switch (version) {
                 case SIMPLE -> ResponseEntity
                     .created(
@@ -599,7 +587,7 @@ public class FederalCurriculumController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.simple+json"
                         )
                     )
-                    .body(media.json());
+                    .body(created.print(new JsonMedia()).json());
                 case FULL -> ResponseEntity
                     .created(
                         URI.create(String.format("/api/federal/curriculums/%d", created.uid()))
@@ -609,7 +597,7 @@ public class FederalCurriculumController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.full+json"
                         )
                     )
-                    .body(media.json());
+                    .body(created.print(new JsonMedia()).json());
             };
         }
         return response;

@@ -21,7 +21,7 @@ import java.util.Set;
  *
  * @since 0.0.1
  */
-public final class JsonMedia implements Media {
+public final class JsonMedia implements com.eshabakhov.schoodule.JsonMedia {
 
     /**
      * Jackson object node being filled.
@@ -36,25 +36,25 @@ public final class JsonMedia implements Media {
     }
 
     @Override
-    public Media with(final String name, final String value) {
+    public JsonMedia with(final String name, final String value) {
         this.node.put(name, value);
         return this;
     }
 
     @Override
-    public Media with(final String name, final Long value) {
+    public JsonMedia with(final String name, final Long value) {
         this.node.put(name, value);
         return this;
     }
 
     @Override
-    public Media with(final String name, final Integer value) {
+    public JsonMedia with(final String name, final Integer value) {
         this.node.put(name, value);
         return this;
     }
 
     @Override
-    public Media include(final String... names) {
+    public JsonMedia include(final String... names) {
         final var allowed = Set.of(names);
         this.node.fieldNames()
             .forEachRemaining(

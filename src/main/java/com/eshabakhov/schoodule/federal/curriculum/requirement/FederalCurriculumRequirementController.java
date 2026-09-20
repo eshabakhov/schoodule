@@ -152,10 +152,8 @@ public class FederalCurriculumRequirementController {
                     request.required("partType").asText()
                 )
             );
-        final JsonMedia media = new JsonMedia();
         return switch (version) {
             case SIMPLE -> {
-                new FcrSimple(requirement).print(media);
                 yield ResponseEntity
                     .created(
                         URI.create(
@@ -170,7 +168,7 @@ public class FederalCurriculumRequirementController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
                         )
                     )
-                    .body(media.json());
+                    .body(new FcrSimple(requirement).print(new JsonMedia()).json());
             }
         };
     }
@@ -203,11 +201,7 @@ public class FederalCurriculumRequirementController {
             );
         final ArrayNode items = JsonNodeFactory.instance.arrayNode();
         result.list().forEach(
-            req -> {
-                final JsonMedia media = new JsonMedia();
-                req.print(media);
-                items.add(media.json());
-            }
+            req -> items.add(req.print(new JsonMedia()).json())
         );
         final ObjectNode response = JsonNodeFactory.instance.objectNode();
         response.set("items", items);
@@ -289,15 +283,8 @@ public class FederalCurriculumRequirementController {
         @PathVariable final long curriculum,
         @PathVariable final long requirement
     ) throws Exception {
-        final JsonMedia media = new JsonMedia();
         return switch (version) {
             case SIMPLE -> {
-                new FcrSimple(
-                    new FcsPostgres(this.ctx)
-                        .curriculum(curriculum)
-                        .requirements()
-                        .requirement(requirement)
-                ).print(media);
                 yield ResponseEntity
                     .status(HttpStatus.OK)
                     .contentType(
@@ -305,7 +292,14 @@ public class FederalCurriculumRequirementController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
                         )
                     )
-                    .body(media.json());
+                    .body(
+                        new FcrSimple(
+                            new FcsPostgres(this.ctx)
+                                .curriculum(curriculum)
+                                .requirements()
+                                .requirement(requirement)
+                        ).print(new JsonMedia()).json()
+                    );
             }
         };
     }
@@ -397,24 +391,9 @@ public class FederalCurriculumRequirementController {
         @RequestBody final JsonNode request
     ) throws Exception {
         ResponseEntity<ObjectNode> response;
-        final JsonMedia media = new JsonMedia();
         try {
             response = switch (version) {
                 case SIMPLE -> {
-                    new FcrSimple(
-                        new FcsPostgres(this.ctx)
-                            .curriculum(curriculum)
-                            .requirements()
-                            .requirement(requirement)
-                            .regraded(request.required("grade").asInt())
-                            .resubjected(request.required("subjectName").asText())
-                            .reweekled(request.required("weeklyHours").asInt())
-                            .reparted(
-                                FederalCurriculumRequirement.PartType.valueOf(
-                                    request.required("partType").asText()
-                                )
-                            )
-                    ).print(media);
                     yield ResponseEntity
                         .status(HttpStatus.OK)
                         .contentType(
@@ -422,7 +401,26 @@ public class FederalCurriculumRequirementController {
                                 "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
                             )
                         )
-                        .body(media.json());
+                        .body(
+                            new FcrSimple(
+                                new FcsPostgres(this.ctx)
+                                    .curriculum(curriculum)
+                                    .requirements()
+                                    .requirement(requirement)
+                                    .regraded(request.required("grade").asInt())
+                                    .resubjected(
+                                        request.required("subjectName").asText()
+                                    )
+                                    .reweekled(
+                                        request.required("weeklyHours").asInt()
+                                    )
+                                    .reparted(
+                                        FederalCurriculumRequirement.PartType.valueOf(
+                                            request.required("partType").asText()
+                                        )
+                                    )
+                            ).print(new JsonMedia()).json()
+                        );
                 }
             };
         } catch (final FcrsPostgres.RequirementNotFoundException ignored) {
@@ -439,7 +437,6 @@ public class FederalCurriculumRequirementController {
                 );
             response = switch (version) {
                 case SIMPLE -> {
-                    new FcrSimple(created).print(media);
                     yield ResponseEntity
                         .created(
                             URI.create(
@@ -454,7 +451,11 @@ public class FederalCurriculumRequirementController {
                                 "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
                             )
                         )
-                        .body(media.json());
+                        .body(
+                            new FcrSimple(created)
+                                .print(new JsonMedia())
+                                .json()
+                        );
                 }
             };
         }
