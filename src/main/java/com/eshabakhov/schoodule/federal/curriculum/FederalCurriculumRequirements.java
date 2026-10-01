@@ -5,7 +5,7 @@ package com.eshabakhov.schoodule.federal.curriculum;
 
 import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
-import com.eshabakhov.schoodule.PageableList;
+import com.eshabakhov.schoodule.Printable;
 import com.eshabakhov.schoodule.Sorts;
 
 /**
@@ -13,7 +13,7 @@ import com.eshabakhov.schoodule.Sorts;
  *
  * @since 0.0.1
  */
-public interface FederalCurriculumRequirements {
+public interface FederalCurriculumRequirements extends Printable {
 
     /**
      * Creates a new federal curriculum requirement.
@@ -51,11 +51,18 @@ public interface FederalCurriculumRequirements {
      * @return List of {@link FederalCurriculumRequirement} instances
      * @throws Exception if listing fails
      */
-    PageableList<FederalCurriculumRequirement> requirements(
+    FederalCurriculumRequirements selection(
         Filters filters,
         Page page,
         Sorts sorts
     ) throws Exception;
+
+    /**
+     * Iterates over requirements represented by this collection.
+     *
+     * @return Federal curriculum requirements
+     */
+    Iterable<FederalCurriculumRequirement> iterate();
 
     /**
      * Removes a federal curriculum requirement by its ID.

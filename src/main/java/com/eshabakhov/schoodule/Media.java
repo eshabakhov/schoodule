@@ -39,6 +39,33 @@ public interface Media {
     Media with(String name, Integer value);
 
     /**
+     * Adds a boolean value to the media.
+     *
+     * @param name Field name
+     * @param value Boolean value
+     * @return Updated media
+     */
+    Media with(String name, Boolean value);
+
+    /**
+     * Adds printable values to the media.
+     *
+     * @param name Field name
+     * @param values Printable values
+     * @return Updated media
+     */
+    Media with(String name, Iterable<? extends Printable> values);
+
+    /**
+     * Adds result pagination to the media.
+     *
+     * @param name Field name
+     * @param value Result pagination
+     * @return Updated media
+     */
+    Media with(String name, ResultPage value);
+
+    /**
      * Includes specified fields.
      *
      * @param name Fields name

@@ -4,6 +4,8 @@
 package com.eshabakhov.schoodule.media;
 
 import com.eshabakhov.schoodule.Media;
+import com.eshabakhov.schoodule.Printable;
+import com.eshabakhov.schoodule.ResultPage;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,6 +25,7 @@ import org.springframework.web.servlet.ModelAndView;
  *
  * @since 0.0.1
  */
+@SuppressWarnings("PMD.TooManyMethods")
 public final class ThymeleafMedia implements ViewMedia {
 
     /**
@@ -92,6 +95,32 @@ public final class ThymeleafMedia implements ViewMedia {
 
     @Override
     public ThymeleafMedia with(final String name, final Integer value) {
+        this.data.put(name, value);
+        return this;
+    }
+
+    @Override
+    public ThymeleafMedia with(final String name, final Boolean value) {
+        this.data.put(name, value);
+        return this;
+    }
+
+    @Override
+    public ThymeleafMedia with(
+        final String name,
+        final Iterable<? extends Printable> values
+    ) {
+        this.data.put(
+            name,
+            java.util.stream.StreamSupport.stream(values.spliterator(), false)
+                .map(value -> value.print(new ThymeleafMedia("", "")).map())
+                .toList()
+        );
+        return this;
+    }
+
+    @Override
+    public ThymeleafMedia with(final String name, final ResultPage value) {
         this.data.put(name, value);
         return this;
     }

@@ -4,8 +4,8 @@
 package com.eshabakhov.schoodule.federal.curriculum;
 
 import com.eshabakhov.schoodule.Filters;
+import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.Page;
-import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.enums.EducationLevelType;
 import com.eshabakhov.schoodule.enums.StudyWeekType;
@@ -13,7 +13,7 @@ import com.eshabakhov.schoodule.federal.FederalCurriculum;
 import com.eshabakhov.schoodule.federal.FederalCurriculums;
 import com.eshabakhov.schoodule.federal.curriculum.filter.FcFlsConditional;
 import com.eshabakhov.schoodule.federal.curriculum.sort.FcStsJooq;
-import com.eshabakhov.schoodule.page.ResponsePageableList;
+import com.eshabakhov.schoodule.page.ResponsePage;
 import com.eshabakhov.schoodule.tables.records.FederalCurriculumRecord;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
@@ -24,6 +24,7 @@ import org.jooq.impl.DSL;
  * Postgres implementation of {@link FederalCurriculums}.
  *
  * @since 0.0.1
+ * @checkstyle AnonInnerLengthCheck (1000 lines)
  */
 @EqualsAndHashCode
 @SuppressWarnings(
@@ -122,7 +123,7 @@ public final class FcsPostgres implements FederalCurriculums {
     }
 
     @Override
-    public PageableList<FederalCurriculum> curriculums(
+    public FederalCurriculums selection(
         final Filters filters,
         final Page page,
         final Sorts sorts
@@ -131,19 +132,43 @@ public final class FcsPostgres implements FederalCurriculums {
         final Condition scoped = new FcFlsConditional(filters).condition().and(
             FcsPostgres.CURRICULUM.IS_DELETED.eq(false)
         );
-        return new ResponsePageableList<>(
+        return new FcsSelected(
+            this,
             this.ctx
                 .selectFrom(FcsPostgres.CURRICULUM)
                 .where(scoped)
                 .orderBy(new FcStsJooq(sorts).fields())
                 .limit(page.limit())
                 .offset((page.offset() - 1) * page.limit())
-                .fetch(selected -> new FcPostgres(this.ctx, selected.getId())),
-            this.ctx.fetchCount(
-                this.ctx.selectFrom(FcsPostgres.CURRICULUM).where(scoped)
-            ),
-            page
+                .fetch(
+                    selected -> new FcPostgres(
+                        this.ctx,
+                        selected.getId()
+                    )
+                ),
+            new ResponsePage(
+                page,
+                this.ctx.fetchCount(
+                    this.ctx
+                        .selectFrom(FcsPostgres.CURRICULUM)
+                        .where(scoped)
+                )
+            )
         );
+    }
+
+    @Override
+    public Iterable<FederalCurriculum> iterate() {
+        return this.ctx
+            .selectFrom(FcsPostgres.CURRICULUM)
+            .where(FcsPostgres.CURRICULUM.IS_DELETED.eq(false))
+            .fetch(selected -> new FcPostgres(this.ctx, selected.getId()));
+    }
+
+    @Override
+    public <M extends Media> M print(final M media) {
+        media.with("items", this.iterate());
+        return media;
     }
 
     @Override
