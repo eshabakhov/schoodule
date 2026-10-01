@@ -5,7 +5,6 @@ package com.eshabakhov.schoodule.federal.curriculum;
 
 import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
-import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.Sort;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
@@ -59,26 +58,9 @@ public class FederalCurriculumHtmlController {
         final Sorts sort,
         final Filters filters
     ) throws Exception {
-        final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
-            .curriculums(
-                filters,
-                page,
-                sort
-            );
-        return new ThymeleafMedia("federal-curriculums/list", "")
-            .attributes(
-                Map.of(
-                    "pageTitle", "Федеральные учебные планы",
-                    "curriculums", result.list().stream()
-                        .map(fc -> fc.print(new ThymeleafMedia("", "")).map())
-                        .toList(),
-                    "page", page.offset(),
-                    "limit", page.limit(),
-                    "totalPages", (int) Math.ceil((double) result.total() / page.limit()),
-                    "hasNext", result.total() > (long) page.offset() * page.limit(),
-                    "hasPrev", page.offset() > 1
-                )
-            )
+        return new FcsPostgres(this.ctx)
+            .selection(filters, page, sort)
+            .print(new ThymeleafMedia("federal-curriculums/list", ""))
             .view();
     }
 
@@ -88,22 +70,12 @@ public class FederalCurriculumHtmlController {
         final Page page,
         final Sorts sort
     ) throws Exception {
-        final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
-            .curriculums(filters, page, sort);
-        return new ThymeleafMedia(
-            "federal-curriculums/list :: curriculums-grid",
-            ""
-        )
-            .attributes(
-                Map.of(
-                    "curriculums", result.list().stream()
-                        .map(fc -> fc.print(new ThymeleafMedia("", "")).map())
-                        .toList(),
-                    "page", page.offset(),
-                    "limit", page.limit(),
-                    "totalPages", (int) Math.ceil((double) result.total() / page.limit()),
-                    "hasNext", result.total() > (long) page.offset() * page.limit(),
-                    "hasPrev", page.offset() > 1
+        return new FcsPostgres(this.ctx)
+            .selection(filters, page, sort)
+            .print(
+                new ThymeleafMedia(
+                    "federal-curriculums/list :: curriculums-grid",
+                    ""
                 )
             )
             .view();
@@ -167,20 +139,22 @@ public class FederalCurriculumHtmlController {
         final Page page,
         final Sorts sort
     ) throws Exception {
-        return new FcsPostgres(this.ctx)
-            .curriculum(curriculum)
+        final FederalCurriculum selected = new FcsPostgres(this.ctx)
+            .curriculum(curriculum);
+        return selected.requirements()
+            .selection(filters, page, sort)
             .print(
-                new ThymeleafMedia(
-                    "federal-curriculums/requirements",
-                    ""
+                selected.print(
+                    new ThymeleafMedia(
+                        "federal-curriculums/requirements",
+                        ""
+                    )
                 )
             )
             .title("Требования: %s")
             .attributes(
                 FederalCurriculumHtmlController.requirementsModel(
                     curriculum,
-                    this.requirementsPageData(curriculum, filters, page, sort),
-                    page,
                     sort
                 )
             )
@@ -195,15 +169,19 @@ public class FederalCurriculumHtmlController {
         final Page page,
         final Sorts sort
     ) throws Exception {
-        return new ThymeleafMedia(
-            "federal-curriculums/requirements :: requirements-results",
-            ""
-        )
+        return new FcsPostgres(this.ctx)
+            .curriculum(curriculum)
+            .requirements()
+            .selection(filters, page, sort)
+            .print(
+                new ThymeleafMedia(
+                    "federal-curriculums/requirements :: requirements-results",
+                    ""
+                )
+            )
             .attributes(
                 FederalCurriculumHtmlController.requirementsModel(
                     curriculum,
-                    this.requirementsPageData(curriculum, filters, page, sort),
-                    page,
                     sort
                 )
             )
@@ -255,15 +233,11 @@ public class FederalCurriculumHtmlController {
      * Builds requirements list model with pagination metadata.
      *
      * @param curriculum Curriculum ID
-     * @param result Requirements page
-     * @param page Page request
      * @param sort Sorting parameters
      * @return Model attributes
      */
     private static Map<String, Object> requirementsModel(
         final long curriculum,
-        final PageableList<FederalCurriculumRequirement> result,
-        final Page page,
         final Sorts sort
     ) {
         String grade = "";
@@ -289,18 +263,7 @@ public class FederalCurriculumHtmlController {
         }
         return Map.ofEntries(
             Map.entry("id", curriculum),
-            Map.entry(
-                "requirements",
-                result.list().stream()
-                    .map(req -> req.print(new ThymeleafMedia("", "")).map())
-                    .toList()
-            ),
             Map.entry("partTypes", FederalCurriculumRequirement.PartType.values()),
-            Map.entry("page", page.offset()),
-            Map.entry("limit", page.limit()),
-            Map.entry("totalPages", (int) Math.ceil((double) result.total() / page.limit())),
-            Map.entry("hasNext", result.total() > (long) page.offset() * page.limit()),
-            Map.entry("hasPrev", page.offset() > 1),
             Map.entry("gradeSort", grade),
             Map.entry("subjectSort", subject),
             Map.entry("hoursSort", hours),
@@ -308,25 +271,4 @@ public class FederalCurriculumHtmlController {
         );
     }
 
-    /**
-     * Fetches requirements with optional sorting.
-     *
-     * @param curriculum Curriculum ID
-     * @param filters Search filters
-     * @param page Page request
-     * @param sort Sorting parameters
-     * @return Requirements page
-     * @throws Exception if listing fails
-     */
-    private PageableList<FederalCurriculumRequirement> requirementsPageData(
-        final long curriculum,
-        final Filters filters,
-        final Page page,
-        final Sorts sort
-    ) throws Exception {
-        return new FcsPostgres(this.ctx)
-            .curriculum(curriculum)
-            .requirements()
-            .requirements(filters, page, sort);
-    }
 }

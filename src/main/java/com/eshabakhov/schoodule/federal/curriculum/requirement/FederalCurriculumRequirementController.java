@@ -5,14 +5,11 @@ package com.eshabakhov.schoodule.federal.curriculum.requirement;
 
 import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
-import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.curriculum.FcsPostgres;
 import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -191,22 +188,14 @@ public class FederalCurriculumRequirementController {
         final Sorts sort,
         final Filters filters
     ) throws Exception {
-        final PageableList<FederalCurriculumRequirement> result = new FcsPostgres(this.ctx)
-            .curriculum(curriculum)
-            .requirements()
-            .requirements(
-                filters,
-                page,
-                sort
-            );
-        final ArrayNode items = JsonNodeFactory.instance.arrayNode();
-        result.list().forEach(
-            req -> items.add(req.print(new JsonMedia()).json())
+        return ResponseEntity.ok(
+            new FcsPostgres(this.ctx)
+                .curriculum(curriculum)
+                .requirements()
+                .selection(filters, page, sort)
+                .print(new JsonMedia())
+                .json()
         );
-        final ObjectNode response = JsonNodeFactory.instance.objectNode();
-        response.set("items", items);
-        response.put("total", result.total());
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{requirement}")

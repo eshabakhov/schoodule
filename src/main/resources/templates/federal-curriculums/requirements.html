@@ -156,14 +156,14 @@
             <tbody id="req-tbody"
                    th:data-search-url="@{/federal/curriculums/{cid}/requirements/fragment(cid=${id})}"
                    th:fragment="requirements-rows">
-            <tr id="req-empty-row" th:if="${#lists.isEmpty(requirements)}">
+            <tr id="req-empty-row" th:if="${#lists.isEmpty(items)}">
                 <td class="empty-state" colspan="5">Требования пока не добавлены.</td>
             </tr>
             <tr class="req-data-row"
                 th:data-grade="${item['grade']}"
                 th:data-part="${item['partType']}"
                 th:data-subject="${item['subjectName']}"
-                th:each="item : ${requirements}">
+                th:each="item : ${items}">
                 <td class="view-grade"   th:text="${item['grade']}">5</td>
                 <td class="view-subject" th:text="${item['subjectName']}">Математика</td>
                 <td class="view-hours"   th:text="${item['weeklyHours']}">5</td>
@@ -237,9 +237,9 @@
                 <a class="pagination-btn pagination-prev"
                    href="#"
                    title="Предыдущая страница"
-                   th:data-limit="${limit}"
-                   th:data-offset="${page - 1}"
-                   th:if="${hasPrev}">
+                   th:data-limit="${page.limit()}"
+                   th:data-offset="${page.offset() - 1}"
+                   th:if="${page.hasPrev()}">
                     <svg fill="none"
                          stroke="currentColor"
                          stroke-width="2"
@@ -249,13 +249,13 @@
                         <polyline points="15 18 9 12 15 6"/>
                     </svg>
                 </a>
-                <th:block th:if="${totalPages > 1}"
-                          th:with="start=${page > 3 ? page - 2 : 1},end=${page + 2 <= totalPages ? page + 2 : totalPages},end=${end < 5 ? (totalPages < 5 ? totalPages : 5) : end}">
+                <th:block th:if="${page.totalPages() > 1}"
+                          th:with="start=${page.offset() > 3 ? page.offset() - 2 : 1},end=${page.offset() + 2 <= page.totalPages() ? page.offset() + 2 : page.totalPages()},end=${end < 5 ? (page.totalPages() < 5 ? page.totalPages() : 5) : end}">
                     <th:block th:if="${start > 1}">
                         <a class="pagination-btn"
                            href="#"
                            title="Перейти на первую страницу"
-                           th:data-limit="${limit}"
+                           th:data-limit="${page.limit()}"
                            th:data-offset="1">1</a>
                         <span class="pagination-ellipsis" th:if="${start > 2}">...</span>
                     </th:block>
@@ -263,29 +263,29 @@
                         <a class="pagination-btn"
                            href="#"
                            title="Перейти на указанную страницу"
-                           th:classappend="${p == page} ? 'active' : ''"
-                           th:data-limit="${limit}"
+                           th:classappend="${p == page.offset()} ? 'active' : ''"
+                           th:data-limit="${page.limit()}"
                            th:data-offset="${p}"
                            th:text="${p}"
-                           th:title="${p == page} ? 'Текущая страница' : 'Перейти на страницу ' + p">1</a>
+                           th:title="${p == page.offset()} ? 'Текущая страница' : 'Перейти на страницу ' + p">1</a>
                     </th:block>
-                    <th:block th:if="${end < totalPages}">
-                        <span class="pagination-ellipsis" th:if="${end < totalPages - 1}">...</span>
+                    <th:block th:if="${end < page.totalPages()}">
+                        <span class="pagination-ellipsis" th:if="${end < page.totalPages() - 1}">...</span>
                         <a class="pagination-btn"
                            href="#"
                            title="Перейти на последнюю страницу"
-                           th:data-limit="${limit}"
-                           th:data-offset="${totalPages}"
-                           th:text="${totalPages}"
-                           th:title="'Перейти на последнюю страницу (' + ${totalPages} + ')'">N</a>
+                           th:data-limit="${page.limit()}"
+                           th:data-offset="${page.totalPages()}"
+                           th:text="${page.totalPages()}"
+                           th:title="'Перейти на последнюю страницу (' + ${page.totalPages()} + ')'">N</a>
                     </th:block>
                 </th:block>
                 <a class="pagination-btn pagination-next"
                    href="#"
                    title="Следующая страница"
-                   th:data-limit="${limit}"
-                   th:data-offset="${page + 1}"
-                   th:if="${hasNext}">
+                   th:data-limit="${page.limit()}"
+                   th:data-offset="${page.offset() + 1}"
+                   th:if="${page.hasNext()}">
                     <svg fill="none"
                          stroke="currentColor"
                          stroke-width="2"
@@ -296,12 +296,12 @@
                     </svg>
                 </a>
             </div>
-            <div class="pagination-size" th:if="${limit >= 15}">
+            <div class="pagination-size" th:if="${page.limit() >= 15}">
                 <span class="pagination-size-label">На странице:</span>
                 <a class="pagination-size-btn"
                    href="#"
                    title="Показывать по 15 элементов на странице"
-                   th:classappend="${limit == s} ? 'active' : ''"
+                   th:classappend="${page.limit() == s} ? 'active' : ''"
                    th:data-limit="${s}"
                    th:data-offset="1"
                    th:each="s : ${#arrays.toArray({15, 30, 50})}"

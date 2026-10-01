@@ -5,13 +5,10 @@ package com.eshabakhov.schoodule.federal.curriculum;
 
 import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
-import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.federal.FederalCurriculum;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -227,20 +224,12 @@ public class FederalCurriculumController {
         final Sorts sort,
         final Filters filters
     ) throws Exception {
-        final PageableList<FederalCurriculum> result = new FcsPostgres(this.ctx)
-            .curriculums(
-                filters,
-                page,
-                sort
-            );
-        final ArrayNode items = JsonNodeFactory.instance.arrayNode();
-        result.list().forEach(
-            fc -> items.add(fc.print(new JsonMedia()).json())
+        return ResponseEntity.ok(
+            new FcsPostgres(this.ctx)
+                .selection(filters, page, sort)
+                .print(new JsonMedia())
+                .json()
         );
-        final ObjectNode response = JsonNodeFactory.instance.objectNode();
-        response.set("items", items);
-        response.put("total", result.total());
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{curriculum}")

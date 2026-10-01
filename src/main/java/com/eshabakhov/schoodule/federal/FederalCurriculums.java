@@ -5,7 +5,7 @@ package com.eshabakhov.schoodule.federal;
 
 import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
-import com.eshabakhov.schoodule.PageableList;
+import com.eshabakhov.schoodule.Printable;
 import com.eshabakhov.schoodule.Sorts;
 
 /**
@@ -14,7 +14,7 @@ import com.eshabakhov.schoodule.Sorts;
  * @since 0.0.1
  */
 @SuppressWarnings("PMD.UseObjectForClearerAPI")
-public interface FederalCurriculums {
+public interface FederalCurriculums extends Printable {
 
     /**
      * Creates a new federal curriculum.
@@ -56,8 +56,15 @@ public interface FederalCurriculums {
      * @return List of {@link FederalCurriculum} instances
      * @throws Exception if listing fails
      */
-    PageableList<FederalCurriculum> curriculums(Filters filters, Page page, Sorts sorts)
+    FederalCurriculums selection(Filters filters, Page page, Sorts sorts)
         throws Exception;
+
+    /**
+     * Iterates over federal curriculums represented by this collection.
+     *
+     * @return Federal curriculums
+     */
+    Iterable<FederalCurriculum> iterate();
 
     /**
      * Removes a federal curriculum by its ID.
