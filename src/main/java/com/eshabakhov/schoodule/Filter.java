@@ -12,12 +12,14 @@ public interface Filter {
 
     /**
      * Filter field name.
+     *
      * @return Field name
      */
     String name();
 
     /**
      * Filter value.
+     *
      * @return Value
      */
     String value();

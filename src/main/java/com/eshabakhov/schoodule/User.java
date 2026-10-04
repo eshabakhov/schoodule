@@ -23,14 +23,34 @@ public interface User {
     @JsonProperty
     long uid();
 
+    /**
+     * User credentials.
+     *
+     * @return Credentials
+     */
     @JsonProperty
     Credentials credentials();
 
+    /**
+     * User roles.
+     *
+     * @return Roles
+     */
     @JsonProperty
     Roles roles();
 
+    /**
+     * Reference information.
+     *
+     * @return Reference information
+     */
     @JsonProperty
     ReferenceInformation info();
 
+    /**
+     * Administrative access marker.
+     *
+     * @return Administrative access marker
+     */
     boolean isAdmin();
 }

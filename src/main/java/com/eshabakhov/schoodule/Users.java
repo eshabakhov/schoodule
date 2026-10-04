@@ -46,6 +46,13 @@ public interface Users {
      */
     User identification(Long id) throws Exception;
 
+    /**
+     * Authenticate user by login.
+     *
+     * @param login Username or email
+     * @return User
+     * @throws Exception If authentication fails
+     */
     User authentication(String login) throws Exception;
 
     /**

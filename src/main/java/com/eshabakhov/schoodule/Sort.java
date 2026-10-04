@@ -12,12 +12,14 @@ public interface Sort {
 
     /**
      * Sorting field name.
+     *
      * @return Field name
      */
     String name();
 
     /**
      * Sorting direction.
+     *
      * @return Direction
      */
     Direction direction();
@@ -28,6 +30,7 @@ public interface Sort {
      * @since 0.0.1
      */
     enum Direction {
+
         /**
          * Sorting is not applied.
          */

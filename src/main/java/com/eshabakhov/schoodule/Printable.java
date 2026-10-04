@@ -9,6 +9,7 @@ package com.eshabakhov.schoodule;
  *
  * @since 0.0.1
  */
+@FunctionalInterface
 public interface Printable {
 
     /**
