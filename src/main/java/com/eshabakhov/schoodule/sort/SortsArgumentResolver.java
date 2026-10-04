@@ -8,6 +8,7 @@ import com.eshabakhov.schoodule.Sorts;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -23,10 +24,22 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Component
 public final class SortsArgumentResolver implements HandlerMethodArgumentResolver {
 
+    /** Sort parameter separator. */
+    private static final Pattern SEPARATOR = Pattern.compile("[:,]");
+
     /**
      * Default direction.
      */
-    private final Sort.Direction none = Sort.Direction.NONE;
+    private final Sort.Direction none;
+
+    /**
+     * New sorts argument resolver.
+     *
+     * @since 0.0.1
+     */
+    public SortsArgumentResolver() {
+        this.none = Sort.Direction.NONE;
+    }
 
     @Override
     public boolean supportsParameter(final MethodParameter parameter) {
@@ -48,29 +61,17 @@ public final class SortsArgumentResolver implements HandlerMethodArgumentResolve
         return new SortsRequest(found);
     }
 
-    /**
-     * Request sorts.
-     *
-     * @param raw Raw sort parameters
-     * @return Sorts
-     */
     private List<Sort> requested(final String... raw) {
         final List<Sort> found = new ArrayList<>(raw.length);
         for (final String item : raw) {
             if (item != null && !item.isBlank()) {
-                final String[] parts = item.split("[:,]", 2);
+                final String[] parts = SortsArgumentResolver.SEPARATOR.split(item, 2);
                 found.add(new SortRequest(parts[0], this.direction(parts)));
             }
         }
         return found;
     }
 
-    /**
-     * Direction from split sort value.
-     *
-     * @param parts Split sort value
-     * @return Direction
-     */
     private Sort.Direction direction(final String... parts) {
         final Sort.Direction direction;
         if (parts.length < 2) {
@@ -81,12 +82,6 @@ public final class SortsArgumentResolver implements HandlerMethodArgumentResolve
         return direction;
     }
 
-    /**
-     * Direction from raw value.
-     *
-     * @param raw Raw direction
-     * @return Direction
-     */
     private Sort.Direction direction(final String raw) {
         final Sort.Direction direction;
         if (raw == null || raw.isBlank()) {
