@@ -9,6 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SchoolClass;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import java.util.Map;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.springframework.http.MediaType;
@@ -25,11 +26,9 @@ import org.springframework.web.servlet.ModelAndView;
  * Controller for Html response {@link SchoolClass}.
  *
  * @since 0.0.1
- * @checkstyle DesignForExtensionCheck (1000 lines)
  */
 @Controller
 @RequestMapping("/schools/{school}/classes")
-@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class SchoolClassHtmlController {
 
     /** JOOQ Table for SchoolClass. */
@@ -39,10 +38,25 @@ public class SchoolClassHtmlController {
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
 
+    /**
+     * New controller.
+     *
+     * @param ctx Database context
+     */
     public SchoolClassHtmlController(final DSLContext ctx) {
         this.ctx = ctx;
     }
 
+    /**
+     * Render school classes.
+     *
+     * @param school School identifier
+     * @param offset Page number
+     * @param limit Page size
+     * @param name Name filter
+     * @return Classes view
+     * @throws Exception When classes cannot be loaded
+     */
     //@checkstyle ParameterNumberCheck (3 lines)
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
@@ -52,7 +66,7 @@ public class SchoolClassHtmlController {
         @RequestParam(name = "limit", defaultValue = "15") final int limit,
         @RequestParam(name = "name", required = false) final String name
     ) throws Exception {
-        var condition = SchoolClassHtmlController.SCHOOL_CLASS.IS_DELETED.eq(false)
+        Condition condition = SchoolClassHtmlController.SCHOOL_CLASS.IS_DELETED.eq(false)
             .and(SchoolClassHtmlController.SCHOOL_CLASS.SCHOOL_ID.eq(school));
         if (name != null && !name.isBlank()) {
             condition = condition.and(
@@ -66,21 +80,30 @@ public class SchoolClassHtmlController {
         final PageableList<SchoolClass> classes = sch
             .schoolClasses()
             .classes(condition, new PageRequest(limit, offset));
-        return new ModelAndView("schoolclasses/list")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "pageTitle", String.format("%s — школьные классы", sch.name()),
-                    "classes", classes.list(),
-                    "page", offset,
-                    "limit", limit,
-                    "totalPages", (int) Math.ceil((double) classes.total() / limit),
-                    "hasNext", classes.total() > (long) offset * limit,
-                    "hasPrev", offset > 1
-                )
-            );
+        return new ModelAndView("schoolclasses/list").addAllObjects(
+            Map.of(
+                "school", sch,
+                "pageTitle", String.format("%s — школьные классы", sch.name()),
+                "classes", classes.list(),
+                "page", offset,
+                "limit", limit,
+                "totalPages", (int) Math.ceil((double) classes.total() / limit),
+                "hasNext", classes.total() > (long) offset * limit,
+                "hasPrev", offset > 1
+            )
+        );
     }
 
+    /**
+     * Render school classes fragment.
+     *
+     * @param school School identifier
+     * @param name Name filter
+     * @param offset Page number
+     * @param limit Page size
+     * @return Classes fragment
+     * @throws Exception When classes cannot be loaded
+     */
     //@checkstyle ParameterNumberCheck (3 lines)
     @GetMapping(value = "/fragment", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
@@ -90,7 +113,7 @@ public class SchoolClassHtmlController {
         @RequestParam(name = "offset", defaultValue = "1") final int offset,
         @RequestParam(name = "limit", defaultValue = "15") final int limit
     ) throws Exception {
-        var condition = SchoolClassHtmlController.SCHOOL_CLASS.IS_DELETED.eq(false)
+        Condition condition = SchoolClassHtmlController.SCHOOL_CLASS.IS_DELETED.eq(false)
             .and(SchoolClassHtmlController.SCHOOL_CLASS.SCHOOL_ID.eq(school));
         if (name != null && !name.isBlank()) {
             condition = condition.and(
@@ -104,20 +127,27 @@ public class SchoolClassHtmlController {
         final PageableList<SchoolClass> classes = sch
             .schoolClasses()
             .classes(condition, new PageRequest(limit, offset));
-        return new ModelAndView("schoolclasses/list :: school-classes-grid")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "classes", classes.list(),
-                    "page", offset,
-                    "limit", limit,
-                    "totalPages", (int) Math.ceil((double) classes.total() / limit),
-                    "hasNext", classes.total() > (long) offset * limit,
-                    "hasPrev", offset > 1
-                )
-            );
+        return new ModelAndView("schoolclasses/list :: school-classes-grid").addAllObjects(
+            Map.of(
+                "school", sch,
+                "classes", classes.list(),
+                "page", offset,
+                "limit", limit,
+                "totalPages", (int) Math.ceil((double) classes.total() / limit),
+                "hasNext", classes.total() > (long) offset * limit,
+                "hasPrev", offset > 1
+            )
+        );
     }
 
+    /**
+     * Render school class details.
+     *
+     * @param school School identifier
+     * @param clazz Class identifier
+     * @return Class view
+     * @throws Exception When the class cannot be loaded
+     */
     @GetMapping(value = "/{clazz}", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView details(
@@ -126,29 +156,42 @@ public class SchoolClassHtmlController {
     ) throws Exception {
         final School sch = new SlsPostgres(this.ctx).school(school);
         final SchoolClass scl = sch.schoolClasses().clazz(clazz);
-        return new ModelAndView("schoolclasses/details")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "clazz", scl,
-                    "pageTitle", scl.name()
-                )
-            );
+        return new ModelAndView("schoolclasses/details").addAllObjects(
+            Map.of(
+                "school", sch,
+                "clazz", scl,
+                "pageTitle", scl.name()
+            )
+        );
     }
 
+    /**
+     * Render class creation form.
+     *
+     * @param school School identifier
+     * @return Creation form
+     * @throws Exception When the school cannot be loaded
+     */
     @GetMapping(value = "/create", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
-    public ModelAndView createForm(@PathVariable final long school)
-        throws Exception {
-        return new ModelAndView("schoolclasses/create")
-            .addAllObjects(
-                Map.of(
-                    "school", new SlsPostgres(this.ctx).school(school),
-                    "pageTitle", "Новый класс"
-                )
-            );
+    public ModelAndView createForm(@PathVariable final long school) throws Exception {
+        return new ModelAndView("schoolclasses/create").addAllObjects(
+            Map.of(
+                "school", new SlsPostgres(this.ctx).school(school),
+                "pageTitle", "Новый класс"
+            )
+        );
     }
 
+    /**
+     * Create a school class.
+     *
+     * @param school School identifier
+     * @param litera Class letter
+     * @param grade Grade number
+     * @return Redirect location
+     * @throws Exception When the class cannot be created
+     */
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public String create(
@@ -169,6 +212,14 @@ public class SchoolClassHtmlController {
         return result;
     }
 
+    /**
+     * Render class editing form.
+     *
+     * @param school School identifier
+     * @param clazz Class identifier
+     * @return Editing form
+     * @throws Exception When the class cannot be loaded
+     */
     @GetMapping(value = "/{clazz}/edit", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView editForm(
@@ -176,16 +227,25 @@ public class SchoolClassHtmlController {
         @PathVariable final long clazz
     ) throws Exception {
         final School sch = new SlsPostgres(this.ctx).school(school);
-        return new ModelAndView("schoolclasses/edit")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "clazz", sch.schoolClasses().clazz(clazz),
-                    "pageTitle", "Редактировать класс"
-                )
-            );
+        return new ModelAndView("schoolclasses/edit").addAllObjects(
+            Map.of(
+                "school", sch,
+                "clazz", sch.schoolClasses().clazz(clazz),
+                "pageTitle", "Редактировать класс"
+            )
+        );
     }
 
+    /**
+     * Update a school class.
+     *
+     * @param school School identifier
+     * @param clazz Class identifier
+     * @param litera Class letter
+     * @param grade Grade number
+     * @return Redirect location
+     * @throws Exception When the class cannot be updated
+     */
     @PostMapping("/{clazz}/edit")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     //@checkstyle ParameterNumberCheck (1 line)

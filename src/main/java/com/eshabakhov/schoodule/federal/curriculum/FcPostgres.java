@@ -16,7 +16,6 @@ import org.jooq.DSLContext;
  *
  * @since 0.0.1
  */
-@SuppressWarnings("PMD.TooManyMethods")
 public final class FcPostgres implements FederalCurriculum {
 
     /**
@@ -54,8 +53,7 @@ public final class FcPostgres implements FederalCurriculum {
     @Override
     public <M extends Media> M print(final M media) {
         this.ctx.selectFrom(FcPostgres.CURRICULUM)
-            .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
-            .fetchOne(
+            .where(FcPostgres.CURRICULUM.ID.eq(this.fid)).fetchOne(
                 record -> media
                     .with("id", record.getId())
                     .with("title", record.getTitle())
@@ -84,12 +82,10 @@ public final class FcPostgres implements FederalCurriculum {
     public FederalCurriculum releveled(final Level level) {
         return new FcPostgres(
             this.ctx,
-            this.ctx.update(FcPostgres.CURRICULUM)
-                .set(
-                    FcPostgres.CURRICULUM.EDUCATION_LEVEL,
-                    EducationLevelType.valueOf(level.name())
-                )
-                .where(FcPostgres.CURRICULUM.ID.eq(this.fid))
+            this.ctx.update(FcPostgres.CURRICULUM).set(
+                FcPostgres.CURRICULUM.EDUCATION_LEVEL,
+                EducationLevelType.valueOf(level.name())
+            ).where(FcPostgres.CURRICULUM.ID.eq(this.fid))
                 .returningResult(FcPostgres.CURRICULUM.ID)
                 .fetchOne(FcPostgres.CURRICULUM.ID)
         );

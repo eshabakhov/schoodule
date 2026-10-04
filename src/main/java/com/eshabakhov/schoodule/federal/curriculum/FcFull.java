@@ -11,7 +11,6 @@ import com.eshabakhov.schoodule.federal.FederalCurriculum;
  *
  * @since 0.0.1
  */
-@SuppressWarnings("PMD.TooManyMethods")
 public final class FcFull implements FederalCurriculum {
 
     /**

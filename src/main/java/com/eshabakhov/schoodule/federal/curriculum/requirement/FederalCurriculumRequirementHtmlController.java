@@ -17,14 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam;
  * Controller for HTML responses for {@link FederalCurriculumRequirement}.
  *
  * @since 0.0.1
- * @checkstyle ClassFanOutComplexityCheck (1000 lines)
- * @checkstyle DesignForExtensionCheck (1000 lines)
  * @checkstyle ParameterNumberCheck (1000 lines)
  */
 @Controller
 @RequestMapping("/federal/curriculums")
 @PreAuthorize("hasRole('ADMIN')")
-@SuppressWarnings("PMD.UseObjectForClearerAPI")
 public class FederalCurriculumRequirementHtmlController {
 
     /**
@@ -32,10 +29,28 @@ public class FederalCurriculumRequirementHtmlController {
      */
     private final DSLContext ctx;
 
+    /**
+     * New controller.
+     *
+     * @param ctx JOOQ context
+     * @since 0.0.1
+     */
     public FederalCurriculumRequirementHtmlController(final DSLContext ctx) {
         this.ctx = ctx;
     }
 
+    /**
+     * Creates a curriculum requirement from form values.
+     *
+     * @param curriculum Curriculum ID
+     * @param grade Grade
+     * @param subject Subject
+     * @param hours Weekly hours
+     * @param part Curriculum part
+     * @return Redirect to requirements
+     * @throws Exception If creation fails
+     * @since 0.0.1
+     */
     @PostMapping("/{curriculum}/requirements/create")
     public String create(
         @PathVariable final long curriculum,
@@ -51,6 +66,19 @@ public class FederalCurriculumRequirementHtmlController {
         return String.format("redirect:/federal/curriculums/%d/requirements", curriculum);
     }
 
+    /**
+     * Updates a curriculum requirement from form values.
+     *
+     * @param curriculum Curriculum ID
+     * @param requirement Requirement ID
+     * @param grade Grade
+     * @param subject Subject
+     * @param hours Weekly hours
+     * @param part Curriculum part
+     * @return Redirect to requirements
+     * @throws Exception If update fails
+     * @since 0.0.1
+     */
     @PostMapping("/{curriculum}/requirements/{requirement}/edit")
     public String edit(
         @PathVariable final long curriculum,

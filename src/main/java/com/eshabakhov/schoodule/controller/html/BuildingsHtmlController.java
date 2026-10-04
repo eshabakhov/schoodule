@@ -9,6 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.Building;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import java.util.Map;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,12 +25,10 @@ import org.springframework.web.servlet.ModelAndView;
  * Controller for Html response {@link Building}.
  *
  * @since 0.0.1
- * @checkstyle DesignForExtensionCheck (1000 lines)
  * @checkstyle ParameterNumberCheck (1000 lines)
  */
 @Controller
 @RequestMapping("/schools/{school}/buildings")
-@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class BuildingsHtmlController {
 
     /** JOOQ Table for Building. */
@@ -39,10 +38,25 @@ public class BuildingsHtmlController {
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
 
+    /**
+     * New controller.
+     *
+     * @param ctx Database context
+     */
     public BuildingsHtmlController(final DSLContext ctx) {
         this.ctx = ctx;
     }
 
+    /**
+     * Render buildings.
+     *
+     * @param school School identifier
+     * @param offset Page number
+     * @param limit Page size
+     * @param name Name filter
+     * @return Buildings view
+     * @throws Exception When buildings cannot be loaded
+     */
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView list(
@@ -51,7 +65,7 @@ public class BuildingsHtmlController {
         @RequestParam(name = "limit", defaultValue = "15") final int limit,
         @RequestParam(name = "name", required = false) final String name
     ) throws Exception {
-        var condition = BuildingsHtmlController.BUILDING.IS_DELETED.eq(false)
+        Condition condition = BuildingsHtmlController.BUILDING.IS_DELETED.eq(false)
             .and(BuildingsHtmlController.BUILDING.SCHOOL_ID.eq(school));
         if (name != null && !name.isBlank()) {
             condition = condition.and(
@@ -62,21 +76,30 @@ public class BuildingsHtmlController {
         final PageableList<Building> buildings = sch
             .buildings()
             .buildings(condition, new PageRequest(limit, offset));
-        return new ModelAndView("buildings/list")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "pageTitle", String.format("%s — корпуса", sch.name()),
-                    "buildings", buildings.list(),
-                    "page", offset,
-                    "limit", limit,
-                    "totalPages", (int) Math.ceil((double) buildings.total() / limit),
-                    "hasNext", buildings.total() > (long) offset * limit,
-                    "hasPrev", offset > 1
-                )
-            );
+        return new ModelAndView("buildings/list").addAllObjects(
+            Map.of(
+                "school", sch,
+                "pageTitle", String.format("%s — корпуса", sch.name()),
+                "buildings", buildings.list(),
+                "page", offset,
+                "limit", limit,
+                "totalPages", (int) Math.ceil((double) buildings.total() / limit),
+                "hasNext", buildings.total() > (long) offset * limit,
+                "hasPrev", offset > 1
+            )
+        );
     }
 
+    /**
+     * Render buildings fragment.
+     *
+     * @param school School identifier
+     * @param name Name filter
+     * @param offset Page number
+     * @param limit Page size
+     * @return Buildings fragment
+     * @throws Exception When buildings cannot be loaded
+     */
     @GetMapping(value = "/fragment", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView fragment(
@@ -85,7 +108,7 @@ public class BuildingsHtmlController {
         @RequestParam(name = "offset", defaultValue = "1") final int offset,
         @RequestParam(name = "limit", defaultValue = "15") final int limit
     ) throws Exception {
-        var condition = BuildingsHtmlController.BUILDING.IS_DELETED.eq(false)
+        Condition condition = BuildingsHtmlController.BUILDING.IS_DELETED.eq(false)
             .and(BuildingsHtmlController.BUILDING.SCHOOL_ID.eq(school));
         if (name != null && !name.isBlank()) {
             condition = condition.and(
@@ -96,20 +119,27 @@ public class BuildingsHtmlController {
         final PageableList<Building> buildings = sch
             .buildings()
             .buildings(condition, new PageRequest(limit, offset));
-        return new ModelAndView("buildings/list :: buildings-grid")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "buildings", buildings.list(),
-                    "page", offset,
-                    "limit", limit,
-                    "totalPages", (int) Math.ceil((double) buildings.total() / limit),
-                    "hasNext", buildings.total() > (long) offset * limit,
-                    "hasPrev", offset > 1
-                )
-            );
+        return new ModelAndView("buildings/list :: buildings-grid").addAllObjects(
+            Map.of(
+                "school", sch,
+                "buildings", buildings.list(),
+                "page", offset,
+                "limit", limit,
+                "totalPages", (int) Math.ceil((double) buildings.total() / limit),
+                "hasNext", buildings.total() > (long) offset * limit,
+                "hasPrev", offset > 1
+            )
+        );
     }
 
+    /**
+     * Render building details.
+     *
+     * @param school School identifier
+     * @param building Building identifier
+     * @return Building view
+     * @throws Exception When the building cannot be loaded
+     */
     @GetMapping(value = "/{building}", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView details(
@@ -118,36 +148,48 @@ public class BuildingsHtmlController {
     ) throws Exception {
         final School sch = new SlsPostgres(this.ctx).school(school);
         final Building build = sch.buildings().building(building);
-        return new ModelAndView("buildings/details")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "building", build,
-                    "pageTitle", build.name()
-                )
-            );
+        return new ModelAndView("buildings/details").addAllObjects(
+            Map.of(
+                "school", sch,
+                "building", build,
+                "pageTitle", build.name()
+            )
+        );
     }
 
+    /**
+     * Render building creation form.
+     *
+     * @param school School identifier
+     * @return Creation form
+     * @throws Exception When the school cannot be loaded
+     */
     @GetMapping(value = "/create", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView createForm(@PathVariable final long school)
         throws Exception {
-        return new ModelAndView("buildings/create")
-            .addAllObjects(
-                Map.of(
-                    "school", new SlsPostgres(this.ctx).school(school),
-                    "pageTitle", "Новый кабинет"
-                )
-            );
+        return new ModelAndView("buildings/create").addAllObjects(
+            Map.of(
+                "school", new SlsPostgres(this.ctx).school(school),
+                "pageTitle", "Новый кабинет"
+            )
+        );
     }
 
+    /**
+     * Create a building.
+     *
+     * @param school School identifier
+     * @param name Building name
+     * @return Redirect location
+     * @throws Exception When the building cannot be created
+     */
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public String create(
         @PathVariable final long school,
         @RequestParam final String name
-    )
-        throws Exception {
+    ) throws Exception {
         final String result;
         if (name == null || name.isBlank()) {
             result = String.format("redirect:/schools/%d/buildings/create?error=empty", school);
@@ -161,6 +203,14 @@ public class BuildingsHtmlController {
         return result;
     }
 
+    /**
+     * Render building editing form.
+     *
+     * @param school School identifier
+     * @param building Building identifier
+     * @return Editing form
+     * @throws Exception When the building cannot be loaded
+     */
     @GetMapping(value = "/{building}/edit", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView editForm(
@@ -168,16 +218,24 @@ public class BuildingsHtmlController {
         @PathVariable final long building
     ) throws Exception {
         final School sch = new SlsPostgres(this.ctx).school(school);
-        return new ModelAndView("buildings/edit")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "building", sch.buildings().building(building),
-                    "pageTitle", "Редактировать корпус"
-                )
-            );
+        return new ModelAndView("buildings/edit").addAllObjects(
+            Map.of(
+                "school", sch,
+                "building", sch.buildings().building(building),
+                "pageTitle", "Редактировать корпус"
+            )
+        );
     }
 
+    /**
+     * Update a building.
+     *
+     * @param school School identifier
+     * @param building Building identifier
+     * @param name Building name
+     * @return Redirect location
+     * @throws Exception When the building cannot be updated
+     */
     @PostMapping("/{building}/edit")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public String edit(

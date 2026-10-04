@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,7 +39,6 @@ import org.springframework.web.bind.annotation.RestController;
  * Building's client controller.
  *
  * @since 0.0.1
- * @checkstyle DesignForExtensionCheck (1000 lines)
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
  * @checkstyle ParameterNumberCheck (1000 lines)
  */
@@ -58,6 +58,15 @@ public class BuildingController {
         this.ctx = ctx;
     }
 
+    /**
+     * Create a building.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param request Request body
+     * @return Created building
+     * @throws Exception When the building cannot be created
+     */
     @PostMapping
     @PreAuthorize(
         """
@@ -158,7 +167,7 @@ public class BuildingController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (BuildingVersion.SIMPLE.equals(version)) {
+        if (version == BuildingController.BuildingVersion.SIMPLE) {
             final JsonNode name = request.get("name");
             if (name == null || name.asText().isBlank()) {
                 throw new BuildingRequiredFieldException(
@@ -169,18 +178,27 @@ public class BuildingController {
                 .school(school)
                 .buildings()
                 .create(name.asText());
-            return ResponseEntity
-                .created(
-                    URI.create(
-                        String.format("/api/schools/%d/buildings/%d", school, building.uid())
-                    )
+            return ResponseEntity.created(
+                URI.create(
+                    String.format("/api/schools/%d/buildings/%d", school, building.uid())
                 )
-                .body(new BdBase(building.uid(), building.name()));
+            )
+            .body(new BdBase(building.uid(), building.name()));
         } else {
             throw new VersionHeaderException(version.name());
         }
     }
 
+    /**
+     * Fetch buildings.
+     *
+     * @param school School identifier
+     * @param limit Page size
+     * @param offset Page number
+     * @param namect Name filter
+     * @return Buildings page
+     * @throws Exception When buildings cannot be loaded
+     */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(summary = "Fetch list of buildings")
@@ -201,23 +219,29 @@ public class BuildingController {
             required = false
         ) final String namect
     ) throws Exception {
-        var condition = BuildingController.BUILDING.SCHOOL_ID.eq(school)
+        Condition condition = BuildingController.BUILDING.SCHOOL_ID.eq(school)
             .and(BuildingController.BUILDING.IS_DELETED.eq(false));
         if (namect != null && !namect.isBlank()) {
             condition = condition.and(
                 BuildingController.BUILDING.NAME.likeIgnoreCase(String.format("%%%s%%", namect))
             );
         }
-        return ResponseEntity
-            .ok()
-            .body(
-                new SlsPostgres(this.ctx)
-                    .school(school)
-                    .buildings()
-                    .buildings(condition, new PageRequest(limit, offset))
-            );
+        return ResponseEntity.ok().body(
+            new SlsPostgres(this.ctx)
+                .school(school)
+                .buildings()
+                .buildings(condition, new PageRequest(limit, offset))
+        );
     }
 
+    /**
+     * Fetch a building.
+     *
+     * @param school School identifier
+     * @param building Building identifier
+     * @return Building
+     * @throws Exception When the building cannot be loaded
+     */
     @GetMapping("/{building}")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(
@@ -286,6 +310,16 @@ public class BuildingController {
             .building(building);
     }
 
+    /**
+     * Update a building.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param building Building identifier
+     * @param request Request body
+     * @return Updated building
+     * @throws Exception When the building cannot be updated
+     */
     @PutMapping("/{building}")
     @PreAuthorize(
         """
@@ -404,7 +438,7 @@ public class BuildingController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (BuildingVersion.SIMPLE.equals(version)) {
+        if (version == BuildingController.BuildingVersion.SIMPLE) {
             final JsonNode name = request.get("name");
             if (name == null || name.asText().isBlank()) {
                 throw new BuildingRequiredFieldException(
@@ -413,26 +447,24 @@ public class BuildingController {
             }
             ResponseEntity<Building> response;
             try {
-                response = ResponseEntity.ok()
-                    .body(
-                        new SlsPostgres(this.ctx)
-                            .school(school)
-                            .buildings()
-                            .building(building)
-                            .renamed(name.asText())
-                    );
+                response = ResponseEntity.ok().body(
+                    new SlsPostgres(this.ctx)
+                        .school(school)
+                        .buildings()
+                        .building(building)
+                        .renamed(name.asText())
+                );
             } catch (final BdsPostgres.BuildingNotFoundException ex) {
-                final var created = new SlsPostgres(this.ctx)
+                final Building created = new SlsPostgres(this.ctx)
                     .school(school)
                     .buildings()
                     .create(name.asText());
-                response = ResponseEntity
-                    .created(
-                        URI.create(
-                            String.format("/api/schools/%d/buildings/%d", school, created.uid())
-                        )
+                response = ResponseEntity.created(
+                    URI.create(
+                        String.format("/api/schools/%d/buildings/%d", school, created.uid())
                     )
-                    .body(created);
+                )
+                .body(created);
             }
             return response;
         } else {
@@ -440,6 +472,14 @@ public class BuildingController {
         }
     }
 
+    /**
+     * Delete a building.
+     *
+     * @param school School identifier
+     * @param building Building identifier
+     * @return Empty response
+     * @throws Exception When the building cannot be deleted
+     */
     @DeleteMapping("/{building}")
     @PreAuthorize(
         """
@@ -460,12 +500,6 @@ public class BuildingController {
             .buildings()
             .remove(building);
         return ResponseEntity.noContent().build();
-    }
-
-    public static class BuildingRequiredFieldException extends Exception {
-        public BuildingRequiredFieldException(final String message) {
-            super(message);
-        }
     }
 
     /** Building accept version. */

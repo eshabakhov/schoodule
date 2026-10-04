@@ -29,6 +29,13 @@ public final class FcrsSelected implements FederalCurriculumRequirements {
     /** Selection pagination. */
     private final ResultPage page;
 
+    /**
+     * New selected requirements.
+     *
+     * @param origin Complete collection
+     * @param items Selected requirements
+     * @param page Selection pagination
+     */
     public FcrsSelected(
         final FederalCurriculumRequirements origin,
         final Iterable<FederalCurriculumRequirement> items,

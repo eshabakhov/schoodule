@@ -14,7 +14,6 @@ import org.jooq.DSLContext;
  *
  * @since 0.0.1
  */
-@SuppressWarnings("PMD.TooManyMethods")
 public final class FcrPostgres implements FederalCurriculumRequirement {
 
     /**
@@ -52,8 +51,7 @@ public final class FcrPostgres implements FederalCurriculumRequirement {
     @Override
     public <M extends Media> M print(final M media) {
         this.ctx.selectFrom(FcrPostgres.REQUIREMENT)
-            .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid))
-            .fetchOne(
+            .where(FcrPostgres.REQUIREMENT.ID.eq(this.rid)).fetchOne(
                 record -> media
                     .with("id", record.getId())
                     .with("grade", record.getGrade())

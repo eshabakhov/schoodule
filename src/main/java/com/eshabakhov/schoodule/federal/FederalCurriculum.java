@@ -11,11 +11,10 @@ import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirements
  * Federal curriculum plan domain entity.
  *
  * <p>Does not expose data via getters. Instead, prints itself
- * into a {@link Media} via {@link Printable#print(Media)}.
+ * into a {@link Media} via {@link Printable#print(Media)}.</p>
  *
  * @since 0.0.1
  */
-@SuppressWarnings("PMD.TooManyMethods")
 public interface FederalCurriculum extends Printable {
 
     /**
@@ -86,6 +85,7 @@ public interface FederalCurriculum extends Printable {
      * @since 0.0.1
      */
     enum Level {
+
         /**
          * Primary general education, grades 1–4.
          */
@@ -106,6 +106,7 @@ public interface FederalCurriculum extends Printable {
      * @since 0.0.1
      */
     enum Week {
+
         /**
          * Five-day study week.
          */

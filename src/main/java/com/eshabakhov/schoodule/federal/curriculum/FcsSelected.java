@@ -18,7 +18,6 @@ import lombok.EqualsAndHashCode;
  * @since 0.0.1
  */
 @EqualsAndHashCode
-@SuppressWarnings("PMD.UseObjectForClearerAPI")
 public final class FcsSelected implements FederalCurriculums {
 
     /** Complete collection. */
@@ -30,6 +29,13 @@ public final class FcsSelected implements FederalCurriculums {
     /** Selection pagination. */
     private final ResultPage page;
 
+    /**
+     * New selected curriculums.
+     *
+     * @param origin Complete collection
+     * @param items Selected curriculums
+     * @param page Selection pagination
+     */
     public FcsSelected(
         final FederalCurriculums origin,
         final Iterable<FederalCurriculum> items,

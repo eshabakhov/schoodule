@@ -10,6 +10,7 @@ import com.eshabakhov.schoodule.school.Building;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.building.Cabinet;
 import java.util.Map;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,12 +26,10 @@ import org.springframework.web.servlet.ModelAndView;
  * Controller for Html response {@link Cabinet}.
  *
  * @since 0.0.1
- * @checkstyle DesignForExtensionCheck (1000 lines)
  * @checkstyle ParameterNumberCheck (1000 lines)
  */
 @Controller
 @RequestMapping("/schools/{school}/buildings/{building}/cabinets")
-@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class CabinetsHtmlController {
 
     /** JOOQ Table for Cabinet. */
@@ -40,10 +39,26 @@ public class CabinetsHtmlController {
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
 
+    /**
+     * New controller.
+     *
+     * @param ctx Database context
+     */
     public CabinetsHtmlController(final DSLContext ctx) {
         this.ctx = ctx;
     }
 
+    /**
+     * Render cabinets.
+     *
+     * @param school School identifier
+     * @param building Building identifier
+     * @param offset Page number
+     * @param limit Page size
+     * @param name Name filter
+     * @return Cabinets view
+     * @throws Exception When cabinets cannot be loaded
+     */
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView list(
@@ -53,7 +68,7 @@ public class CabinetsHtmlController {
         @RequestParam(name = "limit", defaultValue = "15") final int limit,
         @RequestParam(name = "name", required = false) final String name
     ) throws Exception {
-        var condition = CabinetsHtmlController.CABINET.IS_DELETED.eq(false)
+        Condition condition = CabinetsHtmlController.CABINET.IS_DELETED.eq(false)
             .and(CabinetsHtmlController.CABINET.BUILDING_ID.eq(building));
         if (name != null && !name.isBlank()) {
             condition = condition.and(
@@ -65,22 +80,32 @@ public class CabinetsHtmlController {
         final PageableList<Cabinet> cabinets = build
             .cabinets()
             .cabinets(condition, new PageRequest(limit, offset));
-        return new ModelAndView("cabinets/list")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "building", build,
-                    "pageTitle", String.format("%s — кабинеты", sch.name()),
-                    "cabinets", cabinets.list(),
-                    "page", offset,
-                    "limit", limit,
-                    "totalPages", (int) Math.ceil((double) cabinets.total() / limit),
-                    "hasNext", cabinets.total() > (long) offset * limit,
-                    "hasPrev", offset > 1
-                )
-            );
+        return new ModelAndView("cabinets/list").addAllObjects(
+            Map.of(
+                "school", sch,
+                "building", build,
+                "pageTitle", String.format("%s — кабинеты", sch.name()),
+                "cabinets", cabinets.list(),
+                "page", offset,
+                "limit", limit,
+                "totalPages", (int) Math.ceil((double) cabinets.total() / limit),
+                "hasNext", cabinets.total() > (long) offset * limit,
+                "hasPrev", offset > 1
+            )
+        );
     }
 
+    /**
+     * Render cabinets fragment.
+     *
+     * @param school School identifier
+     * @param building Building identifier
+     * @param name Name filter
+     * @param offset Page number
+     * @param limit Page size
+     * @return Cabinets fragment
+     * @throws Exception When cabinets cannot be loaded
+     */
     @GetMapping(value = "/fragment", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView fragment(
@@ -90,7 +115,7 @@ public class CabinetsHtmlController {
         @RequestParam(name = "offset", defaultValue = "1") final int offset,
         @RequestParam(name = "limit", defaultValue = "15") final int limit
     ) throws Exception {
-        var condition = CabinetsHtmlController.CABINET.IS_DELETED.eq(false)
+        Condition condition = CabinetsHtmlController.CABINET.IS_DELETED.eq(false)
             .and(CabinetsHtmlController.CABINET.BUILDING_ID.eq(building));
         if (name != null && !name.isBlank()) {
             condition = condition.and(
@@ -102,21 +127,29 @@ public class CabinetsHtmlController {
         final PageableList<Cabinet> cabinets = build
             .cabinets()
             .cabinets(condition, new PageRequest(limit, offset));
-        return new ModelAndView("cabinets/list :: cabinets-grid")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "building", build,
-                    "cabinets", cabinets.list(),
-                    "page", offset,
-                    "limit", limit,
-                    "totalPages", (int) Math.ceil((double) cabinets.total() / limit),
-                    "hasNext", cabinets.total() > (long) offset * limit,
-                    "hasPrev", offset > 1
-                )
-            );
+        return new ModelAndView("cabinets/list :: cabinets-grid").addAllObjects(
+            Map.of(
+                "school", sch,
+                "building", build,
+                "cabinets", cabinets.list(),
+                "page", offset,
+                "limit", limit,
+                "totalPages", (int) Math.ceil((double) cabinets.total() / limit),
+                "hasNext", cabinets.total() > (long) offset * limit,
+                "hasPrev", offset > 1
+            )
+        );
     }
 
+    /**
+     * Render cabinet details.
+     *
+     * @param school School identifier
+     * @param building Building identifier
+     * @param cabinet Cabinet identifier
+     * @return Cabinet view
+     * @throws Exception When the cabinet cannot be loaded
+     */
     @GetMapping(value = "/{cabinet}", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView details(
@@ -127,43 +160,56 @@ public class CabinetsHtmlController {
         final School sch = new SlsPostgres(this.ctx).school(school);
         final Building build = sch.buildings().building(building);
         final Cabinet cab = build.cabinets().cabinet(cabinet);
-        return new ModelAndView("cabinets/details")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "building", build,
-                    "cabinet", cab,
-                    "pageTitle", cab.name()
-                )
-            );
+        return new ModelAndView("cabinets/details").addAllObjects(
+            Map.of(
+                "school", sch,
+                "building", build,
+                "cabinet", cab,
+                "pageTitle", cab.name()
+            )
+        );
     }
 
+    /**
+     * Render cabinet creation form.
+     *
+     * @param school School identifier
+     * @param building Building identifier
+     * @return Creation form
+     * @throws Exception When related data cannot be loaded
+     */
     @GetMapping(value = "/create", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView createForm(
         @PathVariable final long school,
         @PathVariable final long building
-    )
-        throws Exception {
+    ) throws Exception {
         final School sch = new SlsPostgres(this.ctx).school(school);
-        return new ModelAndView("cabinets/create")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "building", sch.buildings().building(building),
-                    "pageTitle", "Новый кабинет"
-                )
-            );
+        return new ModelAndView("cabinets/create").addAllObjects(
+            Map.of(
+                "school", sch,
+                "building", sch.buildings().building(building),
+                "pageTitle", "Новый кабинет"
+            )
+        );
     }
 
+    /**
+     * Create a cabinet.
+     *
+     * @param school School identifier
+     * @param building Building identifier
+     * @param name Cabinet name
+     * @return Redirect location
+     * @throws Exception When the cabinet cannot be created
+     */
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public String create(
         @PathVariable final long school,
         @PathVariable final long building,
         @RequestParam final String name
-    )
-        throws Exception {
+    ) throws Exception {
         final String result;
         if (name == null || name.isBlank()) {
             result = String.format(
@@ -182,6 +228,15 @@ public class CabinetsHtmlController {
         return result;
     }
 
+    /**
+     * Render cabinet editing form.
+     *
+     * @param school School identifier
+     * @param building Building identifier
+     * @param cabinet Cabinet identifier
+     * @return Editing form
+     * @throws Exception When the cabinet cannot be loaded
+     */
     @GetMapping(value = "/{cabinet}/edit", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView editForm(
@@ -191,17 +246,26 @@ public class CabinetsHtmlController {
     ) throws Exception {
         final School sch = new SlsPostgres(this.ctx).school(school);
         final Building build = sch.buildings().building(building);
-        return new ModelAndView("cabinets/edit")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "building", build,
-                    "cabinet", build.cabinets().cabinet(cabinet),
-                    "pageTitle", "Редактировать кабинет"
-                )
-            );
+        return new ModelAndView("cabinets/edit").addAllObjects(
+            Map.of(
+                "school", sch,
+                "building", build,
+                "cabinet", build.cabinets().cabinet(cabinet),
+                "pageTitle", "Редактировать кабинет"
+            )
+        );
     }
 
+    /**
+     * Update a cabinet.
+     *
+     * @param school School identifier
+     * @param building Building identifier
+     * @param cabinet Cabinet identifier
+     * @param name Cabinet name
+     * @return Redirect location
+     * @throws Exception When the cabinet cannot be updated
+     */
     @PostMapping("/{cabinet}/edit")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public String edit(

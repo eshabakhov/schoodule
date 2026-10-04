@@ -8,6 +8,7 @@ import com.eshabakhov.schoodule.School;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.user.AuthUser;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
@@ -39,10 +40,26 @@ public final class SchoolsHtmlController {
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
 
+    /**
+     * New controller.
+     *
+     * @param ctx Database context
+     */
     public SchoolsHtmlController(final DSLContext ctx) {
         this.ctx = ctx;
     }
 
+    /**
+     * Render schools.
+     *
+     * @param offset Page number
+     * @param limit Page size
+     * @param name Name filter
+     * @param user Authenticated user
+     * @param model View model
+     * @return Template name
+     * @throws Exception When schools cannot be loaded
+     */
     // @checkstyle ParameterNumberCheck (2 lines)
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     public String list(
@@ -55,7 +72,7 @@ public final class SchoolsHtmlController {
         if (!user.isAdmin()) {
             throw new AccessDeniedException(SchoolsHtmlController.ADMIN_REQUIRED);
         }
-        var condition = SchoolsHtmlController.SCHOOL.IS_DELETED.eq(false);
+        Condition condition = SchoolsHtmlController.SCHOOL.IS_DELETED.eq(false);
         if (name != null && !name.isBlank()) {
             condition = condition.and(
                 SchoolsHtmlController.SCHOOL.NAME.likeIgnoreCase(String.format("%%%s%%", name))
@@ -73,6 +90,17 @@ public final class SchoolsHtmlController {
         return "schools/list";
     }
 
+    /**
+     * Render schools fragment.
+     *
+     * @param name Name filter
+     * @param offset Page number
+     * @param limit Page size
+     * @param user Authenticated user
+     * @param model View model
+     * @return Fragment name
+     * @throws Exception When schools cannot be loaded
+     */
     // @checkstyle ParameterNumberCheck (2 lines)
     @GetMapping(value = "/fragment", produces = MediaType.TEXT_HTML_VALUE)
     public String fragment(
@@ -85,7 +113,7 @@ public final class SchoolsHtmlController {
         if (!user.isAdmin()) {
             throw new AccessDeniedException(SchoolsHtmlController.ADMIN_REQUIRED);
         }
-        var condition = SchoolsHtmlController.SCHOOL.IS_DELETED.eq(false);
+        Condition condition = SchoolsHtmlController.SCHOOL.IS_DELETED.eq(false);
         if (name != null && !name.isBlank()) {
             condition = condition.and(
                 SchoolsHtmlController.SCHOOL.NAME.likeIgnoreCase(
@@ -104,6 +132,13 @@ public final class SchoolsHtmlController {
         return "schools/list :: schools-grid";
     }
 
+    /**
+     * Render school creation form.
+     *
+     * @param model View model
+     * @param user Authenticated user
+     * @return Template name
+     */
     // @checkstyle NonStaticMethodCheck (2 lines)
     @GetMapping(value = "/create", produces = MediaType.TEXT_HTML_VALUE)
     public String createForm(final Model model, @AuthenticationPrincipal final AuthUser user) {
@@ -114,6 +149,14 @@ public final class SchoolsHtmlController {
         return "schools/create";
     }
 
+    /**
+     * Create a school.
+     *
+     * @param name School name
+     * @param user Authenticated user
+     * @return Redirect location
+     * @throws Exception When the school cannot be created
+     */
     @PostMapping("/create")
     public String create(
         @RequestParam
@@ -134,6 +177,15 @@ public final class SchoolsHtmlController {
         return response;
     }
 
+    /**
+     * Render school editing form.
+     *
+     * @param id School identifier
+     * @param user Authenticated user
+     * @param model View model
+     * @return Template name
+     * @throws Exception When the school cannot be loaded
+     */
     @GetMapping(value = "/{id}/edit", produces = MediaType.TEXT_HTML_VALUE)
     public String editForm(
         @PathVariable
@@ -150,6 +202,15 @@ public final class SchoolsHtmlController {
         return "schools/edit";
     }
 
+    /**
+     * Update a school.
+     *
+     * @param id School identifier
+     * @param name School name
+     * @param user Authenticated user
+     * @return Redirect location
+     * @throws Exception When the school cannot be updated
+     */
     @PostMapping("/{id}/edit")
     public String edit(
         @PathVariable

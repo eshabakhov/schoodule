@@ -4,6 +4,7 @@
 package com.eshabakhov.schoodule.user;
 
 import com.eshabakhov.schoodule.error.SimpleError;
+import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,6 @@ public final class UserExceptionHandler {
     public static ResponseEntity<Object> handleRegistrationException(final Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .contentType(MediaType.APPLICATION_JSON)
-            .body(new SimpleError(exception.getMessage()));
+            .body(new SimpleError(exception.getMessage(), Instant.now()));
     }
 }

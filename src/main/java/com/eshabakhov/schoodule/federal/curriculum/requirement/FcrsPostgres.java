@@ -23,9 +23,9 @@ import org.jooq.impl.DSL;
  * Postgres implementation of {@link FederalCurriculumRequirements}.
  *
  * @since 0.0.1
+ * @checkstyle LambdaBodyLengthCheck (1000 lines)
  */
 @EqualsAndHashCode
-@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public final class FcrsPostgres implements FederalCurriculumRequirements {
 
     /**
@@ -66,11 +66,10 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                if (ttx.selectFrom(FcrsPostgres.REQUIREMENT)
-                    .where(FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
+                if (ttx.selectFrom(FcrsPostgres.REQUIREMENT).where(
+                    FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
                         .and(FcrsPostgres.REQUIREMENT.GRADE.eq(grade))
-                        .and(FcrsPostgres.REQUIREMENT.SUBJECT_NAME.eq(subject))
-                        .and(
+                        .and(FcrsPostgres.REQUIREMENT.SUBJECT_NAME.eq(subject)).and(
                             FcrsPostgres.REQUIREMENT.PART_TYPE.eq(
                                 CurriculumPartType.valueOf(part.name())
                             )
@@ -85,8 +84,7 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
                     .set(FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID, this.fid)
                     .set(FcrsPostgres.REQUIREMENT.GRADE, grade)
                     .set(FcrsPostgres.REQUIREMENT.SUBJECT_NAME, subject)
-                    .set(FcrsPostgres.REQUIREMENT.WEEKLY_HOURS, hours)
-                    .set(
+                    .set(FcrsPostgres.REQUIREMENT.WEEKLY_HOURS, hours).set(
                         FcrsPostgres.REQUIREMENT.PART_TYPE,
                         CurriculumPartType.valueOf(part.name())
                     )
@@ -105,8 +103,7 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
     public FederalCurriculumRequirement requirement(final long id)
         throws Exception {
         final FederalCurriculumRequirementRecord selected = this.ctx
-            .selectFrom(FcrsPostgres.REQUIREMENT)
-            .where(
+            .selectFrom(FcrsPostgres.REQUIREMENT).where(
                 FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
                     .and(FcrsPostgres.REQUIREMENT.IS_DELETED.eq(false))
                     .and(FcrsPostgres.REQUIREMENT.ID.eq(id))
@@ -136,8 +133,7 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
                 .where(scoped)
                 .orderBy(new FcrStsJooq(sorts).fields())
                 .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit())
-                .fetch(
+                .offset((page.offset() - 1) * page.limit()).fetch(
                     selected ->
                         new FcrPostgres(this.ctx, selected.getId())
                 ),
@@ -153,8 +149,7 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
     @Override
     public Iterable<FederalCurriculumRequirement> iterate() {
         return this.ctx
-            .selectFrom(FcrsPostgres.REQUIREMENT)
-            .where(
+            .selectFrom(FcrsPostgres.REQUIREMENT).where(
                 FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
                     .and(FcrsPostgres.REQUIREMENT.IS_DELETED.eq(false))
             )
@@ -170,8 +165,7 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
     @Override
     public void remove(final long id) throws Exception {
         if (this.ctx
-            .selectFrom(FcrsPostgres.REQUIREMENT)
-            .where(
+            .selectFrom(FcrsPostgres.REQUIREMENT).where(
                 FcrsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
                     .and(FcrsPostgres.REQUIREMENT.IS_DELETED.eq(false))
                     .and(FcrsPostgres.REQUIREMENT.ID.eq(id))
@@ -193,23 +187,5 @@ public final class FcrsPostgres implements FederalCurriculumRequirements {
                     .where(FcrsPostgres.REQUIREMENT.ID.eq(id))
                     .execute()
         );
-    }
-
-    public static class RequirementFailedCreateException extends Exception {
-        public RequirementFailedCreateException() {
-            super("Failed to create FederalCurriculumRequirement");
-        }
-    }
-
-    public static class RequirementAlreadyExistsException extends Exception {
-        public RequirementAlreadyExistsException() {
-            super("FederalCurriculumRequirement already exists");
-        }
-    }
-
-    public static class RequirementNotFoundException extends Exception {
-        public RequirementNotFoundException(final String message) {
-            super(message);
-        }
     }
 }

@@ -5,6 +5,7 @@ package com.eshabakhov.schoodule.federal.curriculum.sort;
 
 import com.eshabakhov.schoodule.Sort;
 import com.eshabakhov.schoodule.sort.StJooq;
+import com.eshabakhov.schoodule.tables.FederalCurriculum;
 import java.util.Optional;
 import org.jooq.Field;
 import org.jooq.SortField;
@@ -13,14 +14,9 @@ import org.jooq.SortField;
  * Federal curriculum JOOQ sorting parameter.
  *
  * @since 0.0.1
+ * @checkstyle CyclomaticComplexityCheck (100 lines)
  */
 public final class FcStJooq implements StJooq {
-
-    /**
-     * JOOQ Table for FederalCurriculum.
-     */
-    private static final com.eshabakhov.schoodule.tables.FederalCurriculum CURRICULUM =
-        com.eshabakhov.schoodule.tables.FederalCurriculum.FEDERAL_CURRICULUM;
 
     /**
      * Origin sorting parameter.
@@ -50,14 +46,16 @@ public final class FcStJooq implements StJooq {
     @Override
     public SortField<?> field() {
         final Field<?> field = switch (this.origin.name()) {
-            case "title" -> FcStJooq.CURRICULUM.TITLE;
-            case "level" -> FcStJooq.CURRICULUM.EDUCATION_LEVEL;
-            case "week" -> FcStJooq.CURRICULUM.STUDY_WEEK_TYPE;
-            case "version" -> FcStJooq.CURRICULUM.VERSION;
-            case "year" -> FcStJooq.CURRICULUM.ACADEMIC_YEAR;
+            case null -> null;
+            case "title" -> FederalCurriculum.FEDERAL_CURRICULUM.TITLE;
+            case "level" -> FederalCurriculum.FEDERAL_CURRICULUM.EDUCATION_LEVEL;
+            case "week" -> FederalCurriculum.FEDERAL_CURRICULUM.STUDY_WEEK_TYPE;
+            case "version" -> FederalCurriculum.FEDERAL_CURRICULUM.VERSION;
+            case "year" -> FederalCurriculum.FEDERAL_CURRICULUM.ACADEMIC_YEAR;
             default -> null;
         };
         return switch (this.origin.direction()) {
+            case null -> null;
             case NONE -> null;
             case ASC -> Optional.ofNullable(field).map(Field::asc).orElse(null);
             case DESC -> Optional.ofNullable(field).map(Field::desc).orElse(null);

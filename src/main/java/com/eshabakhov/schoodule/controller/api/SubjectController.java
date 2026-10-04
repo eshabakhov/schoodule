@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @since 0.0.1
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
- * @checkstyle DesignForExtensionCheck (1000 lines)
  */
 @RestController
 @RequestMapping("/api/schools/{school}/subjects")
@@ -63,6 +63,15 @@ public class SubjectController {
         this.ctx = ctx;
     }
 
+    /**
+     * Create a subject.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param request Request body
+     * @return Created subject
+     * @throws Exception When the subject cannot be created
+     */
     @PostMapping
     @PreAuthorize(
         """
@@ -163,7 +172,7 @@ public class SubjectController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (SubjectVersion.SIMPLE.equals(version)) {
+        if (version == SubjectController.SubjectVersion.SIMPLE) {
             final JsonNode name = request.get("name");
             if (name == null || name.asText().isBlank()) {
                 throw new SubjectRequiredFieldException(
@@ -174,18 +183,27 @@ public class SubjectController {
                 .school(school)
                 .subjects()
                 .create(name.asText());
-            return ResponseEntity
-                .created(
-                    URI.create(
-                        String.format("/api/schools/%d/subjects/%d", school, subject.uid())
-                    )
+            return ResponseEntity.created(
+                URI.create(
+                    String.format("/api/schools/%d/subjects/%d", school, subject.uid())
                 )
-                .body(subject);
+            )
+            .body(subject);
         } else {
             throw new VersionHeaderException(version.name());
         }
     }
 
+    /**
+     * Fetch subjects.
+     *
+     * @param school School identifier
+     * @param limit Page size
+     * @param offset Page number
+     * @param namect Name filter
+     * @return Subjects page
+     * @throws Exception When subjects cannot be loaded
+     */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(summary = "Fetch list of subjects")
@@ -207,23 +225,30 @@ public class SubjectController {
             required = false
         ) final String namect
     ) throws Exception {
-        var condition = SubjectController.SUBJECT.SCHOOL_ID.eq(school)
+        Condition condition = SubjectController.SUBJECT.SCHOOL_ID.eq(school)
             .and(SubjectController.SUBJECT.IS_DELETED.eq(false));
         if (namect != null && !namect.isBlank()) {
             condition = condition.and(
                 SubjectController.SUBJECT.NAME.likeIgnoreCase(String.format("%%%s%%", namect))
             );
         }
-        return ResponseEntity
-            .ok()
-            .body(
-                new SlsPostgres(this.ctx)
-                    .school(school)
-                    .subjects()
-                    .subjects(condition, new PageRequest(limit, offset))
-            );
+        return ResponseEntity.ok().body(
+            new SlsPostgres(this.ctx)
+                .school(school)
+                .subjects()
+                .subjects(condition, new PageRequest(limit, offset))
+        );
     }
 
+    /**
+     * Fetch a subject.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param subject Subject identifier
+     * @return Subject
+     * @throws Exception When the subject cannot be loaded
+     */
     @GetMapping("/{subject}")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(
@@ -287,8 +312,8 @@ public class SubjectController {
         @PathVariable final long school,
         @PathVariable final long subject
     ) throws Exception {
-        if (SubjectVersion.SIMPLE.equals(version)) {
-            final var found = new SlsPostgres(this.ctx)
+        if (version == SubjectController.SubjectVersion.SIMPLE) {
+            final Subject found = new SlsPostgres(this.ctx)
                 .school(school)
                 .subjects()
                 .subject(subject);
@@ -301,6 +326,16 @@ public class SubjectController {
         }
     }
 
+    /**
+     * Update a subject.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param subject Subject identifier
+     * @param request Request body
+     * @return Updated subject
+     * @throws Exception When the subject cannot be updated
+     */
     @PutMapping("/{subject}")
     @PreAuthorize(
         """
@@ -420,7 +455,7 @@ public class SubjectController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (SubjectVersion.SIMPLE.equals(version)) {
+        if (version == SubjectController.SubjectVersion.SIMPLE) {
             final JsonNode name = request.get("name");
             if (name == null || name.asText().isBlank()) {
                 throw new SubjectRequiredFieldException(
@@ -429,24 +464,23 @@ public class SubjectController {
             }
             ResponseEntity<Subject> response;
             try {
-                final var updated = new SlsPostgres(this.ctx)
+                final Subject updated = new SlsPostgres(this.ctx)
                     .school(school)
                     .subjects()
                     .subject(subject)
                     .renamed(name.asText());
                 response = ResponseEntity.ok().body(new SbBase(updated.uid(), updated.name()));
             } catch (final SbsPostgres.SubjectNotFoundException ex) {
-                final var created = new SlsPostgres(this.ctx)
+                final Subject created = new SlsPostgres(this.ctx)
                     .school(school)
                     .subjects()
                     .create(name.asText());
-                response = ResponseEntity
-                    .created(
-                        URI.create(
-                            String.format("/api/schools/%d/subjects/%d", school, created.uid())
-                        )
+                response = ResponseEntity.created(
+                    URI.create(
+                        String.format("/api/schools/%d/subjects/%d", school, created.uid())
                     )
-                    .body(created);
+                )
+                .body(created);
             }
             return response;
         } else {
@@ -454,6 +488,14 @@ public class SubjectController {
         }
     }
 
+    /**
+     * Delete a subject.
+     *
+     * @param school School identifier
+     * @param subject Subject identifier
+     * @return Empty response
+     * @throws Exception When the subject cannot be deleted
+     */
     @DeleteMapping("/{subject}")
     @PreAuthorize(
         """
@@ -474,12 +516,6 @@ public class SubjectController {
             .subjects()
             .remove(subject);
         return ResponseEntity.noContent().build();
-    }
-
-    public static class SubjectRequiredFieldException extends Exception {
-        public SubjectRequiredFieldException(final String message) {
-            super(message);
-        }
     }
 
     /** Subject accept version. */

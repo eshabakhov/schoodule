@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * Controller for Html response {@link School} details.
  *
  * @since 0.0.1
- * @checkstyle DesignForExtensionCheck (1000 lines)
  */
 @Controller
 @RequestMapping("/schools/{school}")
@@ -31,6 +30,14 @@ public class SchoolDetailsHtmlController {
         this.ctx = ctx;
     }
 
+    /**
+     * Render school details.
+     *
+     * @param school School identifier
+     * @param model View model
+     * @return Template name
+     * @throws Exception When school data cannot be loaded
+     */
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public String details(

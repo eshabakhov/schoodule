@@ -10,7 +10,7 @@ import com.eshabakhov.schoodule.Printable;
  * Federal curriculum requirement domain entity.
  *
  * <p>Does not expose data via getters. Instead, prints itself
- * into a {@link Media} via {@link Printable#print(Media)}.
+ * into a {@link Media} via {@link Printable#print(Media)}.</p>
  *
  * @since 0.0.1
  */
@@ -61,6 +61,7 @@ public interface FederalCurriculumRequirement extends Printable {
      * @since 0.0.1
      */
     enum PartType {
+
         /**
          * Mandatory part of a curriculum plan.
          */

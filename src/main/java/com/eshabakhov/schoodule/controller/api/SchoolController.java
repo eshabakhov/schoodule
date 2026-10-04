@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @since 0.0.1
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
- * @checkstyle DesignForExtensionCheck (1000 lines)
  */
 @RestController
 @RequestMapping("/api/schools")
@@ -160,7 +160,7 @@ public class SchoolController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (SchoolVersion.SIMPLE.equals(version)) {
+        if (version == SchoolController.SchoolVersion.SIMPLE) {
             final JsonNode name = request.get("name");
             if (name == null || name.asText().isBlank()) {
                 throw new SchoolRequiredFieldException(
@@ -205,18 +205,16 @@ public class SchoolController {
             required = false
         ) final String namect
     ) throws Exception {
-        var condition = SchoolController.SCHOOL.IS_DELETED.eq(false);
+        Condition condition = SchoolController.SCHOOL.IS_DELETED.eq(false);
         if (namect != null && !namect.isBlank()) {
             condition = condition.and(
                 SchoolController.SCHOOL.NAME.likeIgnoreCase(String.format("%%%s%%", namect))
             );
         }
-        return ResponseEntity
-            .ok()
-            .body(
-                new SlsPostgres(this.ctx)
-                    .schools(condition, new PageRequest(limit, offset))
-            );
+        return ResponseEntity.ok().body(
+            new SlsPostgres(this.ctx)
+                .schools(condition, new PageRequest(limit, offset))
+        );
     }
 
     /**
@@ -266,8 +264,8 @@ public class SchoolController {
         @RequestHeader("version") final SchoolVersion version,
         @PathVariable final long school
     ) throws Exception {
-        if (SchoolVersion.SIMPLE.equals(version)) {
-            final var found = new SlsPostgres(this.ctx).school(school);
+        if (version == SchoolController.SchoolVersion.SIMPLE) {
+            final School found = new SlsPostgres(this.ctx).school(school);
             return ResponseEntity
                 .ok()
                 .contentType(SchoolController.SIMPLE_TYPE)
@@ -401,7 +399,7 @@ public class SchoolController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (SchoolVersion.SIMPLE.equals(version)) {
+        if (version == SchoolController.SchoolVersion.SIMPLE) {
             final JsonNode name = request.get("name");
             if (name == null || name.asText().isBlank()) {
                 throw new SchoolRequiredFieldException(
@@ -415,7 +413,7 @@ public class SchoolController {
                     .contentType(SchoolController.SIMPLE_TYPE)
                     .body(new SlsPostgres(this.ctx).school(school).renamed(name.asText()));
             } catch (final SlsPostgres.SchoolNotFoundException ex) {
-                final var newschool = new SlsPostgres(this.ctx).create(name.asText());
+                final School newschool = new SlsPostgres(this.ctx).create(name.asText());
                 response = ResponseEntity
                     .created(URI.create(String.format("/api/schools/%d", newschool.uid())))
                     .contentType(SchoolController.SIMPLE_TYPE)
@@ -446,12 +444,6 @@ public class SchoolController {
     public ResponseEntity<Void> delete(@PathVariable final long school) throws Exception {
         new SlsPostgres(this.ctx).remove(school);
         return ResponseEntity.noContent().build();
-    }
-
-    public static class SchoolRequiredFieldException extends Exception {
-        public SchoolRequiredFieldException(final String message) {
-            super(message);
-        }
     }
 
     /** School accept version. */

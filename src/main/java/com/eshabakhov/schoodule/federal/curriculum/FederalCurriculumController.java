@@ -39,12 +39,10 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @since 0.0.1
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
- * @checkstyle DesignForExtensionCheck (1000 lines)
  */
 @RestController
 @RequestMapping("/api/federal/curriculums")
 @Tag(name = "Federal Curriculums")
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.AvoidFieldNameMatchingMethodName"})
 public class FederalCurriculumController {
 
     /**
@@ -56,6 +54,15 @@ public class FederalCurriculumController {
         this.ctx = ctx;
     }
 
+    /**
+     * Creates a federal curriculum.
+     *
+     * @param version Representation version
+     * @param request Curriculum data
+     * @return Created curriculum
+     * @throws Exception If creation fails
+     * @since 0.0.1
+     */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
@@ -171,39 +178,50 @@ public class FederalCurriculumController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        final FederalCurriculum pgcur = new FcsPostgres(this.ctx)
-            .create(
-                request.required("title").asText(),
-                FederalCurriculum.Level.valueOf(request.required("level").asText()),
-                FederalCurriculum.Week.valueOf(request.required("week").asText()),
-                request.required("version").asText(),
-                request.required("year").asText(),
-                request.get("description").asText("")
-            );
+        final FederalCurriculum pgcur = new FcsPostgres(this.ctx).create(
+            request.required("title").asText(),
+            FederalCurriculum.Level.valueOf(request.required("level").asText()),
+            FederalCurriculum.Week.valueOf(request.required("week").asText()),
+            request.required("version").asText(),
+            request.required("year").asText(),
+            request.get("description").asText("")
+        );
         return switch (version) {
             case SIMPLE -> {
-                yield ResponseEntity
-                    .created(URI.create(String.format("/api/federal/curriculums/%d", pgcur.uid())))
-                    .contentType(
-                        MediaType.valueOf(
-                            "application/com.eshabakhov.schoodule.school.federal.curriculum.simple+json"
-                        )
+                yield ResponseEntity.created(
+                    URI.create(
+                        String.format("/api/federal/curriculums/%d", pgcur.uid())
                     )
-                    .body(new FcSimple(pgcur).print(new JsonMedia()).json());
+                ).contentType(
+                    MediaType.valueOf(
+                        "application/com.eshabakhov.schoodule.school.federal.curriculum.simple+json"
+                    )
+                ).body(new FcSimple(pgcur).print(new JsonMedia()).json());
             }
             case FULL -> {
-                yield ResponseEntity
-                    .created(URI.create(String.format("/api/federal/curriculums/%d", pgcur.uid())))
-                    .contentType(
-                        MediaType.valueOf(
-                            "application/com.eshabakhov.schoodule.school.federal.curriculum.full+json"
-                        )
+                yield ResponseEntity.created(
+                    URI.create(
+                        String.format("/api/federal/curriculums/%d", pgcur.uid())
                     )
-                    .body(new FcFull(pgcur).print(new JsonMedia()).json());
+                ).contentType(
+                    MediaType.valueOf(
+                        "application/com.eshabakhov.schoodule.school.federal.curriculum.full+json"
+                    )
+                ).body(new FcFull(pgcur).print(new JsonMedia()).json());
             }
         };
     }
 
+    /**
+     * Lists federal curriculums.
+     *
+     * @param page Pagination
+     * @param sort Sorting
+     * @param filters Filtering
+     * @return Federal curriculums
+     * @throws Exception If selection fails
+     * @since 0.0.1
+     */
     @GetMapping
     @PreAuthorize(
         """
@@ -218,7 +236,6 @@ public class FederalCurriculumController {
         """
     )
     @Operation(summary = "Fetch list of federal curriculums")
-    //@checkstyle ParameterNumberCheck (1 line)
     public ResponseEntity<ObjectNode> list(
         final Page page,
         final Sorts sort,
@@ -232,6 +249,15 @@ public class FederalCurriculumController {
         );
     }
 
+    /**
+     * Fetches a federal curriculum.
+     *
+     * @param version Representation version
+     * @param curriculum Curriculum ID
+     * @return Federal curriculum
+     * @throws Exception If lookup fails
+     * @since 0.0.1
+     */
     @GetMapping("/{curriculum}")
     @PreAuthorize(
         """
@@ -339,8 +365,7 @@ public class FederalCurriculumController {
         return switch (version) {
             case SIMPLE -> {
                 yield ResponseEntity
-                    .status(HttpStatus.OK)
-                    .contentType(
+                    .status(HttpStatus.OK).contentType(
                         MediaType.valueOf(
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.simple+json"
                         )
@@ -349,8 +374,7 @@ public class FederalCurriculumController {
             }
             case FULL -> {
                 yield ResponseEntity
-                    .status(HttpStatus.OK)
-                    .contentType(
+                    .status(HttpStatus.OK).contentType(
                         MediaType.valueOf(
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.full+json"
                         )
@@ -360,6 +384,16 @@ public class FederalCurriculumController {
         };
     }
 
+    /**
+     * Updates or creates a federal curriculum.
+     *
+     * @param version Representation version
+     * @param curriculum Curriculum ID
+     * @param request Curriculum data
+     * @return Updated or created curriculum
+     * @throws Exception If persistence fails
+     * @since 0.0.1
+     */
     @PutMapping("/{curriculum}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
@@ -528,11 +562,9 @@ public class FederalCurriculumController {
         try {
             final FederalCurriculum changed = new FcsPostgres(this.ctx)
                 .curriculum(curriculum)
-                .retitled(request.required("title").asText())
-                .releveled(
+                .retitled(request.required("title").asText()).releveled(
                     FederalCurriculum.Level.valueOf(request.required("level").asText())
-                )
-                .reweeked(
+                ).reweeked(
                     FederalCurriculum.Week.valueOf(request.required("week").asText())
                 )
                 .reversioned(request.required("version").asText())
@@ -540,58 +572,57 @@ public class FederalCurriculumController {
                 .redescriptioned(request.get("description").asText(""));
             response = switch (version) {
                 case SIMPLE -> ResponseEntity
-                    .status(HttpStatus.OK)
-                    .contentType(
+                    .status(HttpStatus.OK).contentType(
                         MediaType.valueOf(
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.simple+json"
                         )
                     )
                     .body(changed.print(new JsonMedia()).json());
                 case FULL -> ResponseEntity
-                    .status(HttpStatus.OK)
-                    .contentType(
+                    .status(HttpStatus.OK).contentType(
                         MediaType.valueOf(
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.full+json"
                         )
                     )
                     .body(changed.print(new JsonMedia()).json());
             };
-        } catch (final FcsPostgres.CurriculumNotFoundException ignored) {
-            final var created = new FcsPostgres(this.ctx)
-                .create(
-                    request.required("title").asText(),
-                    FederalCurriculum.Level.valueOf(request.required("level").asText()),
-                    FederalCurriculum.Week.valueOf(request.required("week").asText()),
-                    request.required("version").asText(),
-                    request.required("year").asText(),
-                    request.get("description").asText("")
-                );
+        } catch (final CurriculumNotFoundException ignored) {
+            final FederalCurriculum created = new FcsPostgres(this.ctx).create(
+                request.required("title").asText(),
+                FederalCurriculum.Level.valueOf(request.required("level").asText()),
+                FederalCurriculum.Week.valueOf(request.required("week").asText()),
+                request.required("version").asText(),
+                request.required("year").asText(),
+                request.get("description").asText("")
+            );
             response = switch (version) {
-                case SIMPLE -> ResponseEntity
-                    .created(
-                        URI.create(String.format("/api/federal/curriculums/%d", created.uid()))
+                case SIMPLE -> ResponseEntity.created(
+                    URI.create(String.format("/api/federal/curriculums/%d", created.uid()))
+                ).contentType(
+                    MediaType.valueOf(
+                        "application/com.eshabakhov.schoodule.school.federal.curriculum.simple+json"
                     )
-                    .contentType(
-                        MediaType.valueOf(
-                            "application/com.eshabakhov.schoodule.school.federal.curriculum.simple+json"
-                        )
+                ).body(created.print(new JsonMedia()).json());
+                case FULL -> ResponseEntity.created(
+                    URI.create(String.format("/api/federal/curriculums/%d", created.uid()))
+                ).contentType(
+                    MediaType.valueOf(
+                        "application/com.eshabakhov.schoodule.school.federal.curriculum.full+json"
                     )
-                    .body(created.print(new JsonMedia()).json());
-                case FULL -> ResponseEntity
-                    .created(
-                        URI.create(String.format("/api/federal/curriculums/%d", created.uid()))
-                    )
-                    .contentType(
-                        MediaType.valueOf(
-                            "application/com.eshabakhov.schoodule.school.federal.curriculum.full+json"
-                        )
-                    )
-                    .body(created.print(new JsonMedia()).json());
+                ).body(created.print(new JsonMedia()).json());
             };
         }
         return response;
     }
 
+    /**
+     * Removes a federal curriculum.
+     *
+     * @param curriculum Curriculum ID
+     * @return Empty response
+     * @throws Exception If removal fails
+     * @since 0.0.1
+     */
     @DeleteMapping("/{curriculum}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Remove federal curriculum")
@@ -604,6 +635,7 @@ public class FederalCurriculumController {
      * Federal curriculum accept version.
      */
     enum CurriculumVersion {
+
         /**
          * Version of simple federal curriculum.
          */

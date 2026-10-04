@@ -39,13 +39,10 @@ import org.springframework.web.bind.annotation.RestController;
  * Federal curriculum requirement REST API controller.
  *
  * @since 0.0.1
- * @checkstyle ClassFanOutComplexityCheck (1000 lines)
- * @checkstyle DesignForExtensionCheck (1000 lines)
  */
 @RestController
 @RequestMapping("/api/federal/curriculums/{curriculum}/requirements")
 @Tag(name = "Federal Curriculums")
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.AvoidFieldNameMatchingMethodName"})
 public class FederalCurriculumRequirementController {
 
     /**
@@ -57,6 +54,16 @@ public class FederalCurriculumRequirementController {
         this.ctx = ctx;
     }
 
+    /**
+     * Creates a curriculum requirement.
+     *
+     * @param version Representation version
+     * @param curriculum Curriculum ID
+     * @param request Requirement data
+     * @return Created requirement
+     * @throws Exception If creation fails
+     * @since 0.0.1
+     */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
@@ -140,8 +147,7 @@ public class FederalCurriculumRequirementController {
     ) throws Exception {
         final FederalCurriculumRequirement requirement = new FcsPostgres(this.ctx)
             .curriculum(curriculum)
-            .requirements()
-            .create(
+            .requirements().create(
                 request.required("grade").asInt(),
                 request.required("subjectName").asText(),
                 request.required("weeklyHours").asInt(),
@@ -151,25 +157,33 @@ public class FederalCurriculumRequirementController {
             );
         return switch (version) {
             case SIMPLE -> {
-                yield ResponseEntity
-                    .created(
-                        URI.create(
-                            String.format(
-                                "/api/federal/curriculums/%d/requirements/%d",
-                                curriculum, requirement.uid()
-                            )
+                yield ResponseEntity.created(
+                    URI.create(
+                        String.format(
+                            "/api/federal/curriculums/%d/requirements/%d",
+                            curriculum, requirement.uid()
                         )
                     )
-                    .contentType(
-                        MediaType.valueOf(
-                            "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
-                        )
+                ).contentType(
+                    MediaType.valueOf(
+                        "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
                     )
-                    .body(new FcrSimple(requirement).print(new JsonMedia()).json());
+                ).body(new FcrSimple(requirement).print(new JsonMedia()).json());
             }
         };
     }
 
+    /**
+     * Lists curriculum requirements.
+     *
+     * @param curriculum Curriculum ID
+     * @param page Pagination
+     * @param sort Sorting
+     * @param filters Filtering
+     * @return Curriculum requirements
+     * @throws Exception If selection fails
+     * @since 0.0.1
+     */
     @GetMapping
     @PreAuthorize(
         """
@@ -198,6 +212,16 @@ public class FederalCurriculumRequirementController {
         );
     }
 
+    /**
+     * Fetches a curriculum requirement.
+     *
+     * @param version Representation version
+     * @param curriculum Curriculum ID
+     * @param requirement Requirement ID
+     * @return Curriculum requirement
+     * @throws Exception If lookup fails
+     * @since 0.0.1
+     */
     @GetMapping("/{requirement}")
     @PreAuthorize(
         """
@@ -275,13 +299,11 @@ public class FederalCurriculumRequirementController {
         return switch (version) {
             case SIMPLE -> {
                 yield ResponseEntity
-                    .status(HttpStatus.OK)
-                    .contentType(
+                    .status(HttpStatus.OK).contentType(
                         MediaType.valueOf(
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
                         )
-                    )
-                    .body(
+                    ).body(
                         new FcrSimple(
                             new FcsPostgres(this.ctx)
                                 .curriculum(curriculum)
@@ -293,6 +315,17 @@ public class FederalCurriculumRequirementController {
         };
     }
 
+    /**
+     * Updates or creates a curriculum requirement.
+     *
+     * @param version Representation version
+     * @param curriculum Curriculum ID
+     * @param requirement Requirement ID
+     * @param request Requirement data
+     * @return Updated or created requirement
+     * @throws Exception If persistence fails
+     * @since 0.0.1
+     */
     @PutMapping("/{requirement}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
@@ -384,26 +417,21 @@ public class FederalCurriculumRequirementController {
             response = switch (version) {
                 case SIMPLE -> {
                     yield ResponseEntity
-                        .status(HttpStatus.OK)
-                        .contentType(
+                        .status(HttpStatus.OK).contentType(
                             MediaType.valueOf(
                                 "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
                             )
-                        )
-                        .body(
+                        ).body(
                             new FcrSimple(
                                 new FcsPostgres(this.ctx)
                                     .curriculum(curriculum)
                                     .requirements()
                                     .requirement(requirement)
-                                    .regraded(request.required("grade").asInt())
-                                    .resubjected(
+                                    .regraded(request.required("grade").asInt()).resubjected(
                                         request.required("subjectName").asText()
-                                    )
-                                    .reweekled(
+                                    ).reweekled(
                                         request.required("weeklyHours").asInt()
-                                    )
-                                    .reparted(
+                                    ).reparted(
                                         FederalCurriculumRequirement.PartType.valueOf(
                                             request.required("partType").asText()
                                         )
@@ -412,11 +440,10 @@ public class FederalCurriculumRequirementController {
                         );
                 }
             };
-        } catch (final FcrsPostgres.RequirementNotFoundException ignored) {
-            final var created =  new FcsPostgres(this.ctx)
+        } catch (final RequirementNotFoundException ignored) {
+            final FederalCurriculumRequirement created = new FcsPostgres(this.ctx)
                 .curriculum(curriculum)
-                .requirements()
-                .create(
+                .requirements().create(
                     request.required("grade").asInt(),
                     request.required("subjectName").asText(),
                     request.required("weeklyHours").asInt(),
@@ -426,31 +453,37 @@ public class FederalCurriculumRequirementController {
                 );
             response = switch (version) {
                 case SIMPLE -> {
-                    yield ResponseEntity
-                        .created(
-                            URI.create(
-                                String.format(
-                                    "/api/federal/curriculums/%d/requirements/%d",
-                                    curriculum, created.uid()
-                                )
+                    yield ResponseEntity.created(
+                        URI.create(
+                            String.format(
+                                "/api/federal/curriculums/%d/requirements/%d",
+                                curriculum, created.uid()
                             )
                         )
-                        .contentType(
-                            MediaType.valueOf(
-                                "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
-                            )
+                    ).contentType(
+                        MediaType.valueOf(
+                            "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
                         )
-                        .body(
-                            new FcrSimple(created)
-                                .print(new JsonMedia())
-                                .json()
-                        );
+                    ).body(
+                        new FcrSimple(created)
+                            .print(new JsonMedia())
+                            .json()
+                    );
                 }
             };
         }
         return response;
     }
 
+    /**
+     * Removes a curriculum requirement.
+     *
+     * @param curriculum Curriculum ID
+     * @param requirement Requirement ID
+     * @return Empty response
+     * @throws Exception If removal fails
+     * @since 0.0.1
+     */
     @DeleteMapping("/{requirement}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Remove federal curriculum requirement")
@@ -466,6 +499,7 @@ public class FederalCurriculumRequirementController {
      * Federal curriculum requirement accept version.
      */
     enum CurriculumVersion {
+
         /**
          * Version of simple federal curriculum requirement.
          */
