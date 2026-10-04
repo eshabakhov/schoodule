@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 /**
  * Simple implementation of {@link PageableList}.
  *
- * @param <T> Type of elements stored in the list.
+ * @param <T> Type of elements stored in the list
  * @since 0.0.1
  */
 @EqualsAndHashCode
@@ -26,6 +26,14 @@ public final class ResponsePageableList<T> implements PageableList<T> {
     /** Page implementation. */
     private final Page page;
 
+    /**
+     * New pageable list.
+     *
+     * @param list Page items
+     * @param total Total number of items
+     * @param page Pagination
+     * @since 0.0.1
+     */
     public ResponsePageableList(final List<T> list, final Integer total, final Page page) {
         this.lst = list;
         this.ttl = total;

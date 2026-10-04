@@ -20,6 +20,13 @@ public final class PageRequest implements Page {
     /** Page's offset. */
     private final int off;
 
+    /**
+     * New page request.
+     *
+     * @param lim Page size
+     * @param off Page number
+     * @since 0.0.1
+     */
     public PageRequest(final int lim, final int off) {
         this.lim = lim;
         this.off = off;

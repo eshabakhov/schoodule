@@ -19,6 +19,15 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Component
 public final class PageArgumentResolver implements HandlerMethodArgumentResolver {
 
+    /**
+     * New resolver.
+     *
+     * @since 0.0.1
+     */
+    public PageArgumentResolver() {
+        // Intentionally empty.
+    }
+
     @Override
     public boolean supportsParameter(final MethodParameter parameter) {
         return Page.class.equals(parameter.getParameterType());
