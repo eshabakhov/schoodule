@@ -11,15 +11,13 @@ import java.util.List;
  *
  * <p>Represents one subscription row and exposes behavioral methods
  * rather than getters. Corporate users never have a subscription.</p>
- *
- * <p>Usage example:
+ * Usage example:
  * <pre>
  * final Subscription sub = subscriptions.subscription(userId);
  * if (sub.expired()) {
  *     subscriptions.downgrade(userId);
  * }
  * </pre>
- * </p>
  *
  * @since 0.0.1
  */
@@ -66,7 +64,8 @@ public interface Subscription {
             "Базовый",
             "Бесплатно",
             null,
-            List.of(
+            String.format(
+                "%s%n%s%n%s",
                 "Просмотр расписания школы",
                 "Доступ к учебному плану классов",
                 "До 1 расписания"
@@ -78,7 +77,8 @@ public interface Subscription {
             "Продвинутый",
             "0 ₽ / месяц",
             0,
-            List.of(
+            String.format(
+                "%s%n%s%n%s%n%s%n%s",
                 "Всё из Базового",
                 "Создание и редактирование расписаний",
                 "Управление учебным планом классов",
@@ -92,7 +92,8 @@ public interface Subscription {
             "Профессиональный",
             "0 ₽ / месяц",
             0,
-            List.of(
+            String.format(
+                "%s%n%s%n%s%n%s%n%s%n%s",
                 "Всё из Продвинутого",
                 "Неограниченное количество расписаний",
                 "Расширенное управление учебным планом",
@@ -107,7 +108,8 @@ public interface Subscription {
             "Просмотрщик",
             "0 ₽ / месяц",
             0,
-            List.of(
+            String.format(
+                "%s%n%s%n%s",
                 "Просмотр готового расписания",
                 "Фильтрация по классу и учителю",
                 "Уведомления об изменениях (скоро)"
@@ -124,14 +126,13 @@ public interface Subscription {
         private final Integer mnth;
 
         /** Features. */
-        private final List<String> feats;
+        private final String feats;
 
-        // @checkstyle ParameterNumberCheck (2 lines)
         Plan(
             final String label,
             final String price,
             final Integer monthly,
-            final List<String> features
+            final String features
         ) {
             this.lbl = label;
             this.prc = price;
@@ -172,7 +173,7 @@ public interface Subscription {
          * @return Feature descriptions
          */
         public List<String> features() {
-            return this.feats;
+            return this.feats.lines().toList();
         }
 
         /**

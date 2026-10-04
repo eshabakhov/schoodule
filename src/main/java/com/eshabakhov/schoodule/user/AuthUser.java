@@ -17,15 +17,13 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
  * <p>Implements both {@link UserDetails} and {@link OAuth2User} so that
  * {@code @AuthenticationPrincipal AuthUser} resolves correctly regardless
  * of whether the user signed in via form-login or Yandex OAuth2.</p>
- *
- * <p>Usage example:
+ * Usage example:
  * <pre>
  * final AuthUser user = new AuthUser(dbUser);
  * user.uid();           // always available
  * user.getUsername();   // from UserDetails
  * user.getName();       // from OAuth2User — same as username
  * </pre>
- * </p>
  *
  * @since 0.0.1
  */
@@ -34,6 +32,11 @@ public final class AuthUser implements UserDetails, OAuth2User, User {
     /** User. */
     private final User user;
 
+    /**
+     * New authenticated user.
+     *
+     * @param user User
+     */
     public AuthUser(final User user) {
         this.user = user;
     }

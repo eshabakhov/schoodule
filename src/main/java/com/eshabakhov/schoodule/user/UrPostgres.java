@@ -19,6 +19,12 @@ public final class UrPostgres implements User {
     /** User ID. */
     private final long id;
 
+    /**
+     * New user.
+     *
+     * @param ctx Database context
+     * @param id User identifier
+     */
     public UrPostgres(final DSLContext ctx, final long id) {
         this.ctx = ctx;
         this.id = id;

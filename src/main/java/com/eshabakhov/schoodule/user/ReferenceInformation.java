@@ -14,12 +14,27 @@ import org.jooq.DSLContext;
  */
 public interface ReferenceInformation {
 
+    /**
+     * School identifier.
+     *
+     * @return School identifier
+     */
     @JsonProperty
     Long school();
 
+    /**
+     * Corporate account marker.
+     *
+     * @return Corporate account marker
+     */
     @JsonProperty
     Boolean corporate();
 
+    /**
+     * Account availability marker.
+     *
+     * @return Account availability marker
+     */
     @JsonProperty
     Boolean alive();
 
@@ -36,6 +51,12 @@ public interface ReferenceInformation {
         /** User id. */
         private final Long user;
 
+        /**
+         * New reference information.
+         *
+         * @param ctx Database context
+         * @param user User identifier
+         */
         public RefInfoPostgres(final DSLContext ctx, final Long user) {
             this.ctx = ctx;
             this.user = user;
@@ -65,5 +86,4 @@ public interface ReferenceInformation {
                 .fetchOne() != null;
         }
     }
-
 }

@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
  * User management API controller.
  *
  * @since 0.0.1
- * @checkstyle DesignForExtensionCheck (1000 lines)
  */
 @RestController
 @RequestMapping("/api/users")
@@ -44,6 +43,13 @@ public class UserController {
         this.ctx = ctx;
     }
 
+    /**
+     * Register a user.
+     *
+     * @param request Registration request
+     * @return Created user
+     * @throws Exception If registration fails
+     */
     @PostMapping
     @Operation(summary = "Register new user")
     @ApiResponse(
@@ -135,13 +141,14 @@ public class UserController {
         final User created;
         final JsonNode school = request.get("school");
         if (school == null) {
-            created = new UrsPostgres(this.ctx, new SlsPostgres(this.ctx).create("My school").uid())
-                .register(
-                    username.asText(),
-                    password.asText(),
-                    email.asText(),
-                    false
-                );
+            created = new UrsPostgres(
+                this.ctx, new SlsPostgres(this.ctx).create("My school").uid()
+            ).register(
+                username.asText(),
+                password.asText(),
+                email.asText(),
+                false
+            );
         } else {
             created = new UrsPostgres(
                 this.ctx,
@@ -234,11 +241,11 @@ public class UserController {
         if (rolenode == null || rolenode.asText().isBlank()) {
             throw new RoleAssignmentException("Role is required");
         }
-        final var assigned = new UrsPostgres(this.ctx)
+        final Role assigned = new UrsPostgres(this.ctx)
             .identification(user)
-            .roles()
-            .grant(
+            .roles().grant(
                 switch (rolenode.asText()) {
+                    case null -> Roles.RoleEnum.STUDENT;
                     case "ADMIN" -> Roles.RoleEnum.ADMIN;
                     case "DIRECTOR" -> Roles.RoleEnum.DIRECTOR;
                     case "DEPUTY_DIRECTOR" -> Roles.RoleEnum.DEPUTY_DIRECTOR;
@@ -246,17 +253,15 @@ public class UserController {
                     default -> Roles.RoleEnum.STUDENT;
                 }
             );
-        return ResponseEntity
-            .created(
-                URI.create(
-                    String.format(
-                        "/api/users/%d/roles/%d",
-                        user,
-                        assigned.uid()
-                    )
+        return ResponseEntity.created(
+            URI.create(
+                String.format(
+                    "/api/users/%d/roles/%d",
+                    user,
+                    assigned.uid()
                 )
             )
-            .body(assigned);
+        ).body(assigned);
     }
 
     /**
@@ -297,34 +302,5 @@ public class UserController {
             .roles()
             .revoke(role);
         return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * Registration exception.
-     *
-     * @since 0.0.1
-     */
-    public static class RegistrationException extends Exception {
-
-        /**
-         * Constructor.
-         *
-         * @param message Error message
-         */
-        public RegistrationException(final String message) {
-            super(message);
-        }
-    }
-
-    /**
-     * Role assignment exception.
-     *
-     * @since 0.0.1
-     */
-    public static class RoleAssignmentException extends Exception {
-
-        public RoleAssignmentException(final String message) {
-            super(message);
-        }
     }
 }

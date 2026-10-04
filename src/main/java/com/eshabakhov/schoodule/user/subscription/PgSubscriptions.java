@@ -15,6 +15,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import org.jooq.DSLContext;
+import org.jooq.Record1;
+import org.jooq.Record2;
 
 /**
  * PostgreSQL-backed implementation of {@link Subscriptions}.
@@ -23,13 +25,11 @@ import org.jooq.DSLContext;
  * jOOQ transaction that atomically swaps roles in {@code user_role} and
  * updates the {@code subscription} row. Corporate users are rejected
  * before any database work is done.</p>
- *
- * <p>Usage example:
+ * Usage example:
  * <pre>
  * final Subscriptions subs = new PgSubscriptions(dsl);
  * subs.activate(userId, SubscriptionPlan.PRO);
  * </pre>
- * </p>
  *
  * @since 0.0.1
  */
@@ -49,6 +49,12 @@ public final class PgSubscriptions implements Subscriptions {
     /** Authenticated user. */
     private final AuthUser user;
 
+    /**
+     * New subscriptions collection.
+     *
+     * @param ctx Database context
+     * @param user Authenticated user
+     */
     public PgSubscriptions(final DSLContext ctx, final AuthUser user) {
         this.ctx = ctx;
         this.user = user;
@@ -59,8 +65,9 @@ public final class PgSubscriptions implements Subscriptions {
         if (this.user.info().corporate() || this.user.isAdmin()) {
             throw new PersonalOnlyException(this.user.uid());
         }
-        final var selected = this.ctx
-            .select(PgSubscriptions.SUB.PLAN, PgSubscriptions.SUB.EXPIRES_AT)
+        final Record2<String, OffsetDateTime> selected = this.ctx.select(
+            PgSubscriptions.SUB.PLAN, PgSubscriptions.SUB.EXPIRES_AT
+            )
             .from(PgSubscriptions.SUB)
             .where(PgSubscriptions.SUB.USER_ID.eq(this.user.uid()))
             .fetchOne();
@@ -89,8 +96,8 @@ public final class PgSubscriptions implements Subscriptions {
         }
         this.ctx.transaction(
             conf -> {
-                final var ttx = conf.dsl();
-                this.swap(ttx, roles(ttx, plan));
+                final DSLContext ttx = conf.dsl();
+                this.swap(ttx, PgSubscriptions.roles(ttx, plan));
                 ttx.insertInto(PgSubscriptions.SUB)
                     .set(PgSubscriptions.SUB.USER_ID, this.user.uid())
                     .set(PgSubscriptions.SUB.PLAN, plan.name())
@@ -106,14 +113,6 @@ public final class PgSubscriptions implements Subscriptions {
         );
     }
 
-    /**
-     * Reads the {@link RoleType} set for the given plan
-     * from {@code subscription_plan_roles}.
-     *
-     * @param dsl  DSL context (may be inside a transaction)
-     * @param plan Target plan
-     * @return List of role types to grant
-     */
     private static List<RoleType> roles(final DSLContext dsl, final Subscription.Plan plan) {
         return dsl.select(PgSubscriptions.SPR.ROLE_NAME)
             .from(PgSubscriptions.SPR)
@@ -124,36 +123,22 @@ public final class PgSubscriptions implements Subscriptions {
             .toList();
     }
 
-    /**
-     * Removes all subscription-managed roles from the user then inserts
-     * the new set. Corporate roles are never in the managed list and
-     * are therefore never touched.
-     *
-     * @param dsl    DSL context (must be inside a transaction)
-     * @param grants Role types to grant
-     */
     private void swap(final DSLContext dsl, final List<RoleType> grants) {
-        dsl.deleteFrom(UserRole.USER_ROLE)
-            .where(
-                UserRole.USER_ROLE.USER_ID.eq(this.user.uid())
-                    .and(
-                        UserRole.USER_ROLE.ROLE_ID.in(
-                            dsl.select(Role.ROLE.ID)
-                                .from(Role.ROLE)
-                                .where(
-                                    Role.ROLE.NAME.in(
-                                        List.of(
-                                            "BASIC_MAKER", "ADVANCED_MAKER", "PRO_MAKER", "VIEWER"
-                                        )
-                                    )
-                                )
+        dsl.deleteFrom(UserRole.USER_ROLE).where(
+            UserRole.USER_ROLE.USER_ID.eq(this.user.uid()).and(
+                UserRole.USER_ROLE.ROLE_ID.in(
+                    dsl.select(Role.ROLE.ID).from(Role.ROLE).where(
+                        Role.ROLE.NAME.in(
+                            List.of(
+                                "BASIC_MAKER", "ADVANCED_MAKER", "PRO_MAKER", "VIEWER"
+                            )
                         )
                     )
+                )
             )
-            .execute();
+        ).execute();
         for (final RoleType role : grants) {
-            final var rid = dsl
-                .select(Role.ROLE.ID)
+            final Record1<Long> rid = dsl.select(Role.ROLE.ID)
                 .from(Role.ROLE)
                 .where(Role.ROLE.NAME.eq(role))
                 .fetchOne();
@@ -168,26 +153,6 @@ public final class PgSubscriptions implements Subscriptions {
                 .onConflict(UserRole.USER_ROLE.USER_ID, UserRole.USER_ROLE.ROLE_ID)
                 .doNothing()
                 .execute();
-        }
-    }
-
-    /**
-     * Thrown when a corporate user attempts to access subscription functionality.
-     *
-     * <p>Corporate users receive their roles through the school administrator
-     * and are not eligible for personal subscriptions.</p>
-     *
-     * @since 0.0.1
-     */
-    private static final class PersonalOnlyException extends Exception {
-
-        /**
-         * Primary constructor.
-         *
-         * @param user User identifier for context
-         */
-        PersonalOnlyException(final long user) {
-            super(String.format("Subscriptions are unavailable for corporate user (id=%d)", user));
         }
     }
 }

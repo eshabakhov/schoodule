@@ -7,11 +7,11 @@ import com.eshabakhov.schoodule.user.Subscription;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import org.jooq.DSLContext;
+import org.jooq.Record1;
 
 /**
  * Immutable subscription snapshot loaded from PostgreSQL.
- *
- * <p>Usage example:
+ * Usage example:
  * <pre>
  * final Subscription sub = new PgSubscription(
  *     SubscriptionPlan.PRO_MAKER,
@@ -19,7 +19,6 @@ import org.jooq.DSLContext;
  * );
  * if (sub.valid()) { ... }
  * </pre>
- * </p>
  *
  * @since 0.0.1
  */
@@ -35,6 +34,12 @@ public final class PgSubscription implements Subscription {
     /** User ID. */
     private final long id;
 
+    /**
+     * New subscription.
+     *
+     * @param dsl Database context
+     * @param id User identifier
+     */
     public PgSubscription(final DSLContext dsl, final long id) {
         this.dsl = dsl;
         this.id = id;
@@ -42,7 +47,7 @@ public final class PgSubscription implements Subscription {
 
     @Override
     public Plan plan() {
-        final var selected = this.dsl.select(PgSubscription.SUBSCRIPTION.PLAN)
+        final Record1<String> selected = this.dsl.select(PgSubscription.SUBSCRIPTION.PLAN)
             .from(PgSubscription.SUBSCRIPTION)
             .where(PgSubscription.SUBSCRIPTION.USER_ID.eq(this.id))
             .fetchOne();
@@ -57,8 +62,9 @@ public final class PgSubscription implements Subscription {
 
     @Override
     public OffsetDateTime expiry() {
-        final var selected = this.dsl.select(PgSubscription.SUBSCRIPTION.EXPIRES_AT)
-            .from(PgSubscription.SUBSCRIPTION)
+        final Record1<OffsetDateTime> selected = this.dsl.select(
+            PgSubscription.SUBSCRIPTION.EXPIRES_AT
+        ).from(PgSubscription.SUBSCRIPTION)
             .where(PgSubscription.SUBSCRIPTION.USER_ID.eq(this.id))
             .fetchOne();
         final OffsetDateTime expiry;

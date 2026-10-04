@@ -6,10 +6,14 @@ package com.eshabakhov.schoodule.user;
 import com.eshabakhov.schoodule.User;
 import com.eshabakhov.schoodule.Users;
 import com.eshabakhov.schoodule.tables.LoginAttempt;
+import com.eshabakhov.schoodule.tables.records.LoginAttemptRecord;
+import com.eshabakhov.schoodule.tables.records.UserRecord;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import org.jooq.DSLContext;
+import org.jooq.Result;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
@@ -29,10 +33,21 @@ public final class UrsPostgres implements Users {
     /** School ID. */
     private Long sid;
 
+    /**
+     * New users collection.
+     *
+     * @param ctx Database context
+     */
     public UrsPostgres(final DSLContext ctx) {
         this(ctx, null);
     }
 
+    /**
+     * New users collection scoped to a school.
+     *
+     * @param ctx Database context
+     * @param sid School identifier
+     */
     public UrsPostgres(final DSLContext ctx, final Long sid) {
         this.ctx = ctx;
         this.sid = sid;
@@ -50,7 +65,7 @@ public final class UrsPostgres implements Users {
         return this.ctx.transactionResult(
             conf -> {
                 final DSLContext ttx = conf.dsl();
-                final var inserted = ttx.insertInto(UrsPostgres.USER)
+                final UserRecord inserted = ttx.insertInto(UrsPostgres.USER)
                     .set(UrsPostgres.USER.USERNAME, username)
                     .set(UrsPostgres.USER.PASSWORD, new BCryptPasswordEncoder().encode(password))
                     .set(UrsPostgres.USER.EMAIL, email)
@@ -61,7 +76,7 @@ public final class UrsPostgres implements Users {
                 if (inserted == null) {
                     throw new UserCreationException("Failed to create user");
                 }
-                final var user = new UrPostgres(ttx, inserted.getId());
+                final User user = new UrPostgres(ttx, inserted.getId());
                 user.roles().grant(Roles.RoleEnum.STUDENT);
                 user.roles().grant(Roles.RoleEnum.BASIC_MAKER);
                 return user;
@@ -71,14 +86,12 @@ public final class UrsPostgres implements Users {
 
     @Override
     public User identification(final String login) throws Exception {
-        final var selected = this.ctx.selectFrom(UrsPostgres.USER)
-            .where(
-                UrsPostgres.USER.DELETED.isNull().and(
-                    UrsPostgres.USER.USERNAME.eq(login)
-                        .or(UrsPostgres.USER.EMAIL.eq(login))
-                )
+        final UserRecord selected = this.ctx.selectFrom(UrsPostgres.USER).where(
+            UrsPostgres.USER.DELETED.isNull().and(
+                UrsPostgres.USER.USERNAME.eq(login)
+                    .or(UrsPostgres.USER.EMAIL.eq(login))
             )
-            .fetchOne();
+        ).fetchOne();
         if (selected == null) {
             throw new UserNotFoundException(String.format("User with login '%s' not found", login));
         }
@@ -87,7 +100,7 @@ public final class UrsPostgres implements Users {
 
     @Override
     public User identification(final Long uid) throws Exception {
-        final var selected = this.ctx.selectFrom(UrsPostgres.USER)
+        final UserRecord selected = this.ctx.selectFrom(UrsPostgres.USER)
             .where(UrsPostgres.USER.ID.eq(uid).and(UrsPostgres.USER.DELETED.isNull()))
             .fetchOne();
         if (selected == null) {
@@ -98,20 +111,19 @@ public final class UrsPostgres implements Users {
 
     @Override
     public User authentication(final String login) throws Exception {
-        final var user = this.identification(login);
-        final var time = Instant.now().atOffset(ZoneOffset.UTC);
-        final var selected = this.ctx.selectFrom(LoginAttempt.LOGIN_ATTEMPT)
-            .where(
-                LoginAttempt.LOGIN_ATTEMPT.USER_ID.eq(user.uid())
-                    .and(
-                        LoginAttempt.LOGIN_ATTEMPT.TIME.greaterOrEqual(
-                            time.minus(Duration.ofMinutes(5))
-                        )
-                    )
-                    .and(LoginAttempt.LOGIN_ATTEMPT.TIME.lessOrEqual(time))
-                    .and(LoginAttempt.LOGIN_ATTEMPT.SUCCESS.eq(false))
+        final User user = this.identification(login);
+        final OffsetDateTime time = Instant.now().atOffset(ZoneOffset.UTC);
+        final Result<LoginAttemptRecord> selected = this.ctx.selectFrom(
+            LoginAttempt.LOGIN_ATTEMPT
+        ).where(
+            LoginAttempt.LOGIN_ATTEMPT.USER_ID.eq(user.uid()).and(
+                LoginAttempt.LOGIN_ATTEMPT.TIME.greaterOrEqual(
+                    time.minus(Duration.ofMinutes(5))
+                )
             )
-            .fetch();
+            .and(LoginAttempt.LOGIN_ATTEMPT.TIME.lessOrEqual(time))
+            .and(LoginAttempt.LOGIN_ATTEMPT.SUCCESS.eq(false))
+        ).fetch();
         if (selected.size() > 5) {
             throw new UserLockedException(String.format("User %s is locked", login));
         }
@@ -155,42 +167,6 @@ public final class UrsPostgres implements Users {
             c -> "!@#$%^&*()_+-=[]{};':\"\\|,.<>/?".indexOf(c) >= 0
         )) {
             throw new UserCreationException("Пароль должен содержать хотя бы один спец. символ");
-        }
-    }
-
-    /**
-     * User creation exception.
-     *
-     * @since 0.0.1
-     */
-    public static class UserCreationException extends Exception {
-
-        public UserCreationException(final String message) {
-            super(message);
-        }
-    }
-
-    /**
-     * User not found exception.
-     *
-     * @since 0.0.1
-     */
-    public static class UserNotFoundException extends Exception {
-
-        public UserNotFoundException(final String message) {
-            super(message);
-        }
-    }
-
-    /**
-     * User locked exception.
-     *
-     * @since 0.0.1
-     */
-    public static class UserLockedException extends Exception {
-
-        public UserLockedException(final String message) {
-            super(message);
         }
     }
 }

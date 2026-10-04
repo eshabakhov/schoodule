@@ -20,14 +20,12 @@ import org.springframework.web.servlet.ModelAndView;
  *
  * <p>Accessible only to personal (non-corporate) users.
  * Corporate users are redirected to their profile page immediately.</p>
- *
- * <p>Usage example:
+ * Usage example:
  * <pre>
- * GET  /users/subscription          → manage page
- * POST /users/subscription/checkout → activate a paid plan (stub)
- * POST /users/subscription/cancel   → downgrade to BASIC
+ * GET  /users/subscription          - manage page
+ * POST /users/subscription/checkout - activate a paid plan (stub)
+ * POST /users/subscription/cancel   - downgrade to BASIC
  * </pre>
- * </p>
  *
  * @since 0.0.1
  */
@@ -38,6 +36,11 @@ public final class SubscriptionPage {
     /** Database context. */
     private final DSLContext ctx;
 
+    /**
+     * New subscription page.
+     *
+     * @param ctx Database context
+     */
     public SubscriptionPage(final DSLContext ctx) {
         this.ctx = ctx;
     }
@@ -55,14 +58,13 @@ public final class SubscriptionPage {
         if (user.info().corporate()) {
             model = new ModelAndView("redirect:/users/profile");
         } else {
-            model = new ModelAndView("user/subscription")
-                .addAllObjects(
-                    Map.of(
-                        "pageTitle", "Подписка",
-                        "subscription", new PgSubscriptions(this.ctx, user).subscription(),
-                        "plans", Subscription.Plan.values()
-                    )
-                );
+            model = new ModelAndView("user/subscription").addAllObjects(
+                Map.of(
+                    "pageTitle", "Подписка",
+                    "subscription", new PgSubscriptions(this.ctx, user).subscription(),
+                    "plans", Subscription.Plan.values()
+                )
+            );
         }
         return model;
     }

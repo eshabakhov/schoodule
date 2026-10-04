@@ -7,7 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- *  Login HTML controller.
+ * Login HTML controller.
  *
  * @since 0.0.1
  */
@@ -15,7 +15,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 public final class LoginPage {
 
     /**
+     * New login page.
+     */
+    public LoginPage() {
+        // Intentionally empty.
+    }
+
+    /**
      * Login method.
+     *
      * @return Login
      * @checkstyle NonStaticMethodCheck (2 lines)
      */

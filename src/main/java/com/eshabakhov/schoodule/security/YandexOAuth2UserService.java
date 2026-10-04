@@ -6,6 +6,7 @@ package com.eshabakhov.schoodule.security;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.user.AuthUser;
 import com.eshabakhov.schoodule.user.UrsPostgres;
+import com.eshabakhov.schoodule.user.UserNotFoundException;
 import java.util.UUID;
 import org.jooq.DSLContext;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -86,7 +87,7 @@ public final class YandexOAuth2UserService extends DefaultOAuth2UserService {
         String username;
         try {
             username = urs.identification(email).credentials().username();
-        } catch (final UrsPostgres.UserNotFoundException ignored) {
+        } catch (final UserNotFoundException ignored) {
             username = new UrsPostgres(
                 this.ctx,
                 new SlsPostgres(this.ctx).create("My school").uid()

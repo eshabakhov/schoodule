@@ -14,23 +14,36 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 /**
  * User exception handler for controllers.
  *
- * <p>This class provides centralized exception handling for all controllers in user's package.
+ * <p>This class provides centralized exception handling for all controllers
+ * in user's package.</p>
  *
  * @since 0.0.1
  */
 @ControllerAdvice(basePackages = "com.eshabakhov.schoodule.user")
 public final class UserExceptionHandler {
 
-    private UserExceptionHandler() { }
+    /**
+     * New user exception handler.
+     */
+    public UserExceptionHandler() {
+        // Intentionally empty.
+    }
 
+    /**
+     * Handle user registration failures.
+     *
+     * @param exception Failure
+     * @return Error response
+     * @checkstyle NonStaticMethodCheck (2 lines)
+     */
     @ExceptionHandler(
         {
-            UserController.RegistrationException.class,
-            UserController.RoleAssignmentException.class,
-            UrsPostgres.UserCreationException.class
+            RegistrationException.class,
+            RoleAssignmentException.class,
+            UserCreationException.class
         }
     )
-    public static ResponseEntity<Object> handleRegistrationException(final Exception exception) {
+    public ResponseEntity<Object> handleRegistrationException(final Exception exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .contentType(MediaType.APPLICATION_JSON)
             .body(new SimpleError(exception.getMessage(), Instant.now()));
