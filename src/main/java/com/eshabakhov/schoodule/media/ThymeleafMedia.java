@@ -10,13 +10,14 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
  * A {@link Media} implementation that collects printed data
  * into a flat {@link Map} suitable for Thymeleaf model attributes.
  *
- * <p>Usage in a controller:
+ * <p>Usage in a controller:</p>
  * <pre>
  *   ThymeleafMedia media = new ThymeleafMedia("curriculums/details", "curriculum");
  *   curriculum.print(media);
@@ -25,7 +26,6 @@ import org.springframework.web.servlet.ModelAndView;
  *
  * @since 0.0.1
  */
-@SuppressWarnings("PMD.TooManyMethods")
 public final class ThymeleafMedia implements ViewMedia {
 
     /**
@@ -68,9 +68,7 @@ public final class ThymeleafMedia implements ViewMedia {
     }
 
     @Override
-    public ThymeleafMedia attributes(
-        final Map<String, Object> values
-    ) {
+    public ThymeleafMedia attributes(final Map<String, Object> values) {
         this.model.putAll(values);
         return this;
     }
@@ -112,7 +110,7 @@ public final class ThymeleafMedia implements ViewMedia {
     ) {
         this.data.put(
             name,
-            java.util.stream.StreamSupport.stream(values.spliterator(), false)
+            StreamSupport.stream(values.spliterator(), false)
                 .map(value -> value.print(new ThymeleafMedia("", "")).map())
                 .toList()
         );
@@ -131,12 +129,7 @@ public final class ThymeleafMedia implements ViewMedia {
         return this;
     }
 
-    /**
-     * Returns the collected data as an unmodifiable map
-     * ready to be added to a Thymeleaf {@code ModelAndView}.
-     *
-     * @return Unmodifiable map of field name to value
-     */
+    @Override
     public Map<String, Object> map() {
         return Collections.unmodifiableMap(this.data);
     }
