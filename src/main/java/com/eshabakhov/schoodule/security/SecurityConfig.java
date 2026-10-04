@@ -11,7 +11,6 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,15 +34,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  * Spring security config.
  *
  * @since 0.0.1
+ * @checkstyle LambdaBodyLengthCheck (1000 lines)
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
-
-    /** HSTS max age in seconds. */
-    private static final long HSTS_AGE = 31_536_000L;
 
     /** Permissions policy. */
     private static final String PERMISSIONS = String.join(
@@ -85,6 +81,30 @@ public class SecurityConfig {
     private String origins;
 
     /**
+     * New security configuration.
+     *
+     * @param userdetails User details service
+     * @param success Login success handler
+     * @param failure Login failure handler
+     * @param oauthhandler OAuth success handler
+     * @param oauthservice OAuth user service
+     * @since 0.0.1
+     */
+    public SecurityConfig(
+        final DatabaseUserDetailsService userdetails,
+        final LoginSuccessHandler success,
+        final LoginFailureHandler failure,
+        final OAuthSuccessHandler oauthhandler,
+        final YandexOAuth2UserService oauthservice
+    ) {
+        this.userdetails = userdetails;
+        this.success = success;
+        this.failure = failure;
+        this.oauthhandler = oauthhandler;
+        this.oauthservice = oauthservice;
+    }
+
+    /**
      * Security filter chain configuration.
      *
      * @param http HttpSecurity to configure
@@ -98,14 +118,11 @@ public class SecurityConfig {
             .securityMatcher("/api/**")
             .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-            .exceptionHandling(
-                exceptions -> exceptions
-                    .authenticationEntryPoint(
-                        (request, response, auth) ->
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
-                    )
-                    .accessDeniedHandler(
+            .authorizeHttpRequests(auth -> auth.anyRequest().authenticated()).exceptionHandling(
+                exceptions -> exceptions.authenticationEntryPoint(
+                    (request, response, auth) ->
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                    ).accessDeniedHandler(
                         (request, response, denied) ->
                             response.sendError(HttpServletResponse.SC_FORBIDDEN)
                     )
@@ -126,12 +143,10 @@ public class SecurityConfig {
     @Order(2)
     SecurityFilterChain webSecurity(final HttpSecurity http) throws Exception {
         return http
-            .cors(Customizer.withDefaults())
-            .csrf(
+            .cors(Customizer.withDefaults()).csrf(
                 csrf -> csrf
                     .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            )
-            .authorizeHttpRequests(
+            ).authorizeHttpRequests(
                 auth -> {
                     auth.requestMatchers(
                         "/users/login",
@@ -162,53 +177,42 @@ public class SecurityConfig {
                     }
                     auth.anyRequest().authenticated();
                 }
-            )
-            .headers(
-                headers -> headers
-                    .referrerPolicy(
-                        policy -> policy.policy(
-                            ReferrerPolicyHeaderWriter.ReferrerPolicy
-                                .STRICT_ORIGIN_WHEN_CROSS_ORIGIN
+            ).headers(
+                headers -> headers.referrerPolicy(
+                    policy -> policy.policy(
+                        ReferrerPolicyHeaderWriter.ReferrerPolicy
+                            .STRICT_ORIGIN_WHEN_CROSS_ORIGIN
                         )
-                    )
-                    .frameOptions(frame -> frame.deny())
-                    .httpStrictTransportSecurity(
+                    ).frameOptions(frame -> frame.deny()).httpStrictTransportSecurity(
                         hsts -> hsts
                             .includeSubDomains(true)
                             .preload(true)
-                            .maxAgeInSeconds(SecurityConfig.HSTS_AGE)
-                    )
-                    .permissionsPolicy(
+                            .maxAgeInSeconds(31_536_000L)
+                    ).permissionsPolicyHeader(
                         permissions -> permissions.policy(SecurityConfig.PERMISSIONS)
                     )
-            )
-            .formLogin(
+            ).formLogin(
                 form -> form
                     .loginPage("/users/login")
                     .loginProcessingUrl("/login")
                     .successHandler(this.success)
                     .failureHandler(this.failure)
                     .permitAll()
-            )
-            .oauth2Login(
+            ).oauth2Login(
                 oauth -> oauth
-                    .loginPage("/users/login")
-                    .userInfoEndpoint(
+                    .loginPage("/users/login").userInfoEndpoint(
                         endpoint -> endpoint.userService(this.oauthservice)
                     )
                     .successHandler(this.oauthhandler)
-            )
-            .logout(
+            ).logout(
                 logout -> logout
                     .logoutUrl("/logout")
                     .logoutSuccessUrl("/users/login?logout")
             )
-            .userDetailsService(this.userdetails)
-            .exceptionHandling(
-                exceptions -> exceptions
-                    .accessDeniedHandler(
-                        (request, response, denied) ->
-                            response.sendError(HttpServletResponse.SC_FORBIDDEN)
+            .userDetailsService(this.userdetails).exceptionHandling(
+                exceptions -> exceptions.accessDeniedHandler(
+                    (request, response, denied) ->
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN)
                     )
             )
             .build();
@@ -218,7 +222,6 @@ public class SecurityConfig {
      * CORS configuration source.
      *
      * @return Configured CorsConfigurationSource
-     * @checkstyle NonStaticMethodCheck (2 lines)
      */
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
@@ -235,7 +238,7 @@ public class SecurityConfig {
             config.setAllowedOrigins(allowed);
         }
         config.setAllowCredentials(!allowed.isEmpty());
-        final var source = new UrlBasedCorsConfigurationSource();
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
@@ -259,19 +262,16 @@ public class SecurityConfig {
      */
     @Bean
     OpenAPI openApi() {
-        return new OpenAPI()
-            .info(
-                new Info()
-                    .title("Schoodule API")
-                    .version("0.0.1")
-            )
-            .components(
-                new Components()
-                    .addSecuritySchemes(
-                        "Basic auth",
-                        new SecurityScheme()
-                            .type(SecurityScheme.Type.HTTP)
-                            .scheme("basic")
+        return new OpenAPI().info(
+            new Info()
+                .title("Schoodule API")
+                .version("0.0.1")
+            ).components(
+                new Components().addSecuritySchemes(
+                    "Basic auth",
+                    new SecurityScheme()
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("basic")
                     )
             )
             .addSecurityItem(new SecurityRequirement().addList("Basic auth"));
@@ -290,7 +290,7 @@ public class SecurityConfig {
         final DatabaseUserDetailsService service,
         final PasswordEncoder encoder
     ) {
-        final var provider = new DaoAuthenticationProvider(service);
+        final DaoAuthenticationProvider provider = new DaoAuthenticationProvider(service);
         provider.setPasswordEncoder(encoder);
         provider.setHideUserNotFoundExceptions(false);
         return provider;
