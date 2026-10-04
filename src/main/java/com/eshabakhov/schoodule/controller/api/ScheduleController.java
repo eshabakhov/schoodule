@@ -8,8 +8,8 @@ import com.eshabakhov.schoodule.error.VersionHeaderException;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.Schedule;
 import com.eshabakhov.schoodule.school.SlsPostgres;
+import com.eshabakhov.schoodule.school.schedule.ScheduleNotFoundException;
 import com.eshabakhov.schoodule.school.schedule.SdBase;
-import com.eshabakhov.schoodule.school.schedule.SdsPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -471,7 +471,7 @@ public class ScheduleController {
                         .schedule(schedule)
                         .renamed(name.asText())
                 );
-            } catch (final SdsPostgres.ScheduleNotFoundException ex) {
+            } catch (final ScheduleNotFoundException ex) {
                 final Schedule newschedule = new SlsPostgres(this.ctx)
                     .school(school)
                     .schedules()

@@ -18,7 +18,6 @@ import org.jooq.impl.DSL;
  *
  * @since 0.0.1
  */
-@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public final class SlsPostgres implements Schools {
 
     /** JOOQ Table for School. */
@@ -28,6 +27,12 @@ public final class SlsPostgres implements Schools {
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
 
+    /**
+     * New schools collection.
+     *
+     * @param ctx Database context
+     * @since 0.0.1
+     */
     public SlsPostgres(final DSLContext ctx) {
         this.ctx = ctx;
     }
@@ -36,7 +41,7 @@ public final class SlsPostgres implements Schools {
     public School create(final String name) throws Exception {
         return this.ctx.transactionResult(
             config -> {
-                final var created = DSL.using(config).insertInto(SlsPostgres.SCHOOL)
+                final SchoolRecord created = DSL.using(config).insertInto(SlsPostgres.SCHOOL)
                     .set(SlsPostgres.SCHOOL.NAME, name)
                     .set(SlsPostgres.SCHOOL.IS_DELETED, false)
                     .returning()
@@ -81,8 +86,7 @@ public final class SlsPostgres implements Schools {
                 .where(condition)
                 .orderBy(SlsPostgres.SCHOOL.NAME.asc())
                 .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit())
-                .fetch(
+                .offset((page.offset() - 1) * page.limit()).fetch(
                     selected -> new SlPostgres(this.ctx, selected.getId())
                 ),
             this.ctx.fetchCount(
@@ -107,17 +111,5 @@ public final class SlsPostgres implements Schools {
                     .where(SlsPostgres.SCHOOL.ID.eq(sid))
                     .execute()
         );
-    }
-
-    public static class SchoolFailedCreateException extends Exception {
-        public SchoolFailedCreateException() {
-            super("Failed to create School");
-        }
-    }
-
-    public static class SchoolNotFoundException extends Exception {
-        public SchoolNotFoundException(final String message) {
-            super(message);
-        }
     }
 }

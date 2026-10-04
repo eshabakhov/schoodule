@@ -9,7 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.schedule.ClassCurriculum;
 import com.eshabakhov.schoodule.school.schedule.curriculum.CsCrSimple;
-import com.eshabakhov.schoodule.school.schedule.curriculum.CsCrsPostgres;
+import com.eshabakhov.schoodule.school.schedule.curriculum.CurriculumNotFoundException;
 import com.eshabakhov.schoodule.school.schoolclass.ScPostgres;
 import com.eshabakhov.schoodule.school.subject.SbPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -298,7 +298,7 @@ public class ClassCurriculumController {
                         updated.hoursPerWeek()
                     )
                 );
-            } catch (final CsCrsPostgres.CurriculumNotFoundException ex) {
+            } catch (final CurriculumNotFoundException ex) {
                 final ClassCurriculum created = new SlsPostgres(this.ctx)
                     .school(school)
                     .schedules()

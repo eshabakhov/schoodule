@@ -20,10 +20,23 @@ public final class ThBase implements Teacher {
     /** Teacher name. */
     private final String tname;
 
+    /**
+     * New teacher without an ID.
+     *
+     * @param tname Teacher name
+     * @since 0.0.1
+     */
     public ThBase(final String tname) {
         this(Long.MIN_VALUE, tname);
     }
 
+    /**
+     * New teacher.
+     *
+     * @param tid Teacher ID
+     * @param tname Teacher name
+     * @since 0.0.1
+     */
     public ThBase(final long tid, final String tname) {
         this.tid = tid;
         this.tname = tname;

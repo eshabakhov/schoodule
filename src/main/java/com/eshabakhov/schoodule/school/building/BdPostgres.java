@@ -26,6 +26,13 @@ public final class BdPostgres implements Building {
     /** Building id. */
     private final Long id;
 
+    /**
+     * New building.
+     *
+     * @param ctx Database context
+     * @param id Building ID
+     * @since 0.0.1
+     */
     public BdPostgres(final DSLContext ctx, final Long id) {
         this.ctx = ctx;
         this.id = id;
@@ -67,8 +74,7 @@ public final class BdPostgres implements Building {
         return this.ctx
             .select(BdPostgres.BUILDING.ID, BdPostgres.BUILDING.NAME)
             .from(BdPostgres.BUILDING)
-            .where(BdPostgres.BUILDING.ID.eq(this.id))
-            .fetchOne(
+            .where(BdPostgres.BUILDING.ID.eq(this.id)).fetchOne(
                 clazz ->
                     JsonNodeFactory.instance.objectNode()
                         .put("id", clazz.get(BdPostgres.BUILDING.ID))

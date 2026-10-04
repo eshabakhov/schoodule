@@ -18,9 +18,9 @@ import org.jooq.impl.DSL;
  * Postgres implementation of {@link Schedules}.
  *
  * @since 0.0.1
+ * @checkstyle LambdaBodyLengthCheck (1000 lines)
  */
 @EqualsAndHashCode
-@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public final class SdsPostgres implements Schedules {
 
     /** JOOQ Table for Schedule. */
@@ -33,6 +33,13 @@ public final class SdsPostgres implements Schedules {
     /** School ID. */
     private final Long sid;
 
+    /**
+     * New schedules collection.
+     *
+     * @param ctx Database context
+     * @param sid School ID
+     * @since 0.0.1
+     */
     public SdsPostgres(final DSLContext ctx, final Long sid) {
         this.ctx = ctx;
         this.sid = sid;
@@ -43,15 +50,13 @@ public final class SdsPostgres implements Schedules {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                final var select = ttx.selectFrom(SdsPostgres.SCHEDULE)
-                    .where(
-                        SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid)
-                            .and(SdsPostgres.SCHEDULE.NAME.eq(name))
-                            .and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
+                if (ttx.selectFrom(SdsPostgres.SCHEDULE).where(
+                    SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid).and(
+                        SdsPostgres.SCHEDULE.NAME.eq(name)
+                    ).and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
                     )
-                    .fetchOne();
-                if (select == null) {
-                    final var created = ttx.insertInto(SdsPostgres.SCHEDULE)
+                    .fetchOne() == null) {
+                    final ScheduleRecord created = ttx.insertInto(SdsPostgres.SCHEDULE)
                         .set(SdsPostgres.SCHEDULE.SCHOOL_ID, this.sid)
                         .set(SdsPostgres.SCHEDULE.NAME, name)
                         .set(SdsPostgres.SCHEDULE.IS_DELETED, false)
@@ -62,7 +67,9 @@ public final class SdsPostgres implements Schedules {
                     }
                     return new SdPostgres(this.ctx, created.getId());
                 } else {
-                    throw new ScheduleAlreadyExistsException(name);
+                    throw new ScheduleAlreadyExistsException(
+                        String.format("Schedule `%s` already exists", name)
+                    );
                 }
             }
         );
@@ -70,11 +77,10 @@ public final class SdsPostgres implements Schedules {
 
     @Override
     public Schedule schedule(final long scheduleid) throws Exception {
-        final ScheduleRecord selected = this.ctx.selectFrom(SdsPostgres.SCHEDULE)
-            .where(
-                SdsPostgres.SCHEDULE.ID.eq(scheduleid)
-                    .and(SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid))
-                    .and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
+        final ScheduleRecord selected = this.ctx.selectFrom(SdsPostgres.SCHEDULE).where(
+            SdsPostgres.SCHEDULE.ID.eq(scheduleid).and(
+                SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid)
+            ).and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
             )
             .fetchOne();
         if (selected == null) {
@@ -87,11 +93,10 @@ public final class SdsPostgres implements Schedules {
 
     @Override
     public Schedule schedule(final String name) throws Exception {
-        final ScheduleRecord selected = this.ctx.selectFrom(SdsPostgres.SCHEDULE)
-            .where(
-                SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid)
-                    .and(SdsPostgres.SCHEDULE.NAME.eq(name))
-                    .and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
+        final ScheduleRecord selected = this.ctx.selectFrom(SdsPostgres.SCHEDULE).where(
+            SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid).and(
+                SdsPostgres.SCHEDULE.NAME.eq(name)
+            ).and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
             )
             .fetchOne();
         if (selected == null) {
@@ -112,8 +117,7 @@ public final class SdsPostgres implements Schedules {
                 .where(condition.and(SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid)))
                 .orderBy(SdsPostgres.SCHEDULE.NAME.asc())
                 .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit())
-                .fetch(
+                .offset((page.offset() - 1) * page.limit()).fetch(
                     selected -> new SdPostgres(
                         this.ctx,
                         selected.getId()
@@ -128,11 +132,10 @@ public final class SdsPostgres implements Schedules {
 
     @Override
     public void remove(final long scheduleid) throws Exception {
-        final var selected = this.ctx.selectFrom(SdsPostgres.SCHEDULE)
-            .where(
-                SdsPostgres.SCHEDULE.ID.eq(scheduleid)
-                    .and(SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid))
-                    .and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
+        final ScheduleRecord selected = this.ctx.selectFrom(SdsPostgres.SCHEDULE).where(
+            SdsPostgres.SCHEDULE.ID.eq(scheduleid).and(
+                SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid)
+            ).and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
             )
             .fetchOne();
         if (selected == null) {
@@ -147,23 +150,5 @@ public final class SdsPostgres implements Schedules {
                     .where(SdsPostgres.SCHEDULE.ID.eq(scheduleid))
                     .execute()
         );
-    }
-
-    public static class ScheduleFailedCreateException extends Exception {
-        public ScheduleFailedCreateException() {
-            super("Failed to create Schedule");
-        }
-    }
-
-    public static class ScheduleAlreadyExistsException extends Exception {
-        public ScheduleAlreadyExistsException(final String name) {
-            super(String.format("Schedule `%s` already exists", name));
-        }
-    }
-
-    public static class ScheduleNotFoundException extends Exception {
-        public ScheduleNotFoundException(final String message) {
-            super(message);
-        }
     }
 }

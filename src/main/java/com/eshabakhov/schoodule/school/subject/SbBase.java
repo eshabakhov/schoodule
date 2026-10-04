@@ -20,10 +20,23 @@ public final class SbBase implements Subject {
     /** Subject name. */
     private final String subname;
 
+    /**
+     * New subject without an ID.
+     *
+     * @param subname Subject name
+     * @since 0.0.1
+     */
     public SbBase(final String subname) {
         this(Long.MIN_VALUE, subname);
     }
 
+    /**
+     * New subject.
+     *
+     * @param sid Subject ID
+     * @param subname Subject name
+     * @since 0.0.1
+     */
     public SbBase(final long sid, final String subname) {
         this.sid = sid;
         this.subname = subname;

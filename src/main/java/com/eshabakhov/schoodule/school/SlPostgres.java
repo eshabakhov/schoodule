@@ -36,6 +36,13 @@ public final class SlPostgres implements School {
     /** School id. */
     private final Long sid;
 
+    /**
+     * New school.
+     *
+     * @param ctx Database context
+     * @param sid School ID
+     * @since 0.0.1
+     */
     public SlPostgres(final DSLContext ctx, final Long sid) {
         this.ctx = ctx;
         this.sid = sid;
@@ -106,8 +113,7 @@ public final class SlPostgres implements School {
         return this.ctx
             .select(SlPostgres.SCHOOL.ID, SlPostgres.SCHOOL.NAME)
             .from(SlPostgres.SCHOOL)
-            .where(SlPostgres.SCHOOL.ID.eq(this.sid))
-            .fetchOne(
+            .where(SlPostgres.SCHOOL.ID.eq(this.sid)).fetchOne(
                 school ->
                     JsonNodeFactory.instance.objectNode()
                         .put("id", school.get(SlPostgres.SCHOOL.ID))

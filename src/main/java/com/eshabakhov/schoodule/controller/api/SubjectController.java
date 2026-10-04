@@ -9,7 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.Subject;
 import com.eshabakhov.schoodule.school.subject.SbBase;
-import com.eshabakhov.schoodule.school.subject.SbsPostgres;
+import com.eshabakhov.schoodule.school.subject.SubjectNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -470,7 +470,7 @@ public class SubjectController {
                     .subject(subject)
                     .renamed(name.asText());
                 response = ResponseEntity.ok().body(new SbBase(updated.uid(), updated.name()));
-            } catch (final SbsPostgres.SubjectNotFoundException ex) {
+            } catch (final SubjectNotFoundException ex) {
                 final Subject created = new SlsPostgres(this.ctx)
                     .school(school)
                     .subjects()

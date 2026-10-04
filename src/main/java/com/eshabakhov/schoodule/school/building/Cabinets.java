@@ -9,9 +9,9 @@ import org.jooq.Condition;
 
 /**
  * Interface for managing {@link Cabinet} entities.
- * <p>
- * Provides methods for creating, retrieving, updating, deleting, listing,
- * and counting cabinets.
+ *
+ * <p>Provides methods for creating, retrieving, updating, deleting, listing,
+ * and counting cabinets.</p>
  *
  * @since 0.0.1
  */

@@ -29,6 +29,7 @@ public interface Building extends Jsonable {
 
     /**
      * Returns building with new name.
+     *
      * @param name New name of the building
      * @return Building with new name
      */

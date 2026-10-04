@@ -25,6 +25,13 @@ public final class SbPostgres implements Subject {
     /** Database connection. */
     private final DSLContext ctx;
 
+    /**
+     * New subject.
+     *
+     * @param ctx Database context
+     * @param sid Subject ID
+     * @since 0.0.1
+     */
     public SbPostgres(final DSLContext ctx, final Long sid) {
         this.ctx = ctx;
         this.sid = sid;
@@ -61,8 +68,7 @@ public final class SbPostgres implements Subject {
         return this.ctx
             .select(SbPostgres.SUBJECT.ID, SbPostgres.SUBJECT.NAME)
             .from(SbPostgres.SUBJECT)
-            .where(SbPostgres.SUBJECT.ID.eq(this.sid))
-            .fetchOne(
+            .where(SbPostgres.SUBJECT.ID.eq(this.sid)).fetchOne(
                 clazz ->
                     JsonNodeFactory.instance.objectNode()
                         .put("id", clazz.get(SbPostgres.SUBJECT.ID))

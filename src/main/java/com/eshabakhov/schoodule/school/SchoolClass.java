@@ -42,6 +42,7 @@ public interface SchoolClass extends Jsonable {
 
     /**
      * Returns schoolclass with new grade.
+     *
      * @param grade New grade of schoolclass
      * @return Schoolclass with new grade
      */
@@ -49,8 +50,9 @@ public interface SchoolClass extends Jsonable {
 
     /**
      * Returns schoolclass with new litera.
+     *
      * @param litera New litera of schoolclass
-     * @return Schoolclass with new litera.
+     * @return Schoolclass with new litera
      */
     SchoolClass reliterated(String litera);
 }

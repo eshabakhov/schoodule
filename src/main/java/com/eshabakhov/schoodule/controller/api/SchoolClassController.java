@@ -9,7 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SchoolClass;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.schoolclass.ScBase;
-import com.eshabakhov.schoodule.school.schoolclass.ScsPostgres;
+import com.eshabakhov.schoodule.school.schoolclass.SchoolClassNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -519,7 +519,7 @@ public class SchoolClassController {
                 response = ResponseEntity.ok().body(
                     new ScBase(updated.uid(), updated.grade(), updated.litera())
                 );
-            } catch (final ScsPostgres.SchoolClassNotFoundException ex) {
+            } catch (final SchoolClassNotFoundException ex) {
                 final SchoolClass newclass = new SlsPostgres(this.ctx)
                     .school(school)
                     .schoolClasses()

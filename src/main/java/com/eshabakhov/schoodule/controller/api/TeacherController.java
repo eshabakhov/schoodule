@@ -8,8 +8,8 @@ import com.eshabakhov.schoodule.error.VersionHeaderException;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.Teacher;
+import com.eshabakhov.schoodule.school.teacher.TeacherNotFoundException;
 import com.eshabakhov.schoodule.school.teacher.ThBase;
-import com.eshabakhov.schoodule.school.teacher.ThsPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -469,7 +469,7 @@ public class TeacherController {
                     .teacher(teacher)
                     .renamed(name.asText());
                 response = ResponseEntity.ok().body(new ThBase(updated.uid(), updated.name()));
-            } catch (final ThsPostgres.TeacherNotFoundException ex) {
+            } catch (final TeacherNotFoundException ex) {
                 final Teacher created = new SlsPostgres(this.ctx)
                     .school(school)
                     .teachers()

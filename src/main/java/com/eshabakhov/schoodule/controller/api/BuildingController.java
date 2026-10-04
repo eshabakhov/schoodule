@@ -9,7 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.Building;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.building.BdBase;
-import com.eshabakhov.schoodule.school.building.BdsPostgres;
+import com.eshabakhov.schoodule.school.building.BuildingNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -454,7 +454,7 @@ public class BuildingController {
                         .building(building)
                         .renamed(name.asText())
                 );
-            } catch (final BdsPostgres.BuildingNotFoundException ex) {
+            } catch (final BuildingNotFoundException ex) {
                 final Building created = new SlsPostgres(this.ctx)
                     .school(school)
                     .buildings()

@@ -9,9 +9,9 @@ import org.jooq.Condition;
 
 /**
  * Interface for managing {@link SchoolClass} entities.
- * <p>
- * Defines operations for creating, retrieving, updating, deleting,
- * listing, and counting school classes.
+ *
+ * <p>Defines operations for creating, retrieving, updating, deleting,
+ * listing, and counting school classes.</p>
  *
  * @since 0.0.1
  */

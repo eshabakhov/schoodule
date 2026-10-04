@@ -13,7 +13,7 @@ import org.jooq.Condition;
  * Interface for managing {@link ClassCurriculum} entities.
  *
  * <p>Provides methods for creating, retrieving, updating, deleting,
- * and listing class curriculums within a schedule.
+ * and listing class curriculums within a schedule.</p>
  *
  * @since 0.0.1
  */

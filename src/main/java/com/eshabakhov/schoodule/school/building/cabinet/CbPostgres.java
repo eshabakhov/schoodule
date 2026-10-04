@@ -25,6 +25,13 @@ public final class CbPostgres implements Cabinet {
     /** Cabinet id. */
     private final Long id;
 
+    /**
+     * New cabinet.
+     *
+     * @param ctx Database context
+     * @param id Cabinet ID
+     * @since 0.0.1
+     */
     public CbPostgres(final DSLContext ctx, final Long id) {
         this.ctx = ctx;
         this.id = id;
@@ -61,8 +68,7 @@ public final class CbPostgres implements Cabinet {
         return this.ctx
             .select(CbPostgres.CABINET.ID, CbPostgres.CABINET.NAME)
             .from(CbPostgres.CABINET)
-            .where(CbPostgres.CABINET.ID.eq(this.id))
-            .fetchOne(
+            .where(CbPostgres.CABINET.ID.eq(this.id)).fetchOne(
                 clazz ->
                     JsonNodeFactory.instance.objectNode()
                         .put("id", clazz.get(CbPostgres.CABINET.ID))

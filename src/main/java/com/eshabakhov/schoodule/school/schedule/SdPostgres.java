@@ -26,6 +26,13 @@ public final class SdPostgres implements Schedule {
     /** Schedule id. */
     private final Long sid;
 
+    /**
+     * New schedule.
+     *
+     * @param ctx Database context
+     * @param sid Schedule ID
+     * @since 0.0.1
+     */
     public SdPostgres(final DSLContext ctx, final Long sid) {
         this.ctx = ctx;
         this.sid = sid;
@@ -62,8 +69,7 @@ public final class SdPostgres implements Schedule {
         return this.ctx
             .select(SdPostgres.SCHEDULE.ID, SdPostgres.SCHEDULE.NAME)
             .from(SdPostgres.SCHEDULE)
-            .where(SdPostgres.SCHEDULE.ID.eq(this.sid))
-            .fetchOne(
+            .where(SdPostgres.SCHEDULE.ID.eq(this.sid)).fetchOne(
                 clazz ->
                     JsonNodeFactory.instance.objectNode()
                         .put("id", clazz.get(SdPostgres.SCHEDULE.ID))

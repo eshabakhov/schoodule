@@ -11,7 +11,7 @@ import com.eshabakhov.schoodule.school.Subject;
  * Class curriculum domain entity interface.
  *
  * <p>Represents a curriculum plan for a specific class and subject,
- * defining how many hours per week should be allocated.
+ * defining how many hours per week should be allocated.</p>
  *
  * @since 0.0.1
  */

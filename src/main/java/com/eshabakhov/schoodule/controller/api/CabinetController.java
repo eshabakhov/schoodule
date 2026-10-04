@@ -8,8 +8,8 @@ import com.eshabakhov.schoodule.error.VersionHeaderException;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.building.Cabinet;
+import com.eshabakhov.schoodule.school.building.cabinet.CabinetNotFoundException;
 import com.eshabakhov.schoodule.school.building.cabinet.CbBase;
-import com.eshabakhov.schoodule.school.building.cabinet.CbsPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -473,7 +473,7 @@ public class CabinetController {
                         .cabinet(cabinet)
                         .renamed(name.asText())
                 );
-            } catch (final CbsPostgres.CabinetNotFoundException ex) {
+            } catch (final CabinetNotFoundException ex) {
                 final Cabinet newcabinet = new SlsPostgres(this.ctx)
                     .school(school)
                     .buildings()

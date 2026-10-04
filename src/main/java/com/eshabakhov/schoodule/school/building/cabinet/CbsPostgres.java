@@ -18,9 +18,9 @@ import org.jooq.impl.DSL;
  * Postgres implementation of {@link Cabinets}.
  *
  * @since 0.0.1
+ * @checkstyle LambdaBodyLengthCheck (1000 lines)
  */
 @EqualsAndHashCode
-@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public final class CbsPostgres implements Cabinets {
 
     /** JOOQ Table for Cabinet. */
@@ -33,6 +33,13 @@ public final class CbsPostgres implements Cabinets {
     /** Building id. */
     private final Long bid;
 
+    /**
+     * New cabinets collection.
+     *
+     * @param ctx Database context
+     * @param bid Building ID
+     * @since 0.0.1
+     */
     public CbsPostgres(final DSLContext ctx, final Long bid) {
         this.ctx = ctx;
         this.bid = bid;
@@ -43,15 +50,13 @@ public final class CbsPostgres implements Cabinets {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                final var select = ttx.selectFrom(CbsPostgres.CABINET)
-                    .where(
-                        CbsPostgres.CABINET.BUILDING_ID.eq(this.bid)
-                            .and(CbsPostgres.CABINET.NAME.eq(name))
-                            .and(CbsPostgres.CABINET.IS_DELETED.eq(false))
+                if (ttx.selectFrom(CbsPostgres.CABINET).where(
+                    CbsPostgres.CABINET.BUILDING_ID.eq(this.bid).and(
+                        CbsPostgres.CABINET.NAME.eq(name)
+                    ).and(CbsPostgres.CABINET.IS_DELETED.eq(false))
                     )
-                    .fetchOne();
-                if (select == null) {
-                    final var created = ttx.insertInto(CbsPostgres.CABINET)
+                    .fetchOne() == null) {
+                    final CabinetRecord created = ttx.insertInto(CbsPostgres.CABINET)
                         .set(CbsPostgres.CABINET.BUILDING_ID, this.bid)
                         .set(CbsPostgres.CABINET.NAME, name)
                         .set(CbsPostgres.CABINET.IS_DELETED, false)
@@ -62,7 +67,9 @@ public final class CbsPostgres implements Cabinets {
                     }
                     return new CbPostgres(this.ctx, created.getId());
                 } else {
-                    throw new CabinetAlreadyExistsException(name);
+                    throw new CabinetAlreadyExistsException(
+                        String.format("Cabinet `%s` already exists", name)
+                    );
                 }
             }
         );
@@ -70,11 +77,10 @@ public final class CbsPostgres implements Cabinets {
 
     @Override
     public Cabinet cabinet(final long cid) throws Exception {
-        final var selected = this.ctx.selectFrom(CbsPostgres.CABINET)
-            .where(
-                CbsPostgres.CABINET.ID.eq(cid)
-                    .and(CbsPostgres.CABINET.BUILDING_ID.eq(this.bid))
-                    .and(CbsPostgres.CABINET.IS_DELETED.eq(false))
+        final CabinetRecord selected = this.ctx.selectFrom(CbsPostgres.CABINET).where(
+            CbsPostgres.CABINET.ID.eq(cid).and(
+                CbsPostgres.CABINET.BUILDING_ID.eq(this.bid)
+            ).and(CbsPostgres.CABINET.IS_DELETED.eq(false))
             )
             .fetchOne();
         if (selected == null) {
@@ -87,11 +93,10 @@ public final class CbsPostgres implements Cabinets {
 
     @Override
     public Cabinet cabinet(final String name) throws Exception {
-        final CabinetRecord selected = this.ctx.selectFrom(CbsPostgres.CABINET)
-            .where(
-                CbsPostgres.CABINET.BUILDING_ID.eq(this.bid)
-                    .and(CbsPostgres.CABINET.NAME.eq(name))
-                    .and(CbsPostgres.CABINET.IS_DELETED.eq(false))
+        final CabinetRecord selected = this.ctx.selectFrom(CbsPostgres.CABINET).where(
+            CbsPostgres.CABINET.BUILDING_ID.eq(this.bid).and(
+                CbsPostgres.CABINET.NAME.eq(name)
+            ).and(CbsPostgres.CABINET.IS_DELETED.eq(false))
             )
             .fetchOne();
         if (selected == null) {
@@ -105,14 +110,13 @@ public final class CbsPostgres implements Cabinets {
     @Override
     public PageableList<Cabinet> cabinets(final Condition condition, final Page page)
         throws Exception {
-        final var cnd = condition.and(CbsPostgres.CABINET.BUILDING_ID.eq(this.bid));
+        final Condition cnd = condition.and(CbsPostgres.CABINET.BUILDING_ID.eq(this.bid));
         return new ResponsePageableList<>(
             this.ctx.selectFrom(CbsPostgres.CABINET)
                 .where(cnd)
                 .orderBy(CbsPostgres.CABINET.NAME.asc())
                 .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit())
-                .fetch(
+                .offset((page.offset() - 1) * page.limit()).fetch(
                     selected -> new CbPostgres(this.ctx, selected.getId())
                 ),
             this.ctx.fetchCount(
@@ -124,8 +128,8 @@ public final class CbsPostgres implements Cabinets {
 
     @Override
     public void remove(final long cid) throws Exception {
-        final CabinetRecord cabinet = this.ctx.selectFrom(CbsPostgres.CABINET)
-            .where(CbsPostgres.CABINET.ID.eq(cid)
+        final CabinetRecord cabinet = this.ctx.selectFrom(CbsPostgres.CABINET).where(
+            CbsPostgres.CABINET.ID.eq(cid)
                 .and(CbsPostgres.CABINET.BUILDING_ID.eq(this.bid))
                 .and(CbsPostgres.CABINET.IS_DELETED.eq(false))
             )
@@ -137,23 +141,5 @@ public final class CbsPostgres implements Cabinets {
             .set(CbsPostgres.CABINET.IS_DELETED, true)
             .where(CbsPostgres.CABINET.ID.eq(cid))
             .execute();
-    }
-
-    public static class CabinetFailedCreateException extends Exception {
-        public CabinetFailedCreateException() {
-            super("Failed to create Cabinet");
-        }
-    }
-
-    public static class CabinetAlreadyExistsException extends Exception {
-        public CabinetAlreadyExistsException(final String name) {
-            super(String.format("Cabinet `%s` already exists", name));
-        }
-    }
-
-    public static class CabinetNotFoundException extends Exception {
-        public CabinetNotFoundException(final String message) {
-            super(message);
-        }
     }
 }

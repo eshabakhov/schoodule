@@ -20,10 +20,23 @@ public final class CbBase implements Cabinet {
     /** Cabinet name. */
     private final String cname;
 
+    /**
+     * New cabinet without an ID.
+     *
+     * @param cname Cabinet name
+     * @since 0.0.1
+     */
     public CbBase(final String cname) {
         this(Long.MIN_VALUE, cname);
     }
 
+    /**
+     * New cabinet.
+     *
+     * @param cid Cabinet ID
+     * @param cname Cabinet name
+     * @since 0.0.1
+     */
     public CbBase(final long cid, final String cname) {
         this.cid = cid;
         this.cname = cname;

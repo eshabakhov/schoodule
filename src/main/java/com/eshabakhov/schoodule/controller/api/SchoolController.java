@@ -7,6 +7,7 @@ import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.School;
 import com.eshabakhov.schoodule.error.VersionHeaderException;
 import com.eshabakhov.schoodule.page.PageRequest;
+import com.eshabakhov.schoodule.school.SchoolNotFoundException;
 import com.eshabakhov.schoodule.school.SlBase;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -412,7 +413,7 @@ public class SchoolController {
                     .ok()
                     .contentType(SchoolController.SIMPLE_TYPE)
                     .body(new SlsPostgres(this.ctx).school(school).renamed(name.asText()));
-            } catch (final SlsPostgres.SchoolNotFoundException ex) {
+            } catch (final SchoolNotFoundException ex) {
                 final School newschool = new SlsPostgres(this.ctx).create(name.asText());
                 response = ResponseEntity
                     .created(URI.create(String.format("/api/schools/%d", newschool.uid())))

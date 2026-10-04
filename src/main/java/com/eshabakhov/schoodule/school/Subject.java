@@ -28,6 +28,7 @@ public interface Subject extends Jsonable {
 
     /**
      * Returns subject with new name.
+     *
      * @param name New name of subject
      * @return Subject with new name
      */

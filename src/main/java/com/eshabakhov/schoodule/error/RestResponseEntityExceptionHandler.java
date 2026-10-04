@@ -9,12 +9,17 @@ import com.eshabakhov.schoodule.controller.api.SchoolClassRequiredFieldException
 import com.eshabakhov.schoodule.controller.api.SchoolRequiredFieldException;
 import com.eshabakhov.schoodule.controller.api.SubjectRequiredFieldException;
 import com.eshabakhov.schoodule.controller.api.TeacherRequiredFieldException;
-import com.eshabakhov.schoodule.school.SlsPostgres;
-import com.eshabakhov.schoodule.school.building.cabinet.CbsPostgres;
-import com.eshabakhov.schoodule.school.schedule.SdsPostgres;
-import com.eshabakhov.schoodule.school.schoolclass.ScsPostgres;
-import com.eshabakhov.schoodule.school.subject.SbsPostgres;
-import com.eshabakhov.schoodule.school.teacher.ThsPostgres;
+import com.eshabakhov.schoodule.school.SchoolFailedCreateException;
+import com.eshabakhov.schoodule.school.SchoolNotFoundException;
+import com.eshabakhov.schoodule.school.building.cabinet.CabinetAlreadyExistsException;
+import com.eshabakhov.schoodule.school.building.cabinet.CabinetFailedCreateException;
+import com.eshabakhov.schoodule.school.building.cabinet.CabinetNotFoundException;
+import com.eshabakhov.schoodule.school.schedule.ScheduleAlreadyExistsException;
+import com.eshabakhov.schoodule.school.schoolclass.SchoolClassAlreadyExistsException;
+import com.eshabakhov.schoodule.school.subject.SubjectAlreadyExistsException;
+import com.eshabakhov.schoodule.school.teacher.TeacherAlreadyExistsException;
+import com.eshabakhov.schoodule.school.teacher.TeacherFailedCreateException;
+import com.eshabakhov.schoodule.school.teacher.TeacherNotFoundException;
 import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -89,9 +94,9 @@ public final class RestResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(
         {
-            CbsPostgres.CabinetNotFoundException.class,
-            SlsPostgres.SchoolNotFoundException.class,
-            ThsPostgres.TeacherNotFoundException.class
+            CabinetNotFoundException.class,
+            SchoolNotFoundException.class,
+            TeacherNotFoundException.class
         }
     )
     public static String handleNotFoundException(final Model model) {
@@ -122,12 +127,12 @@ public final class RestResponseEntityExceptionHandler {
      */
     @ExceptionHandler(
         {
-            ScsPostgres.SchoolClassAlreadyExistsException.class,
-            CbsPostgres.CabinetAlreadyExistsException.class,
-            SdsPostgres.ScheduleAlreadyExistsException.class,
-            ScsPostgres.SchoolClassAlreadyExistsException.class,
-            SbsPostgres.SubjectAlreadyExistsException.class,
-            ThsPostgres.TeacherAlreadyExistsException.class
+            SchoolClassAlreadyExistsException.class,
+            CabinetAlreadyExistsException.class,
+            ScheduleAlreadyExistsException.class,
+            SchoolClassAlreadyExistsException.class,
+            SubjectAlreadyExistsException.class,
+            TeacherAlreadyExistsException.class
         }
     )
     public static ResponseEntity<Object> handleConflictException(final Exception exception) {
@@ -144,9 +149,9 @@ public final class RestResponseEntityExceptionHandler {
      */
     @ExceptionHandler(
         {
-            CbsPostgres.CabinetFailedCreateException.class,
-            SlsPostgres.SchoolFailedCreateException.class,
-            ThsPostgres.TeacherFailedCreateException.class
+            CabinetFailedCreateException.class,
+            SchoolFailedCreateException.class,
+            TeacherFailedCreateException.class
         }
     )
     public static ResponseEntity<Object> handleServerException(final Exception exception) {

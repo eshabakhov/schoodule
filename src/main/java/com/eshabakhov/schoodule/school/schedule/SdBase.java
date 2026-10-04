@@ -20,10 +20,23 @@ public final class SdBase implements Schedule {
     /** Schedule name. */
     private final String sname;
 
+    /**
+     * New schedule without an ID.
+     *
+     * @param sname Schedule name
+     * @since 0.0.1
+     */
     public SdBase(final String sname) {
         this(Long.MIN_VALUE, sname);
     }
 
+    /**
+     * New schedule.
+     *
+     * @param sid Schedule ID
+     * @param sname Schedule name
+     * @since 0.0.1
+     */
     public SdBase(final long sid, final String sname) {
         this.sid = sid;
         this.sname = sname;
