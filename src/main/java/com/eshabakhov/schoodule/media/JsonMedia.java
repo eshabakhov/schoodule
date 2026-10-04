@@ -15,7 +15,7 @@ import java.util.Set;
  * A {@link Media} implementation that collects printed data
  * into a Jackson {@link ObjectNode} suitable for REST responses.
  *
- * <p>Usage in a REST controller:
+ * <p>Usage in a REST controller:</p>
  * <pre>
  *   JsonMedia media = new JsonMedia();
  *   curriculum.print(media);
@@ -35,7 +35,7 @@ public final class JsonMedia implements com.eshabakhov.schoodule.JsonMedia {
      * Creates an empty JsonMedia.
      */
     public JsonMedia() {
-        this.node = JsonNodeFactory.instance.objectNode();
+        this.node = new ObjectNode(JsonNodeFactory.instance);
     }
 
     @Override
@@ -90,23 +90,18 @@ public final class JsonMedia implements com.eshabakhov.schoodule.JsonMedia {
 
     @Override
     public JsonMedia include(final String... names) {
-        final var allowed = Set.of(names);
-        this.node.fieldNames()
-            .forEachRemaining(
-                field ->  {
-                    if (!allowed.contains(field)) {
-                        this.node.remove(field);
-                    }
+        final Set<String> allowed = Set.of(names);
+        this.node.fieldNames().forEachRemaining(
+            field -> {
+                if (!allowed.contains(field)) {
+                    this.node.remove(field);
                 }
-            );
+            }
+        );
         return this;
     }
 
-    /**
-     * Returns the filled Jackson {@link ObjectNode}.
-     *
-     * @return ObjectNode with all printed fields
-     */
+    @Override
     public ObjectNode json() {
         return this.node;
     }

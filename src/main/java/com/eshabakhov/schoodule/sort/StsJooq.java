@@ -16,6 +16,7 @@ public interface StsJooq extends Sorts {
 
     /**
      * JOOQ sort fields.
+     *
      * @return Sort fields
      */
     List<SortField<?>> fields();

@@ -20,10 +20,23 @@ public final class BdBase implements Building {
     /** Building name. */
     private final String bname;
 
+    /**
+     * New building without an ID.
+     *
+     * @param bname Building name
+     * @since 0.0.1
+     */
     public BdBase(final String bname) {
         this(Long.MIN_VALUE, bname);
     }
 
+    /**
+     * New building.
+     *
+     * @param bid Building ID
+     * @param bname Building name
+     * @since 0.0.1
+     */
     public BdBase(final long bid, final String bname) {
         this.bid = bid;
         this.bname = bname;

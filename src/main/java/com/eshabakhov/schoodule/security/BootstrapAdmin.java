@@ -3,6 +3,7 @@
  */
 package com.eshabakhov.schoodule.security;
 
+import com.eshabakhov.schoodule.User;
 import com.eshabakhov.schoodule.enums.RoleType;
 import com.eshabakhov.schoodule.tables.Role;
 import com.eshabakhov.schoodule.tables.UserRole;
@@ -45,10 +46,7 @@ public final class BootstrapAdmin implements ApplicationRunner {
      * @param ctx Database context
      * @param env Environment properties
      */
-    public BootstrapAdmin(
-        final DSLContext ctx,
-        final Environment env
-    ) {
+    public BootstrapAdmin(final DSLContext ctx, final Environment env) {
         this.ctx = ctx;
         this.env = env;
     }
@@ -60,8 +58,8 @@ public final class BootstrapAdmin implements ApplicationRunner {
                 BootstrapAdmin.LOG.info("Bootstrap admin skipped: active admin already exists");
             } else {
                 this.validateConfig();
-                final var users = new UrsPostgres(this.ctx);
-                final var admin = users.register(
+                final UrsPostgres users = new UrsPostgres(this.ctx);
+                final User admin = users.register(
                     this.username(),
                     this.password(),
                     this.email(),
@@ -77,9 +75,6 @@ public final class BootstrapAdmin implements ApplicationRunner {
         }
     }
 
-    /**
-     * Validates bootstrap settings before creating an admin.
-     */
     private void validateConfig() {
         if (this.username().isBlank()) {
             throw new IllegalStateException("Bootstrap admin username is required");
@@ -92,56 +87,33 @@ public final class BootstrapAdmin implements ApplicationRunner {
         }
     }
 
-    /**
-     * Whether bootstrap admin creation is enabled.
-     *
-     * @return True if enabled
-     */
     private boolean bootstrapEnabled() {
         return Boolean.parseBoolean(this.env.getProperty("app.bootstrap-admin.enabled", "false"));
     }
 
-    /**
-     * Bootstrap admin username.
-     *
-     * @return Username
-     */
     private String username() {
         return this.env.getProperty("app.bootstrap-admin.username", "");
     }
 
-    /**
-     * Bootstrap admin email.
-     *
-     * @return Email
-     */
     private String email() {
         return this.env.getProperty("app.bootstrap-admin.email", "");
     }
 
-    /**
-     * Bootstrap admin password.
-     *
-     * @return Password
-     */
     private String password() {
         return this.env.getProperty("app.bootstrap-admin.password", "");
     }
 
-    /**
-     * Checks whether any active admin exists.
-     *
-     * @return True if active admin already exists
-     */
     private boolean hasActiveAdmin() {
         return this.ctx.fetchExists(
             this.ctx.selectOne()
                 .from(UserRole.USER_ROLE)
                 .join(Role.ROLE)
                 .on(UserRole.USER_ROLE.ROLE_ID.eq(Role.ROLE.ID))
-                .join(com.eshabakhov.schoodule.tables.User.USER)
-                .on(UserRole.USER_ROLE.USER_ID.eq(com.eshabakhov.schoodule.tables.User.USER.ID))
-                .where(
+                .join(com.eshabakhov.schoodule.tables.User.USER).on(
+                    UserRole.USER_ROLE.USER_ID.eq(
+                        com.eshabakhov.schoodule.tables.User.USER.ID
+                    )
+                ).where(
                     Role.ROLE.NAME.eq(RoleType.ADMIN)
                         .and(com.eshabakhov.schoodule.tables.User.USER.DELETED.isNull())
                 )

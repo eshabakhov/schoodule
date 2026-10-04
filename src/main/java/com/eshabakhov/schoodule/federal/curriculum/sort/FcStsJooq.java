@@ -7,6 +7,7 @@ import com.eshabakhov.schoodule.Sort;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.sort.StJooq;
 import com.eshabakhov.schoodule.sort.StsJooq;
+import com.eshabakhov.schoodule.tables.FederalCurriculum;
 import java.util.ArrayList;
 import java.util.List;
 import org.jooq.SortField;
@@ -21,8 +22,8 @@ public final class FcStsJooq implements StsJooq {
     /**
      * JOOQ Table for FederalCurriculum.
      */
-    private static final com.eshabakhov.schoodule.tables.FederalCurriculum CURRICULUM =
-        com.eshabakhov.schoodule.tables.FederalCurriculum.FEDERAL_CURRICULUM;
+    private static final FederalCurriculum CURRICULUM =
+        FederalCurriculum.FEDERAL_CURRICULUM;
 
     /**
      * Origin sorting parameters.

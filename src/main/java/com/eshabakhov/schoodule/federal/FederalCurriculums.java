@@ -13,7 +13,6 @@ import com.eshabakhov.schoodule.Sorts;
  *
  * @since 0.0.1
  */
-@SuppressWarnings("PMD.UseObjectForClearerAPI")
 public interface FederalCurriculums extends Printable {
 
     /**

@@ -7,12 +7,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
- *  Registration HTML controller.
+ * Registration HTML controller.
  *
  * @since 0.0.1
  */
 @Controller
 public final class RegistrationPage {
+
+    /**
+     * New registration page.
+     */
+    public RegistrationPage() {
+        // Intentionally empty.
+    }
 
     /**
      * Registration page.

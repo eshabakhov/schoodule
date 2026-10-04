@@ -4,6 +4,7 @@
 package com.eshabakhov.schoodule.federal.curriculum.requirement.filter;
 
 import com.eshabakhov.schoodule.filter.FlConditional;
+import com.eshabakhov.schoodule.tables.FederalCurriculumRequirement;
 import org.jooq.Condition;
 
 /**
@@ -12,12 +13,6 @@ import org.jooq.Condition;
  * @since 0.0.1
  */
 public final class FlCdFcrBySubject implements FlConditional {
-
-    /**
-     * JOOQ Table for FederalCurriculumRequirement.
-     */
-    private static final com.eshabakhov.schoodule.tables.FederalCurriculumRequirement REQUIREMENT =
-        com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
 
     /**
      * Origin filter.
@@ -29,6 +24,12 @@ public final class FlCdFcrBySubject implements FlConditional {
      */
     private final String subject;
 
+    /**
+     * New subject filter.
+     *
+     * @param origin Origin filter
+     * @param subject Subject to search
+     */
     public FlCdFcrBySubject(final FlConditional origin, final String subject) {
         this.origin = origin;
         this.subject = subject;
@@ -39,9 +40,10 @@ public final class FlCdFcrBySubject implements FlConditional {
         Condition condition = this.origin.condition();
         if (this.subject != null && !this.subject.isBlank()) {
             condition = condition.and(
-                FlCdFcrBySubject.REQUIREMENT.SUBJECT_NAME.likeIgnoreCase(
-                    String.format("%%%s%%", this.subject.trim())
-                )
+                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
+                    .SUBJECT_NAME.likeIgnoreCase(
+                        String.format("%%%s%%", this.subject.trim())
+                    )
             );
         }
         return condition;

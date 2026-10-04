@@ -27,20 +27,11 @@ import org.springframework.web.servlet.ModelAndView;
  * Controller for HTML responses for {@link FederalCurriculum}.
  *
  * @since 0.0.1
- * @checkstyle ClassFanOutComplexityCheck (1000 lines)
- * @checkstyle DesignForExtensionCheck (1000 lines)
  * @checkstyle ParameterNumberCheck (1000 lines)
  */
 @Controller
 @RequestMapping("/federal/curriculums")
 @PreAuthorize("hasRole('ADMIN')")
-@SuppressWarnings(
-    {
-        "PMD.AvoidDuplicateLiterals",
-        "PMD.TooManyMethods",
-        "PMD.UseObjectForClearerAPI"
-    }
-)
 public class FederalCurriculumHtmlController {
 
     /**
@@ -48,10 +39,26 @@ public class FederalCurriculumHtmlController {
      */
     private final DSLContext ctx;
 
+    /**
+     * New controller.
+     *
+     * @param ctx JOOQ context
+     * @since 0.0.1
+     */
     public FederalCurriculumHtmlController(final DSLContext ctx) {
         this.ctx = ctx;
     }
 
+    /**
+     * Shows federal curriculums.
+     *
+     * @param page Pagination
+     * @param sort Sorting
+     * @param filters Filtering
+     * @return Curriculums view
+     * @throws Exception If selection fails
+     * @since 0.0.1
+     */
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView list(
         final Page page,
@@ -64,6 +71,16 @@ public class FederalCurriculumHtmlController {
             .view();
     }
 
+    /**
+     * Shows the federal curriculums fragment.
+     *
+     * @param filters Filtering
+     * @param page Pagination
+     * @param sort Sorting
+     * @return Curriculums fragment
+     * @throws Exception If selection fails
+     * @since 0.0.1
+     */
     @GetMapping(value = "/fragment", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView fragment(
         final Filters filters,
@@ -71,8 +88,7 @@ public class FederalCurriculumHtmlController {
         final Sorts sort
     ) throws Exception {
         return new FcsPostgres(this.ctx)
-            .selection(filters, page, sort)
-            .print(
+            .selection(filters, page, sort).print(
                 new ThymeleafMedia(
                     "federal-curriculums/list :: curriculums-grid",
                     ""
@@ -81,19 +97,37 @@ public class FederalCurriculumHtmlController {
             .view();
     }
 
+    /**
+     * Shows the curriculum creation form.
+     *
+     * @return Creation form
+     * @since 0.0.1
+     */
     @GetMapping(value = "/create", produces = MediaType.TEXT_HTML_VALUE)
+    @SuppressWarnings("PMD.ProhibitPublicStaticMethods")
     public static ModelAndView createForm() {
-        return new ThymeleafMedia("federal-curriculums/create", "")
-            .attributes(
-                Map.of(
-                    "pageTitle", "Новый федеральный учебный план",
-                    "levels", FederalCurriculum.Level.values(),
-                    "studyWeeks", FederalCurriculum.Week.values()
-                )
+        return new ThymeleafMedia("federal-curriculums/create", "").attributes(
+            Map.of(
+                "pageTitle", "Новый федеральный учебный план",
+                "levels", FederalCurriculum.Level.values(),
+                "studyWeeks", FederalCurriculum.Week.values()
             )
-            .view();
+        ).view();
     }
 
+    /**
+     * Creates a federal curriculum from form values.
+     *
+     * @param title Curriculum title
+     * @param level Education level
+     * @param week Study week
+     * @param version Curriculum version
+     * @param year Academic year
+     * @param description Description
+     * @return Redirect to curriculum
+     * @throws Exception If creation fails
+     * @since 0.0.1
+     */
     @PostMapping("/create")
     public String create(
         @RequestParam final String title,
@@ -105,25 +139,31 @@ public class FederalCurriculumHtmlController {
     ) throws Exception {
         return String.format(
             "redirect:/federal/curriculums/%d",
-            new FcsPostgres(this.ctx)
-                .create(
-                    title.trim(),
-                    level,
-                    week,
-                    version.trim(),
-                    year.trim(),
-                    Optional.ofNullable(description).map(String::trim).orElse(null)
-                ).uid()
+            new FcsPostgres(this.ctx).create(
+                title.trim(),
+                level,
+                week,
+                version.trim(),
+                year.trim(),
+                Optional.ofNullable(description).map(String::trim).orElse(null)
+            ).uid()
         );
     }
 
+    /**
+     * Shows curriculum details.
+     *
+     * @param curriculum Curriculum ID
+     * @return Curriculum view
+     * @throws Exception If lookup fails
+     * @since 0.0.1
+     */
     @GetMapping(value = "/{curriculum}", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView details(
         @PathVariable final long curriculum
     ) throws Exception {
         return new FcsPostgres(this.ctx)
-            .curriculum(curriculum)
-            .print(
+            .curriculum(curriculum).print(
                 new ThymeleafMedia(
                     "federal-curriculums/details",
                     "curriculum"
@@ -132,6 +172,17 @@ public class FederalCurriculumHtmlController {
             .view();
     }
 
+    /**
+     * Shows curriculum requirements.
+     *
+     * @param curriculum Curriculum ID
+     * @param filters Filtering
+     * @param page Pagination
+     * @param sort Sorting
+     * @return Requirements view
+     * @throws Exception If selection fails
+     * @since 0.0.1
+     */
     @GetMapping(value = "/{curriculum}/requirements", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView requirementsPage(
         @PathVariable final long curriculum,
@@ -142,8 +193,7 @@ public class FederalCurriculumHtmlController {
         final FederalCurriculum selected = new FcsPostgres(this.ctx)
             .curriculum(curriculum);
         return selected.requirements()
-            .selection(filters, page, sort)
-            .print(
+            .selection(filters, page, sort).print(
                 selected.print(
                     new ThymeleafMedia(
                         "federal-curriculums/requirements",
@@ -151,8 +201,7 @@ public class FederalCurriculumHtmlController {
                     )
                 )
             )
-            .title("Требования: %s")
-            .attributes(
+            .title("Требования: %s").attributes(
                 FederalCurriculumHtmlController.requirementsModel(
                     curriculum,
                     sort
@@ -161,6 +210,17 @@ public class FederalCurriculumHtmlController {
             .view();
     }
 
+    /**
+     * Shows the curriculum requirements fragment.
+     *
+     * @param curriculum Curriculum ID
+     * @param filters Filtering
+     * @param page Pagination
+     * @param sort Sorting
+     * @return Requirements fragment
+     * @throws Exception If selection fails
+     * @since 0.0.1
+     */
     @GetMapping(value = "/{curriculum}/requirements/fragment", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView requirements(
         @PathVariable
@@ -172,14 +232,12 @@ public class FederalCurriculumHtmlController {
         return new FcsPostgres(this.ctx)
             .curriculum(curriculum)
             .requirements()
-            .selection(filters, page, sort)
-            .print(
+            .selection(filters, page, sort).print(
                 new ThymeleafMedia(
                     "federal-curriculums/requirements :: requirements-results",
                     ""
                 )
-            )
-            .attributes(
+            ).attributes(
                 FederalCurriculumHtmlController.requirementsModel(
                     curriculum,
                     sort
@@ -188,17 +246,23 @@ public class FederalCurriculumHtmlController {
             .view();
     }
 
+    /**
+     * Shows the curriculum editing form.
+     *
+     * @param curriculum Curriculum ID
+     * @return Editing form
+     * @throws Exception If lookup fails
+     * @since 0.0.1
+     */
     @GetMapping(value = "/{curriculum}/edit", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView editForm(@PathVariable final long curriculum) throws Exception {
         return new FcsPostgres(this.ctx)
-            .curriculum(curriculum)
-            .print(
+            .curriculum(curriculum).print(
                 new ThymeleafMedia(
                     "federal-curriculums/edit",
                     ""
                 )
-            )
-            .attributes(
+            ).attributes(
                 Map.of(
                     "pageTitle", "Редактировать федеральный учебный план",
                     "levels", FederalCurriculum.Level.values(),
@@ -208,6 +272,20 @@ public class FederalCurriculumHtmlController {
             .view();
     }
 
+    /**
+     * Updates a federal curriculum from form values.
+     *
+     * @param curriculum Curriculum ID
+     * @param title Curriculum title
+     * @param level Education level
+     * @param week Study week
+     * @param version Curriculum version
+     * @param year Academic year
+     * @param description Description
+     * @return Redirect to curriculum
+     * @throws Exception If update fails
+     * @since 0.0.1
+     */
     @PostMapping("/{curriculum}/edit")
     public String edit(
         @PathVariable final long curriculum,
@@ -229,13 +307,6 @@ public class FederalCurriculumHtmlController {
         return String.format("redirect:/federal/curriculums/%d", curriculum);
     }
 
-    /**
-     * Builds requirements list model with pagination metadata.
-     *
-     * @param curriculum Curriculum ID
-     * @param sort Sorting parameters
-     * @return Model attributes
-     */
     private static Map<String, Object> requirementsModel(
         final long curriculum,
         final Sorts sort
@@ -270,5 +341,4 @@ public class FederalCurriculumHtmlController {
             Map.entry("partSort", part)
         );
     }
-
 }

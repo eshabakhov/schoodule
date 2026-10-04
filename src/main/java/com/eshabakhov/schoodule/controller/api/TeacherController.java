@@ -8,8 +8,8 @@ import com.eshabakhov.schoodule.error.VersionHeaderException;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.Teacher;
+import com.eshabakhov.schoodule.school.teacher.TeacherNotFoundException;
 import com.eshabakhov.schoodule.school.teacher.ThBase;
-import com.eshabakhov.schoodule.school.teacher.ThsPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @since 0.0.1
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
- * @checkstyle DesignForExtensionCheck (1000 lines)
  */
 @RestController
 @RequestMapping("/api/schools/{school}/teachers")
@@ -63,6 +63,15 @@ public class TeacherController {
         this.ctx = ctx;
     }
 
+    /**
+     * Create a teacher.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param request Request body
+     * @return Created teacher
+     * @throws Exception When the teacher cannot be created
+     */
     @PostMapping
     @PreAuthorize(
         """
@@ -163,7 +172,7 @@ public class TeacherController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (TeacherVersion.SIMPLE.equals(version)) {
+        if (version == TeacherController.TeacherVersion.SIMPLE) {
             final JsonNode name = request.get("name");
             if (name == null || name.asText().isBlank()) {
                 throw new TeacherRequiredFieldException(
@@ -174,17 +183,26 @@ public class TeacherController {
                 .school(school)
                 .teachers()
                 .create(name.asText());
-            return ResponseEntity
-                .created(
-                    URI.create(
-                        String.format("/api/schools/%d/teachers/%d", school, teacher.uid())
-                    )
-                ).body(teacher);
+            return ResponseEntity.created(
+                URI.create(
+                    String.format("/api/schools/%d/teachers/%d", school, teacher.uid())
+                )
+            ).body(teacher);
         } else {
             throw new VersionHeaderException(version.name());
         }
     }
 
+    /**
+     * Fetch teachers.
+     *
+     * @param school School identifier
+     * @param limit Page size
+     * @param offset Page number
+     * @param namect Name filter
+     * @return Teachers page
+     * @throws Exception When teachers cannot be loaded
+     */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(summary = "Fetch list of teachers")
@@ -206,23 +224,30 @@ public class TeacherController {
             required = false
         ) final String namect
     ) throws Exception {
-        var condition = TeacherController.TEACHER.SCHOOL_ID.eq(school)
+        Condition condition = TeacherController.TEACHER.SCHOOL_ID.eq(school)
             .and(TeacherController.TEACHER.IS_DELETED.eq(false));
         if (namect != null && !namect.isBlank()) {
             condition = condition.and(
                 TeacherController.TEACHER.NAME.likeIgnoreCase(String.format("%%%s%%", namect))
             );
         }
-        return ResponseEntity
-            .ok()
-            .body(
-                new SlsPostgres(this.ctx)
-                    .school(school)
-                    .teachers()
-                    .teachers(condition, new PageRequest(limit, offset))
-            );
+        return ResponseEntity.ok().body(
+            new SlsPostgres(this.ctx)
+                .school(school)
+                .teachers()
+                .teachers(condition, new PageRequest(limit, offset))
+        );
     }
 
+    /**
+     * Fetch a teacher.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param teacher Teacher identifier
+     * @return Teacher
+     * @throws Exception When the teacher cannot be loaded
+     */
     @GetMapping("/{teacher}")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(
@@ -286,8 +311,8 @@ public class TeacherController {
         @PathVariable final long school,
         @PathVariable final long teacher
     ) throws Exception {
-        if (TeacherVersion.SIMPLE.equals(version)) {
-            final var found = new SlsPostgres(this.ctx)
+        if (version == TeacherController.TeacherVersion.SIMPLE) {
+            final Teacher found = new SlsPostgres(this.ctx)
                 .school(school)
                 .teachers()
                 .teacher(teacher);
@@ -300,6 +325,16 @@ public class TeacherController {
         }
     }
 
+    /**
+     * Update a teacher.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param teacher Teacher identifier
+     * @param request Request body
+     * @return Updated teacher
+     * @throws Exception When the teacher cannot be updated
+     */
     @PutMapping("/{teacher}")
     @PreAuthorize(
         """
@@ -419,7 +454,7 @@ public class TeacherController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (TeacherVersion.SIMPLE.equals(version)) {
+        if (version == TeacherController.TeacherVersion.SIMPLE) {
             final JsonNode name = request.get("name");
             if (name == null || name.asText().isBlank()) {
                 throw new TeacherRequiredFieldException(
@@ -428,24 +463,23 @@ public class TeacherController {
             }
             ResponseEntity<Teacher> response;
             try {
-                final var updated = new SlsPostgres(this.ctx)
+                final Teacher updated = new SlsPostgres(this.ctx)
                     .school(school)
                     .teachers()
                     .teacher(teacher)
                     .renamed(name.asText());
                 response = ResponseEntity.ok().body(new ThBase(updated.uid(), updated.name()));
-            } catch (final ThsPostgres.TeacherNotFoundException ex) {
-                final var created = new SlsPostgres(this.ctx)
+            } catch (final TeacherNotFoundException ex) {
+                final Teacher created = new SlsPostgres(this.ctx)
                     .school(school)
                     .teachers()
                     .create(name.asText());
-                response = ResponseEntity
-                    .created(
-                        URI.create(
-                            String.format("/api/schools/%d/teachers/%d", school, created.uid())
-                        )
+                response = ResponseEntity.created(
+                    URI.create(
+                        String.format("/api/schools/%d/teachers/%d", school, created.uid())
                     )
-                    .body(created);
+                )
+                .body(created);
             }
             return response;
         } else {
@@ -453,6 +487,14 @@ public class TeacherController {
         }
     }
 
+    /**
+     * Delete a teacher.
+     *
+     * @param school School identifier
+     * @param teacher Teacher identifier
+     * @return Empty response
+     * @throws Exception When the teacher cannot be deleted
+     */
     @DeleteMapping("/{teacher}")
     @PreAuthorize(
         """
@@ -473,12 +515,6 @@ public class TeacherController {
             .teachers()
             .remove(teacher);
         return ResponseEntity.noContent().build();
-    }
-
-    public static class TeacherRequiredFieldException extends Exception {
-        public TeacherRequiredFieldException(final String message) {
-            super(message);
-        }
     }
 
     /** Teacher accept version. */

@@ -3,8 +3,12 @@
  */
 package com.eshabakhov.schoodule.controller.html;
 
+import com.eshabakhov.schoodule.PageableList;
+import com.eshabakhov.schoodule.School;
 import com.eshabakhov.schoodule.page.PageRequest;
+import com.eshabakhov.schoodule.school.Schedule;
 import com.eshabakhov.schoodule.school.SlsPostgres;
+import com.eshabakhov.schoodule.school.schedule.ClassCurriculum;
 import com.eshabakhov.schoodule.school.schoolclass.ScPostgres;
 import com.eshabakhov.schoodule.school.subject.SbPostgres;
 import org.jooq.DSLContext;
@@ -25,12 +29,12 @@ import org.springframework.web.bind.annotation.RequestParam;
  * <p>Server-side rendering for curriculum management.</p>
  *
  * @since 0.0.1
- * @checkstyle DesignForExtensionCheck (1000 lines)
  */
 @Controller
 @RequestMapping("/schools/{school}/schedules/{schedule}/curriculum")
 @SuppressWarnings("PMD.AvoidCatchingGenericException")
 public class CurriculumHtmlController {
+
     /**
      * Database context.
      */
@@ -45,6 +49,15 @@ public class CurriculumHtmlController {
         this.ctx = dsl;
     }
 
+    /**
+     * Render the curriculum list.
+     *
+     * @param school School identifier
+     * @param schedule Schedule identifier
+     * @param model View model
+     * @return Template name
+     * @throws Exception When curriculum data cannot be loaded
+     */
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public String list(
@@ -52,9 +65,9 @@ public class CurriculumHtmlController {
         @PathVariable final long schedule,
         final Model model
     ) throws Exception {
-        final var sch = new SlsPostgres(this.ctx).school(school);
-        final var sched = sch.schedules().schedule(schedule);
-        final var curriculums = sched
+        final School sch = new SlsPostgres(this.ctx).school(school);
+        final Schedule sched = sch.schedules().schedule(schedule);
+        final PageableList<ClassCurriculum> curriculums = sched
             .curriculums()
             .list(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1));
         model.addAttribute("school", sch);
@@ -72,9 +85,19 @@ public class CurriculumHtmlController {
                 .subjects()
                 .subjects(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
         );
-        return  "planning/curriculum";
+        return "planning/curriculum";
     }
 
+    /**
+     * Create a curriculum entry.
+     *
+     * @param school School identifier
+     * @param schedule Schedule identifier
+     * @param clazz Class identifier
+     * @param subject Subject identifier
+     * @param hours Weekly hours
+     * @return Redirect location
+     */
     @PostMapping("/create")
     //@checkstyle ParameterNumberCheck (2 lines)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
@@ -91,8 +114,7 @@ public class CurriculumHtmlController {
                 .school(school)
                 .schedules()
                 .schedule(schedule)
-                .curriculums()
-                .create(
+                .curriculums().create(
                     new ScPostgres(this.ctx, clazz),
                     new SbPostgres(this.ctx, subject),
                     hours
@@ -114,6 +136,15 @@ public class CurriculumHtmlController {
         return response;
     }
 
+    /**
+     * Delete a curriculum entry.
+     *
+     * @param school School identifier
+     * @param schedule Schedule identifier
+     * @param curriculum Curriculum identifier
+     * @return Redirect location
+     * @throws Exception When the entry cannot be deleted
+     */
     @PostMapping("/{curriculum}/delete")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public String delete(

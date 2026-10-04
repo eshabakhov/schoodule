@@ -25,10 +25,23 @@ public final class SlBase implements School {
     /** School name. */
     private final String sname;
 
+    /**
+     * New school without an ID.
+     *
+     * @param sname School name
+     * @since 0.0.1
+     */
     public SlBase(final String sname) {
         this(Long.MIN_VALUE, sname);
     }
 
+    /**
+     * New school.
+     *
+     * @param sid School ID
+     * @param sname School name
+     * @since 0.0.1
+     */
     public SlBase(final long sid, final String sname) {
         this.sid = sid;
         this.sname = sname;

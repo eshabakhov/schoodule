@@ -18,9 +18,9 @@ import org.jooq.impl.DSL;
  * Postgres implementation of {@link Teachers}.
  *
  * @since 0.0.1
+ * @checkstyle LambdaBodyLengthCheck (1000 lines)
  */
 @EqualsAndHashCode
-@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public final class ThsPostgres implements Teachers {
 
     /** JOOQ Table for Teacher. */
@@ -33,6 +33,13 @@ public final class ThsPostgres implements Teachers {
     /** School ID. */
     private final Long sid;
 
+    /**
+     * New teachers collection.
+     *
+     * @param ctx Database context
+     * @param sid School ID
+     * @since 0.0.1
+     */
     public ThsPostgres(final DSLContext ctx, final Long sid) {
         this.ctx = ctx;
         this.sid = sid;
@@ -43,15 +50,13 @@ public final class ThsPostgres implements Teachers {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                final var rec = ttx.selectFrom(ThsPostgres.TEACHER)
-                    .where(
-                        ThsPostgres.TEACHER.SCHOOL_ID.eq(this.sid)
-                            .and(ThsPostgres.TEACHER.NAME.eq(name))
-                            .and(ThsPostgres.TEACHER.IS_DELETED.eq(false))
+                if (ttx.selectFrom(ThsPostgres.TEACHER).where(
+                    ThsPostgres.TEACHER.SCHOOL_ID.eq(this.sid).and(
+                        ThsPostgres.TEACHER.NAME.eq(name)
+                    ).and(ThsPostgres.TEACHER.IS_DELETED.eq(false))
                     )
-                    .fetchOne();
-                if (rec == null) {
-                    final var created = ttx.insertInto(ThsPostgres.TEACHER)
+                    .fetchOne() == null) {
+                    final TeacherRecord created = ttx.insertInto(ThsPostgres.TEACHER)
                         .set(ThsPostgres.TEACHER.SCHOOL_ID, this.sid)
                         .set(ThsPostgres.TEACHER.NAME, name)
                         .set(ThsPostgres.TEACHER.IS_DELETED, false)
@@ -62,7 +67,9 @@ public final class ThsPostgres implements Teachers {
                     }
                     return new ThPostgres(this.ctx, created.getId());
                 } else {
-                    throw new TeacherAlreadyExistsException(name);
+                    throw new TeacherAlreadyExistsException(
+                        String.format("Teacher `%s` already exists", name)
+                    );
                 }
             }
         );
@@ -70,11 +77,10 @@ public final class ThsPostgres implements Teachers {
 
     @Override
     public Teacher teacher(final long tid) throws Exception {
-        final TeacherRecord selected = this.ctx.selectFrom(ThsPostgres.TEACHER)
-            .where(
-                ThsPostgres.TEACHER.ID.eq(tid)
-                    .and(ThsPostgres.TEACHER.SCHOOL_ID.eq(this.sid))
-                    .and(ThsPostgres.TEACHER.IS_DELETED.eq(false))
+        final TeacherRecord selected = this.ctx.selectFrom(ThsPostgres.TEACHER).where(
+            ThsPostgres.TEACHER.ID.eq(tid).and(
+                ThsPostgres.TEACHER.SCHOOL_ID.eq(this.sid)
+            ).and(ThsPostgres.TEACHER.IS_DELETED.eq(false))
             )
             .fetchOne();
         if (selected == null) {
@@ -87,11 +93,10 @@ public final class ThsPostgres implements Teachers {
 
     @Override
     public Teacher teacher(final String name) throws Exception {
-        final TeacherRecord selected = this.ctx.selectFrom(ThsPostgres.TEACHER)
-            .where(
-                ThsPostgres.TEACHER.SCHOOL_ID.eq(this.sid)
-                    .and(ThsPostgres.TEACHER.NAME.eq(name))
-                    .and(ThsPostgres.TEACHER.IS_DELETED.eq(false))
+        final TeacherRecord selected = this.ctx.selectFrom(ThsPostgres.TEACHER).where(
+            ThsPostgres.TEACHER.SCHOOL_ID.eq(this.sid).and(
+                ThsPostgres.TEACHER.NAME.eq(name)
+            ).and(ThsPostgres.TEACHER.IS_DELETED.eq(false))
             )
             .fetchOne();
         if (selected == null) {
@@ -110,8 +115,7 @@ public final class ThsPostgres implements Teachers {
                 .where(condition.and(ThsPostgres.TEACHER.SCHOOL_ID.eq(this.sid)))
                 .orderBy(ThsPostgres.TEACHER.NAME.asc())
                 .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit())
-                .fetch(
+                .offset((page.offset() - 1) * page.limit()).fetch(
                     selected -> new ThPostgres(this.ctx, selected.getId())
                 ),
             this.ctx.fetchCount(
@@ -123,11 +127,10 @@ public final class ThsPostgres implements Teachers {
 
     @Override
     public void remove(final long tid) throws Exception {
-        final TeacherRecord selected = this.ctx.selectFrom(ThsPostgres.TEACHER)
-            .where(
-                ThsPostgres.TEACHER.ID.eq(tid)
-                    .and(ThsPostgres.TEACHER.SCHOOL_ID.eq(this.sid))
-                    .and(ThsPostgres.TEACHER.IS_DELETED.eq(false))
+        final TeacherRecord selected = this.ctx.selectFrom(ThsPostgres.TEACHER).where(
+            ThsPostgres.TEACHER.ID.eq(tid).and(
+                ThsPostgres.TEACHER.SCHOOL_ID.eq(this.sid)
+            ).and(ThsPostgres.TEACHER.IS_DELETED.eq(false))
             )
             .fetchOne();
         if (selected == null) {
@@ -142,23 +145,5 @@ public final class ThsPostgres implements Teachers {
                     .where(ThsPostgres.TEACHER.ID.eq(tid))
                     .execute()
         );
-    }
-
-    public static class TeacherFailedCreateException extends Exception {
-        public TeacherFailedCreateException() {
-            super("Failed to create Teacher");
-        }
-    }
-
-    public static class TeacherAlreadyExistsException extends Exception {
-        public TeacherAlreadyExistsException(final String name) {
-            super(String.format("Teacher `%s` already exists", name));
-        }
-    }
-
-    public static class TeacherNotFoundException extends Exception {
-        public TeacherNotFoundException(final String message) {
-            super(message);
-        }
     }
 }

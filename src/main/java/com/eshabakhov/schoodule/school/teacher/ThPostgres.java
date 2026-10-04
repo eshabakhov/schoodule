@@ -25,6 +25,13 @@ public final class ThPostgres implements Teacher {
     /** Teacher ID. */
     private final long tid;
 
+    /**
+     * New teacher.
+     *
+     * @param ctx Database context
+     * @param tid Teacher ID
+     * @since 0.0.1
+     */
     public ThPostgres(final DSLContext ctx, final Long tid) {
         this.ctx = ctx;
         this.tid = tid;
@@ -61,8 +68,7 @@ public final class ThPostgres implements Teacher {
         return this.ctx
             .select(ThPostgres.TEACHER.ID, ThPostgres.TEACHER.NAME)
             .from(ThPostgres.TEACHER)
-            .where(ThPostgres.TEACHER.ID.eq(this.tid))
-            .fetchOne(
+            .where(ThPostgres.TEACHER.ID.eq(this.tid)).fetchOne(
                 clazz ->
                     JsonNodeFactory.instance.objectNode()
                         .put("id", clazz.get(ThPostgres.TEACHER.ID))

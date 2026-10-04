@@ -24,10 +24,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * Test for {@link SlsPostgres}.
  *
  * @since 0.0.1
+ * @checkstyle ProhibitFieldsInTestClassesCheck (1000 lines)
  */
 @Testcontainers
 @SpringBootTest
-@SuppressWarnings("PMD.UnusedPrivateMethod")
+@SuppressWarnings({"PMD.UnusedPrivateMethod", "UnusedMethod"})
 final class SlsPostgresTest {
 
     /** Postgres container. */
@@ -53,16 +54,17 @@ final class SlsPostgresTest {
 
     @Test
     void createsSchool() throws Exception {
-        final var created = new SlsPostgres(this.ctx).create("Awesome school");
-        final var rec = this.ctx.selectFrom(School.SCHOOL)
-            .where(School.SCHOOL.NAME.eq("Awesome school").and(School.SCHOOL.IS_DELETED.eq(false)))
-            .fetchOne();
         Assertions.assertEquals(
+            new SlsPostgres(this.ctx).create("Awesome school"),
             new SlPostgres(
                 this.ctx,
-                rec.getId()
-            ),
-            created
+                this.ctx.selectFrom(School.SCHOOL).where(
+                    School.SCHOOL.NAME.eq("Awesome school")
+                        .and(School.SCHOOL.IS_DELETED.eq(false))
+                    )
+                    .fetchOne()
+                    .getId()
+            )
         );
     }
 

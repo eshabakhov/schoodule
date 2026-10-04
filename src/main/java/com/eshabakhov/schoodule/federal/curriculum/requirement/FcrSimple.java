@@ -11,7 +11,6 @@ import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
  *
  * @since 0.0.1
  */
-@SuppressWarnings("PMD.TooManyMethods")
 public final class FcrSimple implements FederalCurriculumRequirement {
 
     /**
@@ -22,7 +21,7 @@ public final class FcrSimple implements FederalCurriculumRequirement {
     /**
      * Creates a Postgres-backed requirement.
      *
-     * @param origin Original federal curriculum requirement.
+     * @param origin Original federal curriculum requirement
      */
     public FcrSimple(final FederalCurriculumRequirement origin) {
         this.origin = origin;

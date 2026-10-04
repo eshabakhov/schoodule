@@ -25,10 +25,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * Test for {@link SlPostgres}.
  *
  * @since 0.0.1
+ * @checkstyle ProhibitFieldsInTestClassesCheck (1000 lines)
  */
 @Testcontainers
 @SpringBootTest
-@SuppressWarnings("PMD.UnusedPrivateMethod")
+@SuppressWarnings({"PMD.UnusedPrivateMethod", "UnusedMethod"})
 final class SlPostgresTest {
 
     /** Postgres container. */

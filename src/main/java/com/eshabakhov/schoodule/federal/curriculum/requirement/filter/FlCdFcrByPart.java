@@ -17,12 +17,6 @@ import org.jooq.Condition;
 public final class FlCdFcrByPart implements FlConditional {
 
     /**
-     * JOOQ Table for FederalCurriculumRequirement.
-     */
-    private static final com.eshabakhov.schoodule.tables.FederalCurriculumRequirement REQUIREMENT =
-        com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
-
-    /**
      * Origin filter.
      */
     private final FlConditional origin;
@@ -32,6 +26,12 @@ public final class FlCdFcrByPart implements FlConditional {
      */
     private final Optional<FederalCurriculumRequirement.PartType> part;
 
+    /**
+     * New part filter.
+     *
+     * @param origin Origin filter
+     * @param part Part to search
+     */
     public FlCdFcrByPart(
         final FlConditional origin,
         final FederalCurriculumRequirement.PartType part
@@ -39,6 +39,12 @@ public final class FlCdFcrByPart implements FlConditional {
         this(origin, Optional.ofNullable(part));
     }
 
+    /**
+     * New part filter from a string value.
+     *
+     * @param origin Origin filter
+     * @param part Part to search
+     */
     public FlCdFcrByPart(final FlConditional origin, final String part) {
         this(
             origin,
@@ -61,7 +67,8 @@ public final class FlCdFcrByPart implements FlConditional {
         Condition condition = this.origin.condition();
         if (this.part.isPresent()) {
             condition = condition.and(
-                FlCdFcrByPart.REQUIREMENT.PART_TYPE.eq(
+                com.eshabakhov.schoodule.tables.FederalCurriculumRequirement
+                    .FEDERAL_CURRICULUM_REQUIREMENT.PART_TYPE.eq(
                     CurriculumPartType.valueOf(this.part.get().name())
                 )
             );

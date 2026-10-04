@@ -9,7 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.schedule.ClassCurriculum;
 import com.eshabakhov.schoodule.school.schedule.curriculum.CsCrSimple;
-import com.eshabakhov.schoodule.school.schedule.curriculum.CsCrsPostgres;
+import com.eshabakhov.schoodule.school.schedule.curriculum.CurriculumNotFoundException;
 import com.eshabakhov.schoodule.school.schoolclass.ScPostgres;
 import com.eshabakhov.schoodule.school.subject.SbPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,7 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
  * ClassCurriculum REST API controller.
  *
  * @since 0.0.1
- * @checkstyle DesignForExtensionCheck (1000 lines)
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
  */
 @RestController
@@ -56,6 +55,16 @@ public class ClassCurriculumController {
         this.ctx = ctx;
     }
 
+    /**
+     * Create a class curriculum entry.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param schedule Schedule identifier
+     * @param request Request body
+     * @return Created curriculum entry
+     * @throws Exception When the entry cannot be created
+     */
     @PostMapping
     @PreAuthorize(
         """
@@ -126,7 +135,7 @@ public class ClassCurriculumController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (CurriculumVersion.SIMPLE.equals(version)) {
+        if (version == ClassCurriculumController.CurriculumVersion.SIMPLE) {
             final JsonNode classid = request.get("schoolClassId");
             final JsonNode subjectid = request.get("subjectId");
             final JsonNode hours = request.get("hoursPerWeek");
@@ -139,29 +148,37 @@ public class ClassCurriculumController {
                 .school(school)
                 .schedules()
                 .schedule(schedule)
-                .curriculums()
-                .create(
+                .curriculums().create(
                     new ScPostgres(this.ctx, classid.asLong()),
                     new SbPostgres(this.ctx, subjectid.asLong()),
                     hours.asInt()
                 );
-            return ResponseEntity
-                .created(
-                    URI.create(
-                        String.format(
-                            "/api/schools/%d/schedules/%d/curriculum/%d",
-                            school,
-                            schedule,
-                            curriculum.uid()
-                        )
+            return ResponseEntity.created(
+                URI.create(
+                    String.format(
+                        "/api/schools/%d/schedules/%d/curriculum/%d",
+                        school,
+                        schedule,
+                        curriculum.uid()
                     )
                 )
-                .body(curriculum);
+            )
+            .body(curriculum);
         } else {
             throw new VersionHeaderException(version.name());
         }
     }
 
+    /**
+     * Fetch class curriculum entries.
+     *
+     * @param school School identifier
+     * @param schedule Schedule identifier
+     * @param limit Page size
+     * @param offset Page number
+     * @return Curriculum page
+     * @throws Exception When entries cannot be loaded
+     */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(summary = "Fetch list of class curriculums")
@@ -172,18 +189,25 @@ public class ClassCurriculumController {
         @RequestParam(name = "limit", required = false, defaultValue = "10") final int limit,
         @RequestParam(name = "offset", required = false, defaultValue = "1") final int offset
     ) throws Exception {
-        return ResponseEntity
-            .ok()
-            .body(
-                new SlsPostgres(this.ctx)
-                    .school(school)
-                    .schedules()
-                    .schedule(schedule)
-                    .curriculums()
-                    .list(DSL.trueCondition(), new PageRequest(limit, offset))
-            );
+        return ResponseEntity.ok().body(
+            new SlsPostgres(this.ctx)
+                .school(school)
+                .schedules()
+                .schedule(schedule)
+                .curriculums()
+                .list(DSL.trueCondition(), new PageRequest(limit, offset))
+        );
     }
 
+    /**
+     * Fetch a class curriculum entry.
+     *
+     * @param school School identifier
+     * @param schedule Schedule identifier
+     * @param curriculum Curriculum identifier
+     * @return Curriculum entry
+     * @throws Exception When the entry cannot be loaded
+     */
     @GetMapping("/{curriculum}")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(summary = "Fetch class curriculum")
@@ -200,6 +224,17 @@ public class ClassCurriculumController {
             .curriculum(curriculum);
     }
 
+    /**
+     * Update a class curriculum entry.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param schedule Schedule identifier
+     * @param curriculum Curriculum identifier
+     * @param request Request body
+     * @return Updated curriculum entry
+     * @throws Exception When the entry cannot be updated
+     */
     @PutMapping("/{curriculum}")
     @PreAuthorize(
         """
@@ -236,7 +271,7 @@ public class ClassCurriculumController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (CurriculumVersion.SIMPLE.equals(version)) {
+        if (version == ClassCurriculumController.CurriculumVersion.SIMPLE) {
             final JsonNode classid = request.get("schoolClassId");
             final JsonNode subjectid = request.get("subjectId");
             final JsonNode hours = request.get("hoursPerWeek");
@@ -247,12 +282,11 @@ public class ClassCurriculumController {
             }
             ResponseEntity<ClassCurriculum> response;
             try {
-                final var updated = new SlsPostgres(this.ctx)
+                final ClassCurriculum updated = new SlsPostgres(this.ctx)
                     .school(school)
                     .schedules()
                     .schedule(schedule)
-                    .curriculums()
-                    .curriculum(curriculum)
+                    .curriculums().curriculum(curriculum)
                     .allocate(hours.asInt())
                     .teach(new SbPostgres(this.ctx, subjectid.asLong()))
                     .target(new ScPostgres(this.ctx, classid.asLong()));
@@ -264,29 +298,27 @@ public class ClassCurriculumController {
                         updated.hoursPerWeek()
                     )
                 );
-            } catch (final CsCrsPostgres.CurriculumNotFoundException ex) {
-                final var created = new SlsPostgres(this.ctx)
+            } catch (final CurriculumNotFoundException ex) {
+                final ClassCurriculum created = new SlsPostgres(this.ctx)
                     .school(school)
                     .schedules()
                     .schedule(schedule)
-                    .curriculums()
-                    .create(
+                    .curriculums().create(
                         new ScPostgres(this.ctx, classid.asLong()),
                         new SbPostgres(this.ctx, subjectid.asLong()),
                         hours.asInt()
                     );
-                response = ResponseEntity
-                    .created(
-                        URI.create(
-                            String.format(
-                                "/api/schools/%d/schedules/%d/curriculum/%d",
-                                school,
-                                schedule,
-                                created.uid()
-                            )
+                response = ResponseEntity.created(
+                    URI.create(
+                        String.format(
+                            "/api/schools/%d/schedules/%d/curriculum/%d",
+                            school,
+                            schedule,
+                            created.uid()
                         )
                     )
-                    .body(created);
+                )
+                .body(created);
             }
             return response;
         } else {
@@ -294,6 +326,15 @@ public class ClassCurriculumController {
         }
     }
 
+    /**
+     * Delete a class curriculum entry.
+     *
+     * @param school School identifier
+     * @param schedule Schedule identifier
+     * @param curriculum Curriculum identifier
+     * @return Empty response
+     * @throws Exception When the entry cannot be deleted
+     */
     @DeleteMapping("/{curriculum}")
     @PreAuthorize(
         """
@@ -317,12 +358,6 @@ public class ClassCurriculumController {
             .curriculums()
             .remove(curriculum);
         return ResponseEntity.noContent().build();
-    }
-
-    public static class CurriculumRequiredFieldException extends Exception {
-        public CurriculumRequiredFieldException(final String message) {
-            super(message);
-        }
     }
 
     /** ClassCurriculum accept version. */

@@ -28,6 +28,7 @@ public interface Cabinet extends Jsonable {
 
     /**
      * Returns cabinet with new name.
+     *
      * @param name New name of the cabinet
      * @return Cabinet with new name
      */

@@ -5,6 +5,7 @@ package com.eshabakhov.schoodule.federal.curriculum.requirement.sort;
 
 import com.eshabakhov.schoodule.Sort;
 import com.eshabakhov.schoodule.sort.StJooq;
+import com.eshabakhov.schoodule.tables.FederalCurriculumRequirement;
 import java.util.Optional;
 import org.jooq.Field;
 import org.jooq.SortField;
@@ -19,8 +20,8 @@ public final class FcrStJooq implements StJooq {
     /**
      * JOOQ Table for FederalCurriculumRequirement.
      */
-    private static final com.eshabakhov.schoodule.tables.FederalCurriculumRequirement REQUIREMENT =
-        com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
+    private static final FederalCurriculumRequirement REQUIREMENT =
+        FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
 
     /**
      * Origin sorting parameter.
@@ -50,6 +51,7 @@ public final class FcrStJooq implements StJooq {
     @Override
     public SortField<?> field() {
         final Field<?> field = switch (this.origin.name()) {
+            case null -> null;
             case "grade" -> FcrStJooq.REQUIREMENT.GRADE;
             case "subject" -> FcrStJooq.REQUIREMENT.SUBJECT_NAME;
             case "hours" -> FcrStJooq.REQUIREMENT.WEEKLY_HOURS;
@@ -57,6 +59,7 @@ public final class FcrStJooq implements StJooq {
             default -> null;
         };
         return switch (this.origin.direction()) {
+            case null -> null;
             case NONE -> null;
             case ASC -> Optional.ofNullable(field).map(Field::asc).orElse(null);
             case DESC -> Optional.ofNullable(field).map(Field::desc).orElse(null);

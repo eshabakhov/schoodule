@@ -33,7 +33,7 @@ public interface Credentials {
      * Plain implementation of {@link Credentials}.
      *
      * @since 0.0.1
-    */
+     */
     final class CdPostgres implements Credentials {
 
         /** Username. */
@@ -42,6 +42,12 @@ public interface Credentials {
         /** Password. */
         private final Long user;
 
+        /**
+         * New credentials.
+         *
+         * @param ctx Database context
+         * @param user User identifier
+         */
         public CdPostgres(final DSLContext ctx, final Long user) {
             this.ctx = ctx;
             this.user = user;

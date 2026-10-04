@@ -18,9 +18,9 @@ import org.jooq.impl.DSL;
  * Postgres implementation of {@link Subjects}.
  *
  * @since 0.0.1
+ * @checkstyle LambdaBodyLengthCheck (1000 lines)
  */
 @EqualsAndHashCode
-@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public final class SbsPostgres implements Subjects {
 
     /** JOOQ Table for Cabinet. */
@@ -33,6 +33,13 @@ public final class SbsPostgres implements Subjects {
     /** School ID. */
     private final Long sid;
 
+    /**
+     * New subjects collection.
+     *
+     * @param ctx Database context
+     * @param sid School ID
+     * @since 0.0.1
+     */
     public SbsPostgres(final DSLContext ctx, final Long sid) {
         this.ctx = ctx;
         this.sid = sid;
@@ -43,15 +50,13 @@ public final class SbsPostgres implements Subjects {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                final var rec = ttx.selectFrom(SbsPostgres.SUBJECT)
-                    .where(
-                        SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid)
-                            .and(SbsPostgres.SUBJECT.NAME.eq(name))
-                            .and(SbsPostgres.SUBJECT.IS_DELETED.eq(false))
+                if (ttx.selectFrom(SbsPostgres.SUBJECT).where(
+                    SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid).and(
+                        SbsPostgres.SUBJECT.NAME.eq(name)
+                    ).and(SbsPostgres.SUBJECT.IS_DELETED.eq(false))
                     )
-                    .fetchOne();
-                if (rec == null) {
-                    final var created = ttx.insertInto(SbsPostgres.SUBJECT)
+                    .fetchOne() == null) {
+                    final SubjectRecord created = ttx.insertInto(SbsPostgres.SUBJECT)
                         .set(SbsPostgres.SUBJECT.SCHOOL_ID, this.sid)
                         .set(SbsPostgres.SUBJECT.NAME, name)
                         .set(SbsPostgres.SUBJECT.IS_DELETED, false)
@@ -62,7 +67,9 @@ public final class SbsPostgres implements Subjects {
                     }
                     return new SbPostgres(this.ctx, created.getId());
                 } else {
-                    throw new SubjectAlreadyExistsException(name);
+                    throw new SubjectAlreadyExistsException(
+                        String.format("Subject `%s` already exists", name)
+                    );
                 }
             }
         );
@@ -70,11 +77,10 @@ public final class SbsPostgres implements Subjects {
 
     @Override
     public Subject subject(final long subid) throws Exception {
-        final SubjectRecord selected = this.ctx.selectFrom(SbsPostgres.SUBJECT)
-            .where(
-                SbsPostgres.SUBJECT.ID.eq(subid)
-                    .and(SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid))
-                    .and(SbsPostgres.SUBJECT.IS_DELETED.eq(false))
+        final SubjectRecord selected = this.ctx.selectFrom(SbsPostgres.SUBJECT).where(
+            SbsPostgres.SUBJECT.ID.eq(subid).and(
+                SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid)
+            ).and(SbsPostgres.SUBJECT.IS_DELETED.eq(false))
             )
             .fetchOne();
         if (selected == null) {
@@ -87,11 +93,10 @@ public final class SbsPostgres implements Subjects {
 
     @Override
     public Subject subject(final String name) throws Exception {
-        final SubjectRecord selected = this.ctx.selectFrom(SbsPostgres.SUBJECT)
-            .where(
-                SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid)
-                    .and(SbsPostgres.SUBJECT.NAME.eq(name))
-                    .and(SbsPostgres.SUBJECT.IS_DELETED.eq(false))
+        final SubjectRecord selected = this.ctx.selectFrom(SbsPostgres.SUBJECT).where(
+            SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid).and(
+                SbsPostgres.SUBJECT.NAME.eq(name)
+            ).and(SbsPostgres.SUBJECT.IS_DELETED.eq(false))
             )
             .fetchOne();
         if (selected == null) {
@@ -121,11 +126,10 @@ public final class SbsPostgres implements Subjects {
 
     @Override
     public void remove(final long subid) throws Exception {
-        final SubjectRecord subject = this.ctx.selectFrom(SbsPostgres.SUBJECT)
-            .where(
-                SbsPostgres.SUBJECT.ID.eq(subid)
-                    .and(SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid))
-                    .and(SbsPostgres.SUBJECT.IS_DELETED.eq(false))
+        final SubjectRecord subject = this.ctx.selectFrom(SbsPostgres.SUBJECT).where(
+            SbsPostgres.SUBJECT.ID.eq(subid).and(
+                SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid)
+            ).and(SbsPostgres.SUBJECT.IS_DELETED.eq(false))
             )
             .fetchOne();
         if (subject == null) {
@@ -140,23 +144,5 @@ public final class SbsPostgres implements Subjects {
                     .where(SbsPostgres.SUBJECT.ID.eq(subid))
                     .execute()
         );
-    }
-
-    public static class SubjectFailedCreateException extends Exception {
-        public SubjectFailedCreateException() {
-            super("Failed to create Subject");
-        }
-    }
-
-    public static class SubjectAlreadyExistsException extends Exception {
-        public SubjectAlreadyExistsException(final String name) {
-            super(String.format("Subject `%s` already exists", name));
-        }
-    }
-
-    public static class SubjectNotFoundException extends Exception {
-        public SubjectNotFoundException(final String message) {
-            super(message);
-        }
     }
 }

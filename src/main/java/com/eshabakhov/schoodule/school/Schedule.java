@@ -29,6 +29,7 @@ public interface Schedule extends Jsonable {
 
     /**
      * Returns schedule with new name.
+     *
      * @param name New name of schedule
      * @return Schedule with new name
      */
@@ -36,6 +37,7 @@ public interface Schedule extends Jsonable {
 
     /**
      * Returns class curriculums.
+     *
      * @return Class curriculums
      */
     ClassCurriculums curriculums();

@@ -10,10 +10,12 @@ import java.util.List;
  *
  * @since 0.0.1
  */
+@FunctionalInterface
 public interface Sorts {
 
     /**
      * Sorting parameters.
+     *
      * @return Sorts
      */
     List<Sort> sorts();

@@ -3,17 +3,17 @@
  */
 package com.eshabakhov.schoodule.error;
 
-import com.eshabakhov.schoodule.Error;
+import com.eshabakhov.schoodule.ErrorResponse;
 import java.time.Instant;
 
 /**
- * Simple implementation of {@link Error} interface.
- * <p>
- * Contains an error code, a message, and the timestamp when the error was created.
+ * Simple implementation of {@link ErrorResponse} interface.
+ *
+ * <p>Contains a message and the timestamp when the error was created.</p>
  *
  * @since 0.0.1
  */
-public final class SimpleError implements Error {
+public final class SimpleError implements ErrorResponse {
 
     /** Human-readable error message. */
     private final String msg;
@@ -21,9 +21,15 @@ public final class SimpleError implements Error {
     /** Timestamp of the error creation. */
     private final Instant tsm;
 
-    public SimpleError(final String msg) {
+    /**
+     * New error.
+     *
+     * @param msg Error message
+     * @param tsm Error creation timestamp
+     */
+    public SimpleError(final String msg, final Instant tsm) {
         this.msg = msg;
-        this.tsm = Instant.now();
+        this.tsm = tsm;
     }
 
     @Override

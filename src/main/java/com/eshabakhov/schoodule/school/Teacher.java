@@ -28,6 +28,7 @@ public interface Teacher extends Jsonable {
 
     /**
      * Returns teacher with new name.
+     *
      * @param name New name of the teacher
      * @return Name of the teacher
      */

@@ -28,6 +28,14 @@ public final class ProfilePage {
         this.ctx = ctx;
     }
 
+    /**
+     * Show user profile.
+     *
+     * @param user Authenticated user
+     * @param model View model
+     * @return Profile view
+     * @throws Exception If school loading fails
+     */
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     public String profile(
         @AuthenticationPrincipal final AuthUser user,

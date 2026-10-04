@@ -7,14 +7,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 
 /**
- * Represents an error response with code, message, and timestamp.
+ * Represents an error response with message and timestamp.
  *
  * @since 0.0.1
  */
-public interface Error {
+public interface ErrorResponse {
 
     /**
      * Human-readable error message.
+     *
      * @return Message
      */
     @JsonProperty
@@ -22,6 +23,7 @@ public interface Error {
 
     /**
      * Timestamp of the error occurrence.
+     *
      * @return Timestamp
      */
     @JsonProperty

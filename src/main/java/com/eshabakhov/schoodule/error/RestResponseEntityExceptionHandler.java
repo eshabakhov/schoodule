@@ -3,18 +3,24 @@
  */
 package com.eshabakhov.schoodule.error;
 
-import com.eshabakhov.schoodule.controller.api.CabinetController;
-import com.eshabakhov.schoodule.controller.api.ScheduleController;
-import com.eshabakhov.schoodule.controller.api.SchoolClassController;
-import com.eshabakhov.schoodule.controller.api.SchoolController;
-import com.eshabakhov.schoodule.controller.api.SubjectController;
-import com.eshabakhov.schoodule.controller.api.TeacherController;
-import com.eshabakhov.schoodule.school.SlsPostgres;
-import com.eshabakhov.schoodule.school.building.cabinet.CbsPostgres;
-import com.eshabakhov.schoodule.school.schedule.SdsPostgres;
-import com.eshabakhov.schoodule.school.schoolclass.ScsPostgres;
-import com.eshabakhov.schoodule.school.subject.SbsPostgres;
-import com.eshabakhov.schoodule.school.teacher.ThsPostgres;
+import com.eshabakhov.schoodule.controller.api.CabinetRequiredFieldException;
+import com.eshabakhov.schoodule.controller.api.ScheduleRequiredFieldException;
+import com.eshabakhov.schoodule.controller.api.SchoolClassRequiredFieldException;
+import com.eshabakhov.schoodule.controller.api.SchoolRequiredFieldException;
+import com.eshabakhov.schoodule.controller.api.SubjectRequiredFieldException;
+import com.eshabakhov.schoodule.controller.api.TeacherRequiredFieldException;
+import com.eshabakhov.schoodule.school.SchoolFailedCreateException;
+import com.eshabakhov.schoodule.school.SchoolNotFoundException;
+import com.eshabakhov.schoodule.school.building.cabinet.CabinetAlreadyExistsException;
+import com.eshabakhov.schoodule.school.building.cabinet.CabinetFailedCreateException;
+import com.eshabakhov.schoodule.school.building.cabinet.CabinetNotFoundException;
+import com.eshabakhov.schoodule.school.schedule.ScheduleAlreadyExistsException;
+import com.eshabakhov.schoodule.school.schoolclass.SchoolClassAlreadyExistsException;
+import com.eshabakhov.schoodule.school.subject.SubjectAlreadyExistsException;
+import com.eshabakhov.schoodule.school.teacher.TeacherAlreadyExistsException;
+import com.eshabakhov.schoodule.school.teacher.TeacherFailedCreateException;
+import com.eshabakhov.schoodule.school.teacher.TeacherNotFoundException;
+import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,55 +35,68 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
  * Global exception handler for REST controllers.
  *
  * <p>This class provides centralized exception handling for all
- * REST controllers in the application.
+ * REST controllers in the application.</p>
  *
  * @since 0.0.1
  */
 @ControllerAdvice
 @SuppressWarnings(
-    {
-        "PMD.ProhibitPublicStaticMethods",
-        "PMD.UseUtilityClass",
-        "PMD.UncommentedEmptyConstructor",
-        "PMD.CouplingBetweenObjects"
-    }
+    "PMD.ProhibitPublicStaticMethods"
 )
 public final class RestResponseEntityExceptionHandler {
 
     private RestResponseEntityExceptionHandler() { }
 
+    /**
+     * Handle a missing request header.
+     *
+     * @param exception Missing header exception
+     * @return Bad request response
+     */
     @ExceptionHandler(MissingRequestHeaderException.class)
     public static ResponseEntity<Object> handleMissingRequestHeaderException(
         final MissingRequestHeaderException exception
     ) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .contentType(MediaType.APPLICATION_JSON)
-            .body(new SimpleError(exception.getMessage()));
+            .body(new SimpleError(exception.getMessage(), Instant.now()));
     }
 
+    /**
+     * Handle an invalid client request.
+     *
+     * @param exception Client request exception
+     * @return Bad request response
+     */
     @ExceptionHandler(
         {
-            SchoolController.SchoolRequiredFieldException.class,
-            CabinetController.CabinetRequiredFieldException.class,
-            ScheduleController.ScheduleRequiredFieldException.class,
-            SchoolClassController.SchoolClassRequiredFieldException.class,
-            SubjectController.SubjectRequiredFieldException.class,
-            TeacherController.TeacherRequiredFieldException.class
+            SchoolRequiredFieldException.class,
+            CabinetRequiredFieldException.class,
+            ScheduleRequiredFieldException.class,
+            SchoolClassRequiredFieldException.class,
+            SubjectRequiredFieldException.class,
+            TeacherRequiredFieldException.class
         }
     )
     public static ResponseEntity<Object> handleClientException(final Exception exception) {
         return ResponseEntity
             .badRequest()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(new SimpleError(exception.getMessage()));
+            .body(new SimpleError(exception.getMessage(), Instant.now()));
     }
 
+    /**
+     * Handle a missing resource.
+     *
+     * @param model View model
+     * @return Not-found template name
+     */
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(
         {
-            CbsPostgres.CabinetNotFoundException.class,
-            SlsPostgres.SchoolNotFoundException.class,
-            ThsPostgres.TeacherNotFoundException.class
+            CabinetNotFoundException.class,
+            SchoolNotFoundException.class,
+            TeacherNotFoundException.class
         }
     )
     public static String handleNotFoundException(final Model model) {
@@ -85,42 +104,60 @@ public final class RestResponseEntityExceptionHandler {
         return "error/404";
     }
 
+    /**
+     * Handle an invalid method argument type.
+     *
+     * @param exception Type mismatch exception
+     * @return Not acceptable response
+     */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public static ResponseEntity<Object> handleMethodArgumentTypeMismatchException(
         final MethodArgumentTypeMismatchException exception
     ) {
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
             .contentType(MediaType.APPLICATION_JSON)
-            .body(new SimpleError(exception.getMessage()));
+            .body(new SimpleError(exception.getMessage(), Instant.now()));
     }
 
+    /**
+     * Handle a resource conflict.
+     *
+     * @param exception Conflict exception
+     * @return Conflict response
+     */
     @ExceptionHandler(
         {
-            ScsPostgres.SchoolClassAlreadyExistsException.class,
-            CbsPostgres.CabinetAlreadyExistsException.class,
-            SdsPostgres.ScheduleAlreadyExistsException.class,
-            ScsPostgres.SchoolClassAlreadyExistsException.class,
-            SbsPostgres.SubjectAlreadyExistsException.class,
-            ThsPostgres.TeacherAlreadyExistsException.class
+            SchoolClassAlreadyExistsException.class,
+            CabinetAlreadyExistsException.class,
+            ScheduleAlreadyExistsException.class,
+            SchoolClassAlreadyExistsException.class,
+            SubjectAlreadyExistsException.class,
+            TeacherAlreadyExistsException.class
         }
     )
     public static ResponseEntity<Object> handleConflictException(final Exception exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .contentType(MediaType.APPLICATION_JSON)
-            .body(new SimpleError(exception.getMessage()));
+            .body(new SimpleError(exception.getMessage(), Instant.now()));
     }
 
+    /**
+     * Handle an internal server error.
+     *
+     * @param exception Server exception
+     * @return Internal server error response
+     */
     @ExceptionHandler(
         {
-            CbsPostgres.CabinetFailedCreateException.class,
-            SlsPostgres.SchoolFailedCreateException.class,
-            ThsPostgres.TeacherFailedCreateException.class
+            CabinetFailedCreateException.class,
+            SchoolFailedCreateException.class,
+            TeacherFailedCreateException.class
         }
     )
     public static ResponseEntity<Object> handleServerException(final Exception exception) {
         return ResponseEntity
             .internalServerError()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(new SimpleError(exception.getMessage()));
+            .body(new SimpleError(exception.getMessage(), Instant.now()));
     }
 }

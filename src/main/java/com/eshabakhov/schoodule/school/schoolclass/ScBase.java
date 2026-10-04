@@ -23,6 +23,14 @@ public final class ScBase implements SchoolClass {
     /** School class litera. */
     private final String ltr;
 
+    /**
+     * New school class.
+     *
+     * @param sid School class ID
+     * @param grd Grade
+     * @param ltr Litera
+     * @since 0.0.1
+     */
     public ScBase(final long sid, final Integer grd, final String ltr) {
         this.sid = sid;
         this.grd = grd;

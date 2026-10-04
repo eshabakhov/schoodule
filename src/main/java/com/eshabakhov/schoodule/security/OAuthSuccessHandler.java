@@ -19,17 +19,24 @@ import org.springframework.stereotype.Component;
  * principal to an {@link AuthUser}, so this handler applies the same redirect
  * rule as {@link LoginSuccessHandler}: ADMIN goes to /schools,
  * everyone else goes to /schools/{schoolId}.</p>
- *
- * <p>Usage example:
+ * Usage example:
  * <pre>
  * // Wired automatically by Spring Security via SecurityConfig.
  * </pre>
- * </p>
  *
  * @since 0.0.1
  */
 @Component
 public final class OAuthSuccessHandler implements AuthenticationSuccessHandler {
+
+    /**
+     * New OAuth success handler.
+     *
+     * @since 0.0.1
+     */
+    public OAuthSuccessHandler() {
+        // Intentionally empty.
+    }
 
     @Override
     public void onAuthenticationSuccess(

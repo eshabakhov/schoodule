@@ -12,6 +12,8 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import org.jooq.DSLContext;
+import org.jooq.Record1;
+import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,13 +24,12 @@ import org.springframework.stereotype.Component;
  * and downgrades their subscription-managed role sets accordingly.
  *
  * <p>Requires {@code @EnableScheduling} on the application class.</p>
- * <p>Schedule: every day at 03:00 UTC.</p>
  *
- * <p>Usage example:
+ * <p>Schedule: every day at 03:00 UTC.</p>
+ * Usage example:
  * <pre>
  * // Triggered automatically by Spring Scheduler; no manual invocation needed.
  * </pre>
- * </p>
  *
  * @since 0.0.1
  */
@@ -39,6 +40,7 @@ public final class ExpiryReset {
     private static final Logger LOG = LoggerFactory.getLogger(ExpiryReset.class);
 
     /** JOOQ table reference for subscription. */
+    // @checkstyle FullyQualifiedTypeCheck (2 lines)
     private static final com.eshabakhov.schoodule.tables.Subscription SUBSCRIPTION =
         com.eshabakhov.schoodule.tables.Subscription.SUBSCRIPTION;
 
@@ -48,6 +50,11 @@ public final class ExpiryReset {
     /** Database context. */
     private final DSLContext ctx;
 
+    /**
+     * New expiry reset job.
+     *
+     * @param ctx Database context
+     */
     public ExpiryReset(final DSLContext ctx) {
         this.ctx = ctx;
     }
@@ -57,14 +64,11 @@ public final class ExpiryReset {
      */
     @Scheduled(cron = "0 0 3 * * *", zone = "UTC")
     public void reset() {
-        final var expired = this.ctx.select(ExpiryReset.SUBSCRIPTION.USER_ID)
+        final Result<Record1<Long>> expired = this.ctx.select(ExpiryReset.SUBSCRIPTION.USER_ID)
             .from(ExpiryReset.SUBSCRIPTION)
-            .join(User.USER)
-            .on(User.USER.ID.eq(ExpiryReset.SUBSCRIPTION.USER_ID))
-            .where(
+            .join(User.USER).on(User.USER.ID.eq(ExpiryReset.SUBSCRIPTION.USER_ID)).where(
                 ExpiryReset.SUBSCRIPTION.PLAN.ne("BASIC")
-                    .and(ExpiryReset.SUBSCRIPTION.EXPIRES_AT.isNotNull())
-                    .and(
+                    .and(ExpiryReset.SUBSCRIPTION.EXPIRES_AT.isNotNull()).and(
                         ExpiryReset.SUBSCRIPTION.EXPIRES_AT
                             .lt(Instant.now().atOffset(ZoneOffset.UTC))
                     )
@@ -76,23 +80,22 @@ public final class ExpiryReset {
         if (expired.isEmpty()) {
             size = 0;
         } else {
-            final var basic = this.ctx.select(ExpiryReset.SPR.ROLE_NAME)
+            final List<RoleType> basic = this.ctx.select(ExpiryReset.SPR.ROLE_NAME)
                 .from(ExpiryReset.SPR)
                 .where(ExpiryReset.SPR.PLAN.eq(Subscription.Plan.BASIC.name()))
                 .fetch()
                 .stream()
                 .map(r -> r.get(ExpiryReset.SPR.ROLE_NAME))
                 .toList();
-            for (final var row : expired) {
+            for (final Record1<Long> row : expired) {
                 final long uid = row.get(ExpiryReset.SUBSCRIPTION.USER_ID);
                 this.ctx.transaction(
                     conf -> {
-                        final var dsl = conf.dsl();
-                        swap(dsl, uid, basic);
+                        final DSLContext dsl = conf.dsl();
+                        ExpiryReset.swap(dsl, uid, basic);
                         dsl.update(ExpiryReset.SUBSCRIPTION)
                             .set(ExpiryReset.SUBSCRIPTION.PLAN, "BASIC")
-                            .setNull(ExpiryReset.SUBSCRIPTION.EXPIRES_AT)
-                            .set(
+                            .setNull(ExpiryReset.SUBSCRIPTION.EXPIRES_AT).set(
                                 ExpiryReset.SUBSCRIPTION.UPDATED_AT,
                                 Instant.now().atOffset(ZoneOffset.UTC)
                             )
@@ -104,44 +107,32 @@ public final class ExpiryReset {
             size = expired.size();
         }
         if (size > 0) {
-            LOG.info("[ExpiryReset] Downgraded {} expired subscription(s) to BASIC%n", size);
+            ExpiryReset.LOG.info(
+                "[ExpiryReset] Downgraded {} expired subscription(s) to BASIC%n", size
+            );
         }
     }
 
-    /**
-     * Removes all subscription-managed roles from the user then inserts
-     * the new set. Corporate roles are never in the managed list and
-     * are therefore never touched.
-     *
-     * @param dsl    DSL context (must be inside a transaction)
-     * @param user   User identifier
-     * @param grants Role types to grant
-     */
     private static void swap(
         final DSLContext dsl,
         final long user,
         final List<RoleType> grants
     ) {
-        dsl.deleteFrom(UserRole.USER_ROLE)
-            .where(
-                UserRole.USER_ROLE.USER_ID.eq(user)
-                    .and(
-                        UserRole.USER_ROLE.ROLE_ID.in(
-                            dsl.select(Role.ROLE.ID)
-                                .from(Role.ROLE)
-                                .where(
-                                    Role.ROLE.NAME.in(
-                                        List.of(
-                                            "BASIC_MAKER", "ADVANCED_MAKER", "PRO_MAKER", "VIEWER"
-                                        )
-                                    )
-                                )
+        dsl.deleteFrom(UserRole.USER_ROLE).where(
+            UserRole.USER_ROLE.USER_ID.eq(user).and(
+                UserRole.USER_ROLE.ROLE_ID.in(
+                    dsl.select(Role.ROLE.ID).from(Role.ROLE).where(
+                        Role.ROLE.NAME.in(
+                            List.of(
+                                "BASIC_MAKER", "ADVANCED_MAKER", "PRO_MAKER", "VIEWER"
+                            )
                         )
                     )
+                )
             )
-            .execute();
+        ).execute();
         for (final RoleType role : grants) {
-            final var rid = dsl.select(Role.ROLE.ID)
+            final Record1<Long> rid = dsl.select(Role.ROLE.ID)
                 .from(Role.ROLE)
                 .where(Role.ROLE.NAME.eq(role))
                 .fetchOne();

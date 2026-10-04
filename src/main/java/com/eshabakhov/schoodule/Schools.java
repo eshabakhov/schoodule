@@ -43,7 +43,7 @@ public interface Schools {
      * @param page Pagination (contains limit and offset)
      * @return Collection of schools
      */
-    PageableList<School> schools(Condition condition, Page page)  throws Exception;
+    PageableList<School> schools(Condition condition, Page page) throws Exception;
 
     /**
      * Removes a school from the collection.

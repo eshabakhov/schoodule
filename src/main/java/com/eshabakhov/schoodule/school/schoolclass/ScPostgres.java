@@ -26,6 +26,13 @@ public final class ScPostgres implements SchoolClass {
     /** School class id. */
     private final Long clazzid;
 
+    /**
+     * New school class.
+     *
+     * @param ctx Database context
+     * @param clazzid School class ID
+     * @since 0.0.1
+     */
     public ScPostgres(final DSLContext ctx, final Long clazzid) {
         this.ctx = ctx;
         this.clazzid = clazzid;
@@ -38,14 +45,12 @@ public final class ScPostgres implements SchoolClass {
 
     @Override
     public String name() {
-        return this.ctx
-            .select(
-                DSL.concat(
-                    ScPostgres.SCHOOL_CLASS.GRADE.cast(String.class),
-                    ScPostgres.SCHOOL_CLASS.LITERA
-                )
+        return this.ctx.select(
+            DSL.concat(
+                ScPostgres.SCHOOL_CLASS.GRADE.cast(String.class),
+                ScPostgres.SCHOOL_CLASS.LITERA
             )
-            .from(ScPostgres.SCHOOL_CLASS)
+        ).from(ScPostgres.SCHOOL_CLASS)
             .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
             .fetchOne(0, String.class);
     }
@@ -94,15 +99,13 @@ public final class ScPostgres implements SchoolClass {
 
     @Override
     public ObjectNode json() {
-        return this.ctx
-            .select(
-                ScPostgres.SCHOOL_CLASS.ID,
-                ScPostgres.SCHOOL_CLASS.LITERA,
-                ScPostgres.SCHOOL_CLASS.GRADE
+        return this.ctx.select(
+            ScPostgres.SCHOOL_CLASS.ID,
+            ScPostgres.SCHOOL_CLASS.LITERA,
+            ScPostgres.SCHOOL_CLASS.GRADE
             )
             .from(ScPostgres.SCHOOL_CLASS)
-            .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
-            .fetchOne(
+            .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid)).fetchOne(
                 clazz ->
                     JsonNodeFactory.instance.objectNode()
                         .put("id", clazz.get(ScPostgres.SCHOOL_CLASS.ID))

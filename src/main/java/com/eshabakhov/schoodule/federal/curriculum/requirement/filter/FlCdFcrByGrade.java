@@ -4,6 +4,7 @@
 package com.eshabakhov.schoodule.federal.curriculum.requirement.filter;
 
 import com.eshabakhov.schoodule.filter.FlConditional;
+import com.eshabakhov.schoodule.tables.FederalCurriculumRequirement;
 import java.util.Optional;
 import org.jooq.Condition;
 
@@ -15,12 +16,6 @@ import org.jooq.Condition;
 public final class FlCdFcrByGrade implements FlConditional {
 
     /**
-     * JOOQ Table for FederalCurriculumRequirement.
-     */
-    private static final com.eshabakhov.schoodule.tables.FederalCurriculumRequirement REQUIREMENT =
-        com.eshabakhov.schoodule.tables.FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
-
-    /**
      * Origin filter.
      */
     private final FlConditional origin;
@@ -30,10 +25,22 @@ public final class FlCdFcrByGrade implements FlConditional {
      */
     private final Optional<Integer> grade;
 
+    /**
+     * New grade filter.
+     *
+     * @param origin Origin filter
+     * @param grade Grade to search
+     */
     public FlCdFcrByGrade(final FlConditional origin, final Integer grade) {
         this(origin, Optional.ofNullable(grade));
     }
 
+    /**
+     * New grade filter from a string value.
+     *
+     * @param origin Origin filter
+     * @param grade Grade to search
+     */
     public FlCdFcrByGrade(final FlConditional origin, final String grade) {
         this(
             origin,
@@ -50,7 +57,11 @@ public final class FlCdFcrByGrade implements FlConditional {
     public Condition condition() {
         Condition condition = this.origin.condition();
         if (this.grade.isPresent()) {
-            condition = condition.and(FlCdFcrByGrade.REQUIREMENT.GRADE.eq(this.grade.get()));
+            condition = condition.and(
+                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT.GRADE.eq(
+                    this.grade.get()
+                )
+            );
         }
         return condition;
     }

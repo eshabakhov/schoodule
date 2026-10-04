@@ -16,6 +16,7 @@ import org.jooq.DSLContext;
  * Simple implementation of {@link ClassCurriculum}.
  *
  * @since 0.0.1
+ * @checkstyle LambdaBodyLengthCheck (1000 lines)
  */
 public final class CsCrPostgres implements ClassCurriculum {
 
@@ -29,6 +30,13 @@ public final class CsCrPostgres implements ClassCurriculum {
     /** Curriculum ID. */
     private final Long cid;
 
+    /**
+     * New class curriculum.
+     *
+     * @param ctx Database context
+     * @param cid Curriculum ID
+     * @since 0.0.1
+     */
     public CsCrPostgres(final DSLContext ctx, final Long cid) {
         this.ctx = ctx;
         this.cid = cid;
@@ -95,28 +103,35 @@ public final class CsCrPostgres implements ClassCurriculum {
 
     @Override
     public ObjectNode json() {
-        return this.ctx
-            .select(
-                CsCrPostgres.CURRICULUM.ID,
-                CsCrPostgres.CURRICULUM.SCHOOL_CLASS_ID,
-                CsCrPostgres.CURRICULUM.SUBJECT_ID,
-                CsCrPostgres.CURRICULUM.HOURS_PER_WEEK
+        return this.ctx.select(
+            CsCrPostgres.CURRICULUM.ID,
+            CsCrPostgres.CURRICULUM.SCHOOL_CLASS_ID,
+            CsCrPostgres.CURRICULUM.SUBJECT_ID,
+            CsCrPostgres.CURRICULUM.HOURS_PER_WEEK
             )
             .from(CsCrPostgres.CURRICULUM)
-            .where(CsCrPostgres.CURRICULUM.ID.eq(this.cid))
-            .fetchOne(
+            .where(CsCrPostgres.CURRICULUM.ID.eq(this.cid)).fetchOne(
                 r -> {
                     final ObjectNode json = JsonNodeFactory.instance.objectNode();
-                    json.put("id", r.get(CURRICULUM.ID));
+                    json.put("id", r.get(CsCrPostgres.CURRICULUM.ID));
                     json.set(
                         "schoolClass",
-                        new ScPostgres(this.ctx, r.get(CURRICULUM.SCHOOL_CLASS_ID)).json()
+                        new ScPostgres(
+                            this.ctx,
+                            r.get(CsCrPostgres.CURRICULUM.SCHOOL_CLASS_ID)
+                        ).json()
                     );
                     json.set(
                         "subject",
-                        new SbPostgres(this.ctx, r.get(CURRICULUM.SUBJECT_ID)).json()
+                        new SbPostgres(
+                            this.ctx,
+                            r.get(CsCrPostgres.CURRICULUM.SUBJECT_ID)
+                        ).json()
                     );
-                    json.put("hoursPerWeek", r.get(CURRICULUM.HOURS_PER_WEEK));
+                    json.put(
+                        "hoursPerWeek",
+                        r.get(CsCrPostgres.CURRICULUM.HOURS_PER_WEEK)
+                    );
                     return json;
                 }
             );

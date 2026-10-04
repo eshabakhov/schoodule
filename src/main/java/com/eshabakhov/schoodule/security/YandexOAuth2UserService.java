@@ -6,6 +6,7 @@ package com.eshabakhov.schoodule.security;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.user.AuthUser;
 import com.eshabakhov.schoodule.user.UrsPostgres;
+import com.eshabakhov.schoodule.user.UserNotFoundException;
 import java.util.UUID;
 import org.jooq.DSLContext;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -25,13 +26,11 @@ import org.springframework.stereotype.Service;
  * {@link OAuth2User}, controllers can declare
  * {@code @AuthenticationPrincipal AuthUser} without any casting or special
  * handling — it works identically for form-login and OAuth2 sessions.</p>
- *
- * <p>Usage example:
+ * Usage example:
  * <pre>
  * // Wired automatically via SecurityConfig.oauth2Login()
  * //   .userInfoEndpoint().userService(yandexOAuth2UserService)
  * </pre>
- * </p>
  *
  * @since 0.0.1
  */
@@ -83,34 +82,27 @@ public final class YandexOAuth2UserService extends DefaultOAuth2UserService {
         }
     }
 
-    /**
-     * Finds an existing user by email or registers a new personal one,
-     * then wraps the result in {@link AuthUser}.
-     *
-     * @param email Email from Yandex profile
-     * @return AuthUser usable as both UserDetails and OAuth2User principal
-     * @throws Exception if database operations fail
-     */
     private AuthUser resolve(final String email) throws Exception {
         final UrsPostgres urs = new UrsPostgres(this.ctx);
         String username;
         try {
             username = urs.identification(email).credentials().username();
-        } catch (final UrsPostgres.UserNotFoundException ignored) {
-            final long school = new SlsPostgres(this.ctx).create("My school").uid();
-            username = new UrsPostgres(this.ctx, school)
-                .register(
-                    String.format(
-                        "%s_%s",
-                        email.split("@")[0],
-                        UUID.randomUUID().toString().replace("-", "").substring(0, 6)
-                    ),
-                    String.format(
-                        "Ya_1!A_%s",
-                        UUID.randomUUID().toString().replace("-", "")
-                    ),
-                    email,
-                    false
+        } catch (final UserNotFoundException ignored) {
+            username = new UrsPostgres(
+                this.ctx,
+                new SlsPostgres(this.ctx).create("My school").uid()
+            ).register(
+                String.format(
+                    "%s_%s",
+                    email.substring(0, email.indexOf('@')),
+                    UUID.randomUUID().toString().replace("-", "").substring(0, 6)
+                ),
+                String.format(
+                    "Ya_1!A_%s",
+                    UUID.randomUUID().toString().replace("-", "")
+                ),
+                email,
+                false
                 )
                 .credentials()
                 .username();

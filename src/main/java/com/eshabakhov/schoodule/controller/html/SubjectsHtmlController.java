@@ -9,6 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.Subject;
 import java.util.Map;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,11 +25,9 @@ import org.springframework.web.servlet.ModelAndView;
  * Controller for Html response {@link Subject}.
  *
  * @since 0.0.1
- * @checkstyle DesignForExtensionCheck (1000 lines)
  */
 @Controller
 @RequestMapping("/schools/{school}/subjects")
-@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class SubjectsHtmlController {
 
     /** JOOQ Table for Subject. */
@@ -38,10 +37,25 @@ public class SubjectsHtmlController {
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
 
+    /**
+     * New controller.
+     *
+     * @param ctx Database context
+     */
     public SubjectsHtmlController(final DSLContext ctx) {
         this.ctx = ctx;
     }
 
+    /**
+     * Render subjects.
+     *
+     * @param school School identifier
+     * @param offset Page number
+     * @param limit Page size
+     * @param name Name filter
+     * @return Subjects view
+     * @throws Exception When subjects cannot be loaded
+     */
     //@checkstyle ParameterNumberCheck (3 lines)
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
@@ -51,7 +65,7 @@ public class SubjectsHtmlController {
         @RequestParam(name = "limit", defaultValue = "15") final int limit,
         @RequestParam(name = "name", required = false) final String name
     ) throws Exception {
-        var condition = SubjectsHtmlController.SUBJECT.IS_DELETED.eq(false)
+        Condition condition = SubjectsHtmlController.SUBJECT.IS_DELETED.eq(false)
             .and(SubjectsHtmlController.SUBJECT.SCHOOL_ID.eq(school));
         if (name != null && !name.isBlank()) {
             condition = condition.and(
@@ -62,21 +76,30 @@ public class SubjectsHtmlController {
         final PageableList<Subject> subjects = sch
             .subjects()
             .subjects(condition, new PageRequest(limit, offset));
-        return new ModelAndView("subjects/list")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "pageTitle", String.format("%s — предметы", sch.name()),
-                    "subjects", subjects.list(),
-                    "page", offset,
-                    "limit", limit,
-                    "totalPages", (int) Math.ceil((double) subjects.total() / limit),
-                    "hasNext", subjects.total() > (long) offset * limit,
-                    "hasPrev", offset > 1
-                )
-            );
+        return new ModelAndView("subjects/list").addAllObjects(
+            Map.of(
+                "school", sch,
+                "pageTitle", String.format("%s — предметы", sch.name()),
+                "subjects", subjects.list(),
+                "page", offset,
+                "limit", limit,
+                "totalPages", (int) Math.ceil((double) subjects.total() / limit),
+                "hasNext", subjects.total() > (long) offset * limit,
+                "hasPrev", offset > 1
+            )
+        );
     }
 
+    /**
+     * Render subjects fragment.
+     *
+     * @param school School identifier
+     * @param name Name filter
+     * @param offset Page number
+     * @param limit Page size
+     * @return Subjects fragment
+     * @throws Exception When subjects cannot be loaded
+     */
     //@checkstyle ParameterNumberCheck (3 lines)
     @GetMapping(value = "/fragment", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
@@ -86,7 +109,7 @@ public class SubjectsHtmlController {
         @RequestParam(name = "offset", defaultValue = "1") final int offset,
         @RequestParam(name = "limit", defaultValue = "15") final int limit
     ) throws Exception {
-        var condition = SubjectsHtmlController.SUBJECT.IS_DELETED.eq(false)
+        Condition condition = SubjectsHtmlController.SUBJECT.IS_DELETED.eq(false)
             .and(SubjectsHtmlController.SUBJECT.SCHOOL_ID.eq(school));
         if (name != null && !name.isBlank()) {
             condition = condition.and(
@@ -97,20 +120,27 @@ public class SubjectsHtmlController {
         final PageableList<Subject> subjects = sch
             .subjects()
             .subjects(condition, new PageRequest(limit, offset));
-        return new ModelAndView("subjects/list :: subjects-grid")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "subjects", subjects.list(),
-                    "page", offset,
-                    "limit", limit,
-                    "totalPages", (int) Math.ceil((double) subjects.total() / limit),
-                    "hasNext", subjects.total() > (long) offset * limit,
-                    "hasPrev", offset > 1
-                )
-            );
+        return new ModelAndView("subjects/list :: subjects-grid").addAllObjects(
+            Map.of(
+                "school", sch,
+                "subjects", subjects.list(),
+                "page", offset,
+                "limit", limit,
+                "totalPages", (int) Math.ceil((double) subjects.total() / limit),
+                "hasNext", subjects.total() > (long) offset * limit,
+                "hasPrev", offset > 1
+            )
+        );
     }
 
+    /**
+     * Render subject details.
+     *
+     * @param school School identifier
+     * @param subject Subject identifier
+     * @return Subject view
+     * @throws Exception When the subject cannot be loaded
+     */
     @GetMapping(value = "/{subject}", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView details(
@@ -119,28 +149,41 @@ public class SubjectsHtmlController {
     ) throws Exception {
         final School sch = new SlsPostgres(this.ctx).school(school);
         final Subject sub = sch.subjects().subject(subject);
-        return new ModelAndView("subjects/details")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "subject", sub,
-                    "pageTitle", sub.name()
-                )
-            );
+        return new ModelAndView("subjects/details").addAllObjects(
+            Map.of(
+                "school", sch,
+                "subject", sub,
+                "pageTitle", sub.name()
+            )
+        );
     }
 
+    /**
+     * Render subject creation form.
+     *
+     * @param school School identifier
+     * @return Creation form
+     * @throws Exception When the school cannot be loaded
+     */
     @GetMapping(value = "/create", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView createForm(@PathVariable final long school) throws Exception {
-        return new ModelAndView("subjects/create")
-            .addAllObjects(
-                Map.of(
-                    "school", new SlsPostgres(this.ctx).school(school),
-                    "pageTitle", "Новый предмет"
-                )
-            );
+        return new ModelAndView("subjects/create").addAllObjects(
+            Map.of(
+                "school", new SlsPostgres(this.ctx).school(school),
+                "pageTitle", "Новый предмет"
+            )
+        );
     }
 
+    /**
+     * Create a subject.
+     *
+     * @param school School identifier
+     * @param name Subject name
+     * @return Redirect location
+     * @throws Exception When the subject cannot be created
+     */
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public String create(@PathVariable final long school, @RequestParam final String name)
@@ -158,6 +201,14 @@ public class SubjectsHtmlController {
         return result;
     }
 
+    /**
+     * Render subject editing form.
+     *
+     * @param school School identifier
+     * @param subject Subject identifier
+     * @return Editing form
+     * @throws Exception When the subject cannot be loaded
+     */
     @GetMapping(value = "/{subject}/edit", produces = MediaType.TEXT_HTML_VALUE)
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public ModelAndView editForm(
@@ -165,16 +216,24 @@ public class SubjectsHtmlController {
         @PathVariable final long subject
     ) throws Exception {
         final School sch = new SlsPostgres(this.ctx).school(school);
-        return new ModelAndView("subjects/edit")
-            .addAllObjects(
-                Map.of(
-                    "school", sch,
-                    "subject", sch.subjects().subject(subject),
-                    "pageTitle", "Редактировать предмет"
-                )
-            );
+        return new ModelAndView("subjects/edit").addAllObjects(
+            Map.of(
+                "school", sch,
+                "subject", sch.subjects().subject(subject),
+                "pageTitle", "Редактировать предмет"
+            )
+        );
     }
 
+    /**
+     * Update a subject.
+     *
+     * @param school School identifier
+     * @param subject Subject identifier
+     * @param name Subject name
+     * @return Redirect location
+     * @throws Exception When the subject cannot be updated
+     */
     @PostMapping("/{subject}/edit")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     public String edit(

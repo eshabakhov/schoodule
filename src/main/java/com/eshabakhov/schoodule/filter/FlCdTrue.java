@@ -13,6 +13,15 @@ import org.jooq.impl.DSL;
  */
 public final class FlCdTrue implements FlConditional {
 
+    /**
+     * New filter.
+     *
+     * @since 0.0.1
+     */
+    public FlCdTrue() {
+        // Intentionally empty.
+    }
+
     @Override
     public Condition condition() {
         return DSL.trueCondition();

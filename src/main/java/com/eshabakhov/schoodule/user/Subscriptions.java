@@ -8,13 +8,11 @@ package com.eshabakhov.schoodule.user;
  *
  * <p>Encapsulates all subscription state transitions and keeps
  * {@code user_role} in sync. Corporate users are rejected immediately.</p>
- *
- * <p>Usage example:
+ * Usage example:
  * <pre>
  * final Subscription sub = subscriptions.subscription(userId);
  * subscriptions.activate(userId, SubscriptionPlan.PRO_MAKER);
  * </pre>
- * </p>
  *
  * @since 0.0.1
  */

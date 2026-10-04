@@ -9,9 +9,9 @@ import org.jooq.Condition;
 
 /**
  * Interface for managing {@link Schedule} entities.
- * <p>
- * Provides operations for creating, retrieving, updating, deleting,
- * listing, checking existence, and counting schedules.
+ *
+ * <p>Provides operations for creating, retrieving, updating, deleting,
+ * listing, checking existence, and counting schedules.</p>
  *
  * @since 0.0.1
  */

@@ -11,8 +11,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  *
  * @since 0.0.1
  */
+@FunctionalInterface
 public interface Jsonable {
 
+    /**
+     * JSON representation.
+     *
+     * @return JSON object
+     */
     @JsonValue
     ObjectNode json();
 }

@@ -17,6 +17,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public final class HomeController {
 
+    /**
+     * New controller.
+     */
+    public HomeController() {
+        // Default constructor.
+    }
+
+    /**
+     * Render the landing page.
+     *
+     * @param user Authenticated user
+     * @param model View model
+     * @return Template name
+     */
     // @checkstyle NonStaticMethodCheck (2 lines)
     @GetMapping("/")
     public String index(@AuthenticationPrincipal final AuthUser user, final Model model) {

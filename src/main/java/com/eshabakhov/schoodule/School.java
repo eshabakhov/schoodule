@@ -14,7 +14,7 @@ import com.eshabakhov.schoodule.school.Teachers;
  *
  * <p>Represents a school entity with its properties and associated
  * collections of domain objects like cabinets, teachers, classes,
- * subjects and schedules.
+ * subjects and schedules.</p>
  *
  * @since 0.0.1
  */
@@ -36,6 +36,7 @@ public interface School extends Jsonable {
 
     /**
      * Returns renamed school.
+     *
      * @param name New name of school
      * @return School with new name
      */
@@ -43,6 +44,7 @@ public interface School extends Jsonable {
 
     /**
      * Return users.
+     *
      * @return Users
      */
     Users users();

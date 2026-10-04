@@ -8,8 +8,8 @@ import com.eshabakhov.schoodule.error.VersionHeaderException;
 import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.Schedule;
 import com.eshabakhov.schoodule.school.SlsPostgres;
+import com.eshabakhov.schoodule.school.schedule.ScheduleNotFoundException;
 import com.eshabakhov.schoodule.school.schedule.SdBase;
-import com.eshabakhov.schoodule.school.schedule.SdsPostgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @since 0.0.1
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
- * @checkstyle DesignForExtensionCheck (1000 lines)
  */
 @RestController
 @RequestMapping("/api/schools/{school}/schedules")
@@ -63,6 +63,15 @@ public class ScheduleController {
         this.ctx = ctx;
     }
 
+    /**
+     * Create a schedule.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param request Request body
+     * @return Created schedule
+     * @throws Exception When the schedule cannot be created
+     */
     @PostMapping
     @PreAuthorize(
         """
@@ -163,7 +172,7 @@ public class ScheduleController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (ScheduleVersion.SIMPLE.equals(version)) {
+        if (version == ScheduleController.ScheduleVersion.SIMPLE) {
             final JsonNode name = request.get("name");
             if (name == null || name.asText().isBlank()) {
                 throw new ScheduleRequiredFieldException(
@@ -174,18 +183,27 @@ public class ScheduleController {
                 .school(school)
                 .schedules()
                 .create(name.asText());
-            return ResponseEntity
-                .created(
-                    URI.create(
-                        String.format("/api/schools/%d/schedules/%d", school, schedule.uid())
-                    )
+            return ResponseEntity.created(
+                URI.create(
+                    String.format("/api/schools/%d/schedules/%d", school, schedule.uid())
                 )
-                .body(new SdBase(schedule.uid(), schedule.name()));
+            )
+            .body(new SdBase(schedule.uid(), schedule.name()));
         } else {
             throw new VersionHeaderException(version.name());
         }
     }
 
+    /**
+     * Fetch schedules.
+     *
+     * @param school School identifier
+     * @param limit Page size
+     * @param offset Page number
+     * @param namect Name filter
+     * @return Schedules page
+     * @throws Exception When schedules cannot be loaded
+     */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(summary = "Fetch list of schedules")
@@ -207,23 +225,30 @@ public class ScheduleController {
             required = false
         ) final String namect
     ) throws Exception {
-        var condition = ScheduleController.SCHEDULE.SCHOOL_ID.eq(school)
+        Condition condition = ScheduleController.SCHEDULE.SCHOOL_ID.eq(school)
             .and(ScheduleController.SCHEDULE.IS_DELETED.eq(false));
         if (namect != null && !namect.isBlank()) {
             condition = condition.and(
                 ScheduleController.SCHEDULE.NAME.likeIgnoreCase(String.format("%%%s%%", namect))
             );
         }
-        return ResponseEntity
-            .ok()
-            .body(
-                new SlsPostgres(this.ctx)
-                    .school(school)
-                    .schedules()
-                    .schedules(condition, new PageRequest(limit, offset))
-            );
+        return ResponseEntity.ok().body(
+            new SlsPostgres(this.ctx)
+                .school(school)
+                .schedules()
+                .schedules(condition, new PageRequest(limit, offset))
+        );
     }
 
+    /**
+     * Fetch a schedule.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param schedule Schedule identifier
+     * @return Schedule
+     * @throws Exception When the schedule cannot be loaded
+     */
     @GetMapping("/{schedule}")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(
@@ -287,8 +312,8 @@ public class ScheduleController {
         @PathVariable final long school,
         @PathVariable final long schedule
     ) throws Exception {
-        if (ScheduleVersion.SIMPLE.equals(version)) {
-            final var sched = new SlsPostgres(this.ctx)
+        if (version == ScheduleController.ScheduleVersion.SIMPLE) {
+            final Schedule sched = new SlsPostgres(this.ctx)
                 .school(school)
                 .schedules()
                 .schedule(schedule);
@@ -301,6 +326,16 @@ public class ScheduleController {
         }
     }
 
+    /**
+     * Update a schedule.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param schedule Schedule identifier
+     * @param request Request body
+     * @return Updated schedule
+     * @throws Exception When the schedule cannot be updated
+     */
     @PutMapping("/{schedule}")
     @PreAuthorize(
         """
@@ -420,7 +455,7 @@ public class ScheduleController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (ScheduleVersion.SIMPLE.equals(version)) {
+        if (version == ScheduleController.ScheduleVersion.SIMPLE) {
             final JsonNode name = request.get("name");
             if (name == null || name.asText().isBlank()) {
                 throw new ScheduleRequiredFieldException(
@@ -436,18 +471,17 @@ public class ScheduleController {
                         .schedule(schedule)
                         .renamed(name.asText())
                 );
-            } catch (final SdsPostgres.ScheduleNotFoundException ex) {
-                final var newschedule =  new SlsPostgres(this.ctx)
+            } catch (final ScheduleNotFoundException ex) {
+                final Schedule newschedule = new SlsPostgres(this.ctx)
                     .school(school)
                     .schedules()
                     .create(name.asText());
-                response = ResponseEntity
-                    .created(
-                        URI.create(
-                            String.format("/api/schools/%d/schedules/%d", school, newschedule.uid())
-                        )
+                response = ResponseEntity.created(
+                    URI.create(
+                        String.format("/api/schools/%d/schedules/%d", school, newschedule.uid())
                     )
-                    .body(new SdBase(newschedule.uid(), newschedule.name()));
+                )
+                .body(new SdBase(newschedule.uid(), newschedule.name()));
             }
             return response;
         } else {
@@ -455,6 +489,14 @@ public class ScheduleController {
         }
     }
 
+    /**
+     * Delete a schedule.
+     *
+     * @param school School identifier
+     * @param schedule Schedule identifier
+     * @return Empty response
+     * @throws Exception When the schedule cannot be deleted
+     */
     @DeleteMapping("/{schedule}")
     @PreAuthorize(
         """
@@ -475,12 +517,6 @@ public class ScheduleController {
             .schedules()
             .remove(schedule);
         return ResponseEntity.noContent().build();
-    }
-
-    public static class ScheduleRequiredFieldException extends Exception {
-        public ScheduleRequiredFieldException(final String message) {
-            super(message);
-        }
     }
 
     /** Schedule accept version. */

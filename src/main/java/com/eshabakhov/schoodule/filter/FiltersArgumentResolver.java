@@ -22,6 +22,15 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Component
 public final class FiltersArgumentResolver implements HandlerMethodArgumentResolver {
 
+    /**
+     * New resolver.
+     *
+     * @since 0.0.1
+     */
+    public FiltersArgumentResolver() {
+        // Intentionally empty.
+    }
+
     @Override
     public boolean supportsParameter(final MethodParameter parameter) {
         return Filters.class.equals(parameter.getParameterType());

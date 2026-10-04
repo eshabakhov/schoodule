@@ -10,10 +10,12 @@ import java.util.Set;
  *
  * @since 0.0.1
  */
+@FunctionalInterface
 public interface Filters {
 
     /**
      * Filter parameters.
+     *
      * @return Filters
      */
     Set<Filter> filters();

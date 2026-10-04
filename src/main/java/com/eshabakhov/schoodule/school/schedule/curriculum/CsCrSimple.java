@@ -28,7 +28,15 @@ public final class CsCrSimple implements ClassCurriculum {
     /** School class. */
     private final Integer hrs;
 
-    // @checkstyle ParameterNumberCheck (2 lines)
+    /**
+     * New class curriculum.
+     *
+     * @param cid Curriculum ID
+     * @param clazz School class
+     * @param subject Subject
+     * @param hours Weekly hours
+     * @since 0.0.1
+     */
     public CsCrSimple(
         final Long cid,
         final SchoolClass clazz,
@@ -78,7 +86,7 @@ public final class CsCrSimple implements ClassCurriculum {
 
     @Override
     public ObjectNode json() {
-        final var node = JsonNodeFactory.instance.objectNode();
+        final ObjectNode node = JsonNodeFactory.instance.objectNode();
         node.put("id", this.cid);
         node.set("schoolClass", this.cls.json());
         node.set("subject", this.sbj.json());

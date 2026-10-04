@@ -9,8 +9,8 @@ import org.jooq.Condition;
 
 /**
  * Interface for managing {@link Building} entities.
- * <p>
- * Provides methods for creating, retrieving, deleting, listing buildings.
+ *
+ * <p>Provides methods for creating, retrieving, deleting, listing buildings.</p>
  *
  * @since 0.0.1
  */

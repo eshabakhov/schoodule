@@ -11,18 +11,17 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  * @since 0.0.1
  */
-@SuppressWarnings(
-    {
-        "PMD.ProhibitPublicStaticMethods",
-        "PMD.UseUtilityClass",
-        "PMD.UncommentedEmptyConstructor"
-    }
-)
+@SuppressWarnings("PMD.UncommentedEmptyConstructor")
 @SpringBootApplication
 public class SchooduleApplication {
 
     protected SchooduleApplication() { }
 
+    /**
+     * Start application.
+     *
+     * @param args Command line arguments
+     */
     public static void main(final String[] args) {
         SpringApplication.run(SchooduleApplication.class, args);
     }

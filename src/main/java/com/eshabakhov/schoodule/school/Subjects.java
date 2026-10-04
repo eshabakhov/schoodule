@@ -9,9 +9,9 @@ import org.jooq.Condition;
 
 /**
  * Interface for managing {@link Subject} entities.
- * <p>
- * Defines operations for creating, retrieving, updating, deleting,
- * listing, and counting subjects.
+ *
+ * <p>Defines operations for creating, retrieving, updating, deleting,
+ * listing, and counting subjects.</p>
  *
  * @since 0.0.1
  */

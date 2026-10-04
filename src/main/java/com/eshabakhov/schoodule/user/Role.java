@@ -3,6 +3,7 @@
  */
 package com.eshabakhov.schoodule.user;
 
+import com.eshabakhov.schoodule.tables.UserRole;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jooq.DSLContext;
 
@@ -38,13 +39,9 @@ public interface Role {
      */
     final class RlPostgres implements Role {
 
-        /** JOOQ Table for Role. */
+        /** JOOQ table for role. */
         private static final com.eshabakhov.schoodule.tables.Role ROLE =
             com.eshabakhov.schoodule.tables.Role.ROLE;
-
-        /** JOOQ Table for UserRole. */
-        private static final com.eshabakhov.schoodule.tables.UserRole USER_ROLE =
-            com.eshabakhov.schoodule.tables.UserRole.USER_ROLE;
 
         /** Database context. */
         private final DSLContext ctx;
@@ -52,6 +49,12 @@ public interface Role {
         /** User role ID. */
         private final long id;
 
+        /**
+         * New role.
+         *
+         * @param ctx Database context
+         * @param id User role identifier
+         */
         public RlPostgres(final DSLContext ctx, final long id) {
             this.ctx = ctx;
             this.id = id;
@@ -66,9 +69,9 @@ public interface Role {
         public String name() {
             return this.ctx.select(Role.RlPostgres.ROLE.NAME)
                 .from(Role.RlPostgres.ROLE)
-                .join(Role.RlPostgres.USER_ROLE)
-                .on(Role.RlPostgres.ROLE.ID.eq(Role.RlPostgres.USER_ROLE.ROLE_ID))
-                .where(Role.RlPostgres.USER_ROLE.ID.eq(this.id))
+                .join(UserRole.USER_ROLE)
+                .on(Role.RlPostgres.ROLE.ID.eq(UserRole.USER_ROLE.ROLE_ID))
+                .where(UserRole.USER_ROLE.ID.eq(this.id))
                 .fetchOneInto(String.class);
         }
     }

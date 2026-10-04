@@ -9,7 +9,7 @@ import com.eshabakhov.schoodule.page.PageRequest;
 import com.eshabakhov.schoodule.school.SchoolClass;
 import com.eshabakhov.schoodule.school.SlsPostgres;
 import com.eshabakhov.schoodule.school.schoolclass.ScBase;
-import com.eshabakhov.schoodule.school.schoolclass.ScsPostgres;
+import com.eshabakhov.schoodule.school.schoolclass.SchoolClassNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.springframework.http.MediaType;
@@ -41,7 +42,6 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @since 0.0.1
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
- * @checkstyle DesignForExtensionCheck (1000 lines)
  */
 @RestController
 @RequestMapping("/api/schools/{school}/classes")
@@ -64,6 +64,15 @@ public class SchoolClassController {
         this.ctx = ctx;
     }
 
+    /**
+     * Create a school class.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param request Request body
+     * @return Created class
+     * @throws Exception When the class cannot be created
+     */
     @PostMapping
     @PreAuthorize(
         """
@@ -176,7 +185,7 @@ public class SchoolClassController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (SchoolClassVersion.SIMPLE.equals(version)) {
+        if (version == SchoolClassController.SchoolClassVersion.SIMPLE) {
             final JsonNode litera = request.get("litera");
             if (litera == null || litera.asText().isBlank()) {
                 throw new SchoolClassRequiredFieldException(
@@ -193,18 +202,27 @@ public class SchoolClassController {
                 .school(school)
                 .schoolClasses()
                 .create(litera.asText(), grade.asInt());
-            return ResponseEntity
-                .created(
-                    URI.create(
-                        String.format("/api/schools/%d/classes/%d", school, clazz.uid())
-                    )
+            return ResponseEntity.created(
+                URI.create(
+                    String.format("/api/schools/%d/classes/%d", school, clazz.uid())
                 )
-                .body(new ScBase(clazz.uid(), clazz.grade(), clazz.litera()));
+            )
+            .body(new ScBase(clazz.uid(), clazz.grade(), clazz.litera()));
         } else {
             throw new VersionHeaderException(version.name());
         }
     }
 
+    /**
+     * Fetch school classes.
+     *
+     * @param school School identifier
+     * @param limit Page size
+     * @param offset Page number
+     * @param namect Name filter
+     * @return Classes page
+     * @throws Exception When classes cannot be loaded
+     */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(summary = "Fetch list of school classes")
@@ -226,7 +244,7 @@ public class SchoolClassController {
             required = false
         ) final String namect
     ) throws Exception {
-        var condition = SchoolClassController.SCHOOL_CLASS.SCHOOL_ID.eq(school)
+        Condition condition = SchoolClassController.SCHOOL_CLASS.SCHOOL_ID.eq(school)
             .and(SchoolClassController.SCHOOL_CLASS.IS_DELETED.eq(false));
         if (namect != null && !namect.isBlank()) {
             condition = condition.and(
@@ -238,16 +256,23 @@ public class SchoolClassController {
                 )
             );
         }
-        return ResponseEntity
-            .ok()
-            .body(
-                new SlsPostgres(this.ctx)
-                    .school(school)
-                    .schoolClasses()
-                    .classes(condition, new PageRequest(limit, offset))
-            );
+        return ResponseEntity.ok().body(
+            new SlsPostgres(this.ctx)
+                .school(school)
+                .schoolClasses()
+                .classes(condition, new PageRequest(limit, offset))
+        );
     }
 
+    /**
+     * Fetch a school class.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param clazz Class identifier
+     * @return School class
+     * @throws Exception When the class cannot be loaded
+     */
     @GetMapping("/{clazz}")
     @PreAuthorize("hasRole('ADMIN') or #school == authentication.principal.info().school()")
     @Operation(
@@ -313,15 +338,13 @@ public class SchoolClassController {
         @PathVariable final long school,
         @PathVariable final long clazz
     ) throws Exception {
-        if (SchoolClassVersion.SIMPLE.equals(version)) {
-            final var cls = new SlsPostgres(this.ctx)
+        if (version == SchoolClassController.SchoolClassVersion.SIMPLE) {
+            final SchoolClass cls = new SlsPostgres(this.ctx)
                 .school(school)
                 .schoolClasses()
                 .clazz(clazz);
-            return ResponseEntity
-                .ok()
-                .contentType(SchoolClassController.SIMPLE_TYPE)
-                .body(
+            return ResponseEntity.ok()
+                .contentType(SchoolClassController.SIMPLE_TYPE).body(
                     new ScBase(cls.uid(), cls.grade(), cls.litera())
                 );
         } else {
@@ -329,6 +352,16 @@ public class SchoolClassController {
         }
     }
 
+    /**
+     * Update a school class.
+     *
+     * @param version Representation version
+     * @param school School identifier
+     * @param clazz Class identifier
+     * @param request Request body
+     * @return Updated class
+     * @throws Exception When the class cannot be updated
+     */
     @PutMapping("/{clazz}")
     @PreAuthorize(
         """
@@ -462,7 +495,7 @@ public class SchoolClassController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        if (SchoolClassVersion.SIMPLE.equals(version)) {
+        if (version == SchoolClassController.SchoolClassVersion.SIMPLE) {
             final JsonNode litera = request.get("litera");
             if (litera == null || litera.asText().isBlank()) {
                 throw new SchoolClassRequiredFieldException(
@@ -477,7 +510,7 @@ public class SchoolClassController {
             }
             ResponseEntity<SchoolClass> response;
             try {
-                final var updated = new SlsPostgres(this.ctx)
+                final SchoolClass updated = new SlsPostgres(this.ctx)
                     .school(school)
                     .schoolClasses()
                     .clazz(clazz)
@@ -486,18 +519,17 @@ public class SchoolClassController {
                 response = ResponseEntity.ok().body(
                     new ScBase(updated.uid(), updated.grade(), updated.litera())
                 );
-            } catch (final ScsPostgres.SchoolClassNotFoundException ex) {
-                final var newclass = new SlsPostgres(this.ctx)
+            } catch (final SchoolClassNotFoundException ex) {
+                final SchoolClass newclass = new SlsPostgres(this.ctx)
                     .school(school)
                     .schoolClasses()
                     .create(litera.asText(), grade.asInt());
-                response = ResponseEntity
-                    .created(
-                        URI.create(
-                            String.format("/api/schools/%d/classes/%d", school, newclass.uid())
-                        )
+                response = ResponseEntity.created(
+                    URI.create(
+                        String.format("/api/schools/%d/classes/%d", school, newclass.uid())
                     )
-                    .body(new ScBase(newclass.uid(), newclass.grade(), newclass.litera()));
+                )
+                .body(new ScBase(newclass.uid(), newclass.grade(), newclass.litera()));
             }
             return response;
         } else {
@@ -505,6 +537,14 @@ public class SchoolClassController {
         }
     }
 
+    /**
+     * Delete a school class.
+     *
+     * @param school School identifier
+     * @param clazz Class identifier
+     * @return Empty response
+     * @throws Exception When the class cannot be deleted
+     */
     @DeleteMapping("/{clazz}")
     @PreAuthorize(
         """
@@ -525,12 +565,6 @@ public class SchoolClassController {
             .schoolClasses()
             .remove(clazz);
         return ResponseEntity.noContent().build();
-    }
-
-    public static class SchoolClassRequiredFieldException extends Exception {
-        public SchoolClassRequiredFieldException(final String message) {
-            super(message);
-        }
     }
 
     /** School class accept version. */

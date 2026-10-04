@@ -31,15 +31,8 @@ public final class LoginFailureHandler implements AuthenticationFailureHandler {
     /** Database context. */
     private final DSLContext ctx;
 
-    /** Database context. */
-    private final Map<Class<? extends Exception>, String> errors;
-
     LoginFailureHandler(final DSLContext ctx) {
         this.ctx = ctx;
-        this.errors = Map.of(
-            BadCredentialsException.class, "bad_credentials",
-            UsernameNotFoundException.class, "user_not_found"
-        );
     }
 
     @Override
@@ -48,7 +41,10 @@ public final class LoginFailureHandler implements AuthenticationFailureHandler {
         final HttpServletResponse response,
         final AuthenticationException exception
     ) throws IOException {
-        final var error = this.errors.getOrDefault(exception.getClass(), "unknown");
+        final String error = Map.of(
+            BadCredentialsException.class, "bad_credentials",
+            UsernameNotFoundException.class, "user_not_found"
+        ).getOrDefault(exception.getClass(), "unknown");
         if ("bad_credentials".equals(error)) {
             final User user;
             try {
