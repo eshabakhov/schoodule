@@ -16,6 +16,6 @@ public final class CurriculumFailedCreateException extends Exception {
      * @since 0.0.1
      */
     public CurriculumFailedCreateException() {
-        super("Failed to create FederalCurriculum");
+        super("Failed to create federal curriculum");
     }
 }

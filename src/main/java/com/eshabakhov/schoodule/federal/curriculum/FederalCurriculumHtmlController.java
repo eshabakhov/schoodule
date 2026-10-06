@@ -7,7 +7,7 @@ import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.Sort;
 import com.eshabakhov.schoodule.Sorts;
-import com.eshabakhov.schoodule.federal.FederalCurriculum;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.Requirement;
 import com.eshabakhov.schoodule.media.ThymeleafMedia;
 import java.util.Locale;
 import java.util.Map;
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * Controller for HTML responses for {@link FederalCurriculum}.
+ * Controller for HTML responses for {@link Curriculum}.
  *
  * @since 0.0.1
  * @checkstyle ParameterNumberCheck (1000 lines)
@@ -65,7 +65,7 @@ public class FederalCurriculumHtmlController {
         final Sorts sort,
         final Filters filters
     ) throws Exception {
-        return new FcsPostgres(this.ctx)
+        return new CrsPostgres(this.ctx)
             .selection(filters, page, sort)
             .print(new ThymeleafMedia("federal-curriculums/list", ""))
             .view();
@@ -87,7 +87,7 @@ public class FederalCurriculumHtmlController {
         final Page page,
         final Sorts sort
     ) throws Exception {
-        return new FcsPostgres(this.ctx)
+        return new CrsPostgres(this.ctx)
             .selection(filters, page, sort).print(
                 new ThymeleafMedia(
                     "federal-curriculums/list :: curriculums-grid",
@@ -109,8 +109,8 @@ public class FederalCurriculumHtmlController {
         return new ThymeleafMedia("federal-curriculums/create", "").attributes(
             Map.of(
                 "pageTitle", "Новый федеральный учебный план",
-                "levels", FederalCurriculum.Level.values(),
-                "studyWeeks", FederalCurriculum.Week.values()
+                "levels", Curriculum.Level.values(),
+                "studyWeeks", Curriculum.Week.values()
             )
         ).view();
     }
@@ -131,15 +131,15 @@ public class FederalCurriculumHtmlController {
     @PostMapping("/create")
     public String create(
         @RequestParam final String title,
-        @RequestParam(name = "level") final FederalCurriculum.Level level,
-        @RequestParam(name = "week") final FederalCurriculum.Week week,
+        @RequestParam(name = "level") final Curriculum.Level level,
+        @RequestParam(name = "week") final Curriculum.Week week,
         @RequestParam final String version,
         @RequestParam(name = "year") final String year,
         @RequestParam(required = false) final String description
     ) throws Exception {
         return String.format(
             "redirect:/federal/curriculums/%d",
-            new FcsPostgres(this.ctx).create(
+            new CrsPostgres(this.ctx).create(
                 title.trim(),
                 level,
                 week,
@@ -162,7 +162,7 @@ public class FederalCurriculumHtmlController {
     public ModelAndView details(
         @PathVariable final long curriculum
     ) throws Exception {
-        return new FcsPostgres(this.ctx)
+        return new CrsPostgres(this.ctx)
             .curriculum(curriculum).print(
                 new ThymeleafMedia(
                     "federal-curriculums/details",
@@ -190,7 +190,7 @@ public class FederalCurriculumHtmlController {
         final Page page,
         final Sorts sort
     ) throws Exception {
-        final FederalCurriculum selected = new FcsPostgres(this.ctx)
+        final Curriculum selected = new CrsPostgres(this.ctx)
             .curriculum(curriculum);
         return selected.requirements()
             .selection(filters, page, sort).print(
@@ -229,7 +229,7 @@ public class FederalCurriculumHtmlController {
         final Page page,
         final Sorts sort
     ) throws Exception {
-        return new FcsPostgres(this.ctx)
+        return new CrsPostgres(this.ctx)
             .curriculum(curriculum)
             .requirements()
             .selection(filters, page, sort).print(
@@ -256,7 +256,7 @@ public class FederalCurriculumHtmlController {
      */
     @GetMapping(value = "/{curriculum}/edit", produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView editForm(@PathVariable final long curriculum) throws Exception {
-        return new FcsPostgres(this.ctx)
+        return new CrsPostgres(this.ctx)
             .curriculum(curriculum).print(
                 new ThymeleafMedia(
                     "federal-curriculums/edit",
@@ -265,8 +265,8 @@ public class FederalCurriculumHtmlController {
             ).attributes(
                 Map.of(
                     "pageTitle", "Редактировать федеральный учебный план",
-                    "levels", FederalCurriculum.Level.values(),
-                    "studyWeeks", FederalCurriculum.Week.values()
+                    "levels", Curriculum.Level.values(),
+                    "studyWeeks", Curriculum.Week.values()
                 )
             )
             .view();
@@ -290,13 +290,13 @@ public class FederalCurriculumHtmlController {
     public String edit(
         @PathVariable final long curriculum,
         @RequestParam final String title,
-        @RequestParam(name = "level") final FederalCurriculum.Level level,
-        @RequestParam(name = "week") final FederalCurriculum.Week week,
+        @RequestParam(name = "level") final Curriculum.Level level,
+        @RequestParam(name = "week") final Curriculum.Week week,
         @RequestParam final String version,
         @RequestParam(name = "year") final String year,
         @RequestParam(required = false) final String description
     ) throws Exception {
-        new FcsPostgres(this.ctx)
+        new CrsPostgres(this.ctx)
             .curriculum(curriculum)
             .retitled(title.trim())
             .releveled(level)
@@ -334,7 +334,7 @@ public class FederalCurriculumHtmlController {
         }
         return Map.ofEntries(
             Map.entry("id", curriculum),
-            Map.entry("partTypes", FederalCurriculumRequirement.PartType.values()),
+            Map.entry("partTypes", Requirement.PartType.values()),
             Map.entry("gradeSort", grade),
             Map.entry("subjectSort", subject),
             Map.entry("hoursSort", hours),

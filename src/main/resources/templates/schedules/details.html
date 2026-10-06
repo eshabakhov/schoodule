@@ -50,8 +50,8 @@
     <div class="tabs-list" style="margin-top:1.5rem;">
         <a class="tab-trigger"
            href="#"
-           title="Планирование нагрузки учебных классов"
-           th:href="@{/schools/{s}/schedules/{r}/curriculum(s=${school.uid()},r=${schedule.uid()})}">План классов</a>
+           title="Учебная нагрузка классов"
+           th:href="@{/schools/{s}/schedules/{r}/loads(s=${school.uid()},r=${schedule.uid()})}">Учебная нагрузка</a>
     </div>
     <div class="stat-grid" style="margin-top:1.5rem;width:100%;">
         <div class="stat-card">

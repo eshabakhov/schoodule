@@ -3,8 +3,7 @@
  */
 package com.eshabakhov.schoodule.federal.curriculum.requirement;
 
-import com.eshabakhov.schoodule.federal.curriculum.FcsPostgres;
-import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
+import com.eshabakhov.schoodule.federal.curriculum.CrsPostgres;
 import org.jooq.DSLContext;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * Controller for HTML responses for {@link FederalCurriculumRequirement}.
+ * Controller for HTML responses for {@link Requirement}.
  *
  * @since 0.0.1
  * @checkstyle ParameterNumberCheck (1000 lines)
@@ -57,9 +56,9 @@ public class FederalCurriculumRequirementHtmlController {
         @RequestParam final Integer grade,
         @RequestParam(name = "subjectName") final String subject,
         @RequestParam(name = "weeklyHours") final Integer hours,
-        @RequestParam(name = "partType") final FederalCurriculumRequirement.PartType part
+        @RequestParam(name = "partType") final Requirement.PartType part
     ) throws Exception {
-        new FcsPostgres(this.ctx)
+        new CrsPostgres(this.ctx)
             .curriculum(curriculum)
             .requirements()
             .create(grade, subject.trim(), hours, part);
@@ -86,9 +85,9 @@ public class FederalCurriculumRequirementHtmlController {
         @RequestParam final Integer grade,
         @RequestParam(name = "subjectName") final String subject,
         @RequestParam(name = "weeklyHours") final Integer hours,
-        @RequestParam(name = "partType") final FederalCurriculumRequirement.PartType part
+        @RequestParam(name = "partType") final Requirement.PartType part
     ) throws Exception {
-        new FcsPostgres(this.ctx)
+        new CrsPostgres(this.ctx)
             .curriculum(curriculum)
             .requirements()
             .requirement(requirement)

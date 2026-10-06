@@ -16,6 +16,6 @@ public final class RequirementAlreadyExistsException extends Exception {
      * @since 0.0.1
      */
     public RequirementAlreadyExistsException() {
-        super("FederalCurriculumRequirement already exists");
+        super("Federal curriculum requirement already exists");
     }
 }

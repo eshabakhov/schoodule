@@ -6,7 +6,6 @@ package com.eshabakhov.schoodule.federal.curriculum;
 import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.Sorts;
-import com.eshabakhov.schoodule.federal.FederalCurriculum;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -147,7 +146,7 @@ public class FederalCurriculumController {
         )
     )
     public ResponseEntity<ObjectNode> create(
-        @RequestHeader("version") final CurriculumVersion version,
+        @RequestHeader("version") final LoadVersion version,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Simple request federal curriculum",
             content = @Content(
@@ -178,10 +177,10 @@ public class FederalCurriculumController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        final FederalCurriculum pgcur = new FcsPostgres(this.ctx).create(
+        final Curriculum pgcur = new CrsPostgres(this.ctx).create(
             request.required("title").asText(),
-            FederalCurriculum.Level.valueOf(request.required("level").asText()),
-            FederalCurriculum.Week.valueOf(request.required("week").asText()),
+            Curriculum.Level.valueOf(request.required("level").asText()),
+            Curriculum.Week.valueOf(request.required("week").asText()),
             request.required("version").asText(),
             request.required("year").asText(),
             request.get("description").asText("")
@@ -196,7 +195,7 @@ public class FederalCurriculumController {
                     MediaType.valueOf(
                         "application/com.eshabakhov.schoodule.school.federal.curriculum.simple+json"
                     )
-                ).body(new FcSimple(pgcur).print(new JsonMedia()).json());
+                ).body(new CrSimple(pgcur).print(new JsonMedia()).json());
             }
             case FULL -> {
                 yield ResponseEntity.created(
@@ -207,7 +206,7 @@ public class FederalCurriculumController {
                     MediaType.valueOf(
                         "application/com.eshabakhov.schoodule.school.federal.curriculum.full+json"
                     )
-                ).body(new FcFull(pgcur).print(new JsonMedia()).json());
+                ).body(new CrFull(pgcur).print(new JsonMedia()).json());
             }
         };
     }
@@ -242,7 +241,7 @@ public class FederalCurriculumController {
         final Filters filters
     ) throws Exception {
         return ResponseEntity.ok(
-            new FcsPostgres(this.ctx)
+            new CrsPostgres(this.ctx)
                 .selection(filters, page, sort)
                 .print(new JsonMedia())
                 .json()
@@ -358,10 +357,10 @@ public class FederalCurriculumController {
         )
     )
     public ResponseEntity<ObjectNode> get(
-        @RequestHeader("version") final CurriculumVersion version,
+        @RequestHeader("version") final LoadVersion version,
         @PathVariable final long curriculum
     ) throws Exception {
-        final FederalCurriculum pgcur = new FcsPostgres(this.ctx).curriculum(curriculum);
+        final Curriculum pgcur = new CrsPostgres(this.ctx).curriculum(curriculum);
         return switch (version) {
             case SIMPLE -> {
                 yield ResponseEntity
@@ -370,7 +369,7 @@ public class FederalCurriculumController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.simple+json"
                         )
                     )
-                    .body(new FcSimple(pgcur).print(new JsonMedia()).json());
+                    .body(new CrSimple(pgcur).print(new JsonMedia()).json());
             }
             case FULL -> {
                 yield ResponseEntity
@@ -379,7 +378,7 @@ public class FederalCurriculumController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.full+json"
                         )
                     )
-                    .body(new FcFull(pgcur).print(new JsonMedia()).json());
+                    .body(new CrFull(pgcur).print(new JsonMedia()).json());
             }
         };
     }
@@ -526,7 +525,7 @@ public class FederalCurriculumController {
         )
     )
     public ResponseEntity<ObjectNode> put(
-        @RequestHeader("version") final CurriculumVersion version,
+        @RequestHeader("version") final LoadVersion version,
         @PathVariable final long curriculum,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Simple request federal curriculum",
@@ -560,12 +559,12 @@ public class FederalCurriculumController {
     ) throws Exception {
         ResponseEntity<ObjectNode> response;
         try {
-            final FederalCurriculum changed = new FcsPostgres(this.ctx)
+            final Curriculum changed = new CrsPostgres(this.ctx)
                 .curriculum(curriculum)
                 .retitled(request.required("title").asText()).releveled(
-                    FederalCurriculum.Level.valueOf(request.required("level").asText())
+                    Curriculum.Level.valueOf(request.required("level").asText())
                 ).reweeked(
-                    FederalCurriculum.Week.valueOf(request.required("week").asText())
+                    Curriculum.Week.valueOf(request.required("week").asText())
                 )
                 .reversioned(request.required("version").asText())
                 .reyeared(request.required("year").asText())
@@ -587,10 +586,10 @@ public class FederalCurriculumController {
                     .body(changed.print(new JsonMedia()).json());
             };
         } catch (final CurriculumNotFoundException ignored) {
-            final FederalCurriculum created = new FcsPostgres(this.ctx).create(
+            final Curriculum created = new CrsPostgres(this.ctx).create(
                 request.required("title").asText(),
-                FederalCurriculum.Level.valueOf(request.required("level").asText()),
-                FederalCurriculum.Week.valueOf(request.required("week").asText()),
+                Curriculum.Level.valueOf(request.required("level").asText()),
+                Curriculum.Week.valueOf(request.required("week").asText()),
                 request.required("version").asText(),
                 request.required("year").asText(),
                 request.get("description").asText("")
@@ -627,14 +626,14 @@ public class FederalCurriculumController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Remove federal curriculum")
     public ResponseEntity<Void> delete(@PathVariable final long curriculum) throws Exception {
-        new FcsPostgres(this.ctx).remove(curriculum);
+        new CrsPostgres(this.ctx).remove(curriculum);
         return ResponseEntity.noContent().build();
     }
 
     /**
      * Federal curriculum accept version.
      */
-    enum CurriculumVersion {
+    enum LoadVersion {
 
         /**
          * Version of simple federal curriculum.

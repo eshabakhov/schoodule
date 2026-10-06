@@ -4,7 +4,8 @@
 package com.eshabakhov.schoodule.school.schedule;
 
 import com.eshabakhov.schoodule.school.Schedule;
-import com.eshabakhov.schoodule.school.schedule.curriculum.CsCrsPostgres;
+import com.eshabakhov.schoodule.school.schedule.load.ClassLoads;
+import com.eshabakhov.schoodule.school.schedule.load.ClassLoadsPostgres;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
@@ -78,7 +79,7 @@ public final class SdPostgres implements Schedule {
     }
 
     @Override
-    public ClassCurriculums curriculums() {
-        return new CsCrsPostgres(this.ctx, this.sid);
+    public ClassLoads loads() {
+        return new ClassLoadsPostgres(this.ctx, this.sid);
     }
 }

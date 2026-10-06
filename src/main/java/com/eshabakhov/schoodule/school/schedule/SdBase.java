@@ -4,6 +4,7 @@
 package com.eshabakhov.schoodule.school.schedule;
 
 import com.eshabakhov.schoodule.school.Schedule;
+import com.eshabakhov.schoodule.school.schedule.load.ClassLoads;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -65,9 +66,9 @@ public final class SdBase implements Schedule {
     }
 
     @Override
-    public ClassCurriculums curriculums() {
+    public ClassLoads loads() {
         throw new UnsupportedOperationException(
-            "ClassCurriculums are infrastructure-dependent"
+            "ClassLoads are infrastructure-dependent"
         );
     }
 }
