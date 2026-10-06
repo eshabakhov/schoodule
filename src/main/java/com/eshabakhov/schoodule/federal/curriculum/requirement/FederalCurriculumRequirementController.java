@@ -6,8 +6,7 @@ package com.eshabakhov.schoodule.federal.curriculum.requirement;
 import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.Sorts;
-import com.eshabakhov.schoodule.federal.curriculum.FcsPostgres;
-import com.eshabakhov.schoodule.federal.curriculum.FederalCurriculumRequirement;
+import com.eshabakhov.schoodule.federal.curriculum.CrsPostgres;
 import com.eshabakhov.schoodule.media.JsonMedia;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -122,7 +121,7 @@ public class FederalCurriculumRequirementController {
         )
     )
     public ResponseEntity<ObjectNode> create(
-        @RequestHeader("version") final CurriculumVersion version,
+        @RequestHeader("version") final LoadVersion version,
         @PathVariable final long curriculum,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Simple request federal curriculum requirement",
@@ -145,13 +144,13 @@ public class FederalCurriculumRequirementController {
         )
         @RequestBody final JsonNode request
     ) throws Exception {
-        final FederalCurriculumRequirement requirement = new FcsPostgres(this.ctx)
+        final Requirement requirement = new CrsPostgres(this.ctx)
             .curriculum(curriculum)
             .requirements().create(
                 request.required("grade").asInt(),
                 request.required("subjectName").asText(),
                 request.required("weeklyHours").asInt(),
-                FederalCurriculumRequirement.PartType.valueOf(
+                Requirement.PartType.valueOf(
                     request.required("partType").asText()
                 )
             );
@@ -168,7 +167,7 @@ public class FederalCurriculumRequirementController {
                     MediaType.valueOf(
                         "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
                     )
-                ).body(new FcrSimple(requirement).print(new JsonMedia()).json());
+                ).body(new RqSimple(requirement).print(new JsonMedia()).json());
             }
         };
     }
@@ -203,7 +202,7 @@ public class FederalCurriculumRequirementController {
         final Filters filters
     ) throws Exception {
         return ResponseEntity.ok(
-            new FcsPostgres(this.ctx)
+            new CrsPostgres(this.ctx)
                 .curriculum(curriculum)
                 .requirements()
                 .selection(filters, page, sort)
@@ -292,7 +291,7 @@ public class FederalCurriculumRequirementController {
         )
     )
     public ResponseEntity<ObjectNode> requirement(
-        @RequestHeader("version") final CurriculumVersion version,
+        @RequestHeader("version") final LoadVersion version,
         @PathVariable final long curriculum,
         @PathVariable final long requirement
     ) throws Exception {
@@ -304,8 +303,8 @@ public class FederalCurriculumRequirementController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
                         )
                     ).body(
-                        new FcrSimple(
-                            new FcsPostgres(this.ctx)
+                        new RqSimple(
+                            new CrsPostgres(this.ctx)
                                 .curriculum(curriculum)
                                 .requirements()
                                 .requirement(requirement)
@@ -407,7 +406,7 @@ public class FederalCurriculumRequirementController {
     )
     //@checkstyle ParameterNumberCheck (1 line)
     public ResponseEntity<ObjectNode> put(
-        @RequestHeader("version") final CurriculumVersion version,
+        @RequestHeader("version") final LoadVersion version,
         @PathVariable final long curriculum,
         @PathVariable final long requirement,
         @RequestBody final JsonNode request
@@ -422,8 +421,8 @@ public class FederalCurriculumRequirementController {
                                 "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
                             )
                         ).body(
-                            new FcrSimple(
-                                new FcsPostgres(this.ctx)
+                            new RqSimple(
+                                new CrsPostgres(this.ctx)
                                     .curriculum(curriculum)
                                     .requirements()
                                     .requirement(requirement)
@@ -432,7 +431,7 @@ public class FederalCurriculumRequirementController {
                                     ).reweekled(
                                         request.required("weeklyHours").asInt()
                                     ).reparted(
-                                        FederalCurriculumRequirement.PartType.valueOf(
+                                        Requirement.PartType.valueOf(
                                             request.required("partType").asText()
                                         )
                                     )
@@ -441,13 +440,13 @@ public class FederalCurriculumRequirementController {
                 }
             };
         } catch (final RequirementNotFoundException ignored) {
-            final FederalCurriculumRequirement created = new FcsPostgres(this.ctx)
+            final Requirement created = new CrsPostgres(this.ctx)
                 .curriculum(curriculum)
                 .requirements().create(
                     request.required("grade").asInt(),
                     request.required("subjectName").asText(),
                     request.required("weeklyHours").asInt(),
-                    FederalCurriculumRequirement.PartType.valueOf(
+                    Requirement.PartType.valueOf(
                         request.required("partType").asText()
                     )
                 );
@@ -465,7 +464,7 @@ public class FederalCurriculumRequirementController {
                             "application/com.eshabakhov.schoodule.school.federal.curriculum.requirement.simple+json"
                         )
                     ).body(
-                        new FcrSimple(created)
+                        new RqSimple(created)
                             .print(new JsonMedia())
                             .json()
                     );
@@ -491,14 +490,14 @@ public class FederalCurriculumRequirementController {
         @PathVariable final long curriculum,
         @PathVariable final long requirement
     ) throws Exception {
-        new FcsPostgres(this.ctx).curriculum(curriculum).requirements().remove(requirement);
+        new CrsPostgres(this.ctx).curriculum(curriculum).requirements().remove(requirement);
         return ResponseEntity.noContent().build();
     }
 
     /**
      * Federal curriculum requirement accept version.
      */
-    enum CurriculumVersion {
+    enum LoadVersion {
 
         /**
          * Version of simple federal curriculum requirement.

@@ -4,7 +4,7 @@
 package com.eshabakhov.schoodule.school;
 
 import com.eshabakhov.schoodule.Jsonable;
-import com.eshabakhov.schoodule.school.schedule.ClassCurriculums;
+import com.eshabakhov.schoodule.school.schedule.load.ClassLoads;
 
 /**
  * Schedule domain entity interface.
@@ -36,9 +36,9 @@ public interface Schedule extends Jsonable {
     Schedule renamed(String name);
 
     /**
-     * Returns class curriculums.
+     * Returns class loads.
      *
-     * @return Class curriculums
+     * @return Class loads
      */
-    ClassCurriculums curriculums();
+    ClassLoads loads();
 }
