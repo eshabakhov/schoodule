@@ -4,20 +4,25 @@
 package com.eshabakhov.schoodule;
 
 /**
- * An object that can print itself into a {@link Media}.
- * Replaces getter-based data exposure with printer-based approach.
+ * An object that explicitly describes its public representation.
  *
- * @since 0.0.1
+ * <p>The object chooses the fields; the supplied medium chooses their format.
+ * Implementations must use and return the medium returned by each operation:
+ * the built-in media are immutable. No getters or reflective inspection of
+ * domain fields are required.</p>
+ *
+ * @since 0.1.0
  */
 @FunctionalInterface
 public interface Printable {
 
     /**
-     * Prints this object's data into the given media.
+     * Prints this representation into the supplied medium.
      *
-     * @param media Target media to print into
-     * @param <M> Media type
-     * @return Media filled with this object's data
+     * @param media Initial medium
+     * @param <T> Native output type of the medium
+     * @return The resulting medium, never {@code null}
+     * @throws Exception If the representation cannot be produced
      */
-    <M extends Media> M print(M media);
+    <T> Media<T> print(Media<T> media) throws Exception;
 }

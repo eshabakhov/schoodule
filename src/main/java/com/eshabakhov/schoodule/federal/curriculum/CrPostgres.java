@@ -52,9 +52,9 @@ public final class CrPostgres implements Curriculum {
     }
 
     @Override
-    public <M extends Media> M print(final M media) {
-        this.ctx.selectFrom(CrPostgres.CURRICULUM)
-            .where(CrPostgres.CURRICULUM.ID.eq(this.fid)).fetchOne(
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        return this.ctx.selectFrom(CrPostgres.CURRICULUM)
+            .where(CrPostgres.CURRICULUM.ID.eq(this.fid)).fetchSingle(
                 record -> media
                     .with("id", record.getId())
                     .with("title", record.getTitle())
@@ -64,7 +64,6 @@ public final class CrPostgres implements Curriculum {
                     .with("year", record.getAcademicYear())
                     .with("description", record.getDescription())
             );
-        return media;
     }
 
     @Override

@@ -33,10 +33,10 @@ public final class CrFull implements Curriculum {
     }
 
     @Override
-    public <M extends Media> M print(final M media) {
-        this.origin.print(media)
-            .include("id", "title", "level", "week", "version", "year", "description");
-        return media;
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        return this.origin.print(media).include(
+            "id", "title", "level", "week", "version", "year", "description"
+        );
     }
 
     @Override

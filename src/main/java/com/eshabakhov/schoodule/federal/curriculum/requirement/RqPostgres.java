@@ -49,9 +49,9 @@ public final class RqPostgres implements Requirement {
     }
 
     @Override
-    public <M extends Media> M print(final M media) {
-        this.ctx.selectFrom(RqPostgres.REQUIREMENT)
-            .where(RqPostgres.REQUIREMENT.ID.eq(this.rid)).fetchOne(
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        return this.ctx.selectFrom(RqPostgres.REQUIREMENT)
+            .where(RqPostgres.REQUIREMENT.ID.eq(this.rid)).fetchSingle(
                 record -> media
                     .with("id", record.getId())
                     .with("grade", record.getGrade())
@@ -59,7 +59,6 @@ public final class RqPostgres implements Requirement {
                     .with("weeklyHours", record.getWeeklyHours())
                     .with("partType", record.getPartType().name())
             );
-        return media;
     }
 
     @Override

@@ -32,10 +32,10 @@ public final class RqSimple implements Requirement {
     }
 
     @Override
-    public <M extends Media> M print(final M media) {
-        this.origin.print(media)
-            .include("id", "grade", "subjectName", "weeklyHours", "partType");
-        return media;
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        return this.origin.print(media).include(
+            "id", "grade", "subjectName", "weeklyHours", "partType"
+        );
     }
 
     @Override

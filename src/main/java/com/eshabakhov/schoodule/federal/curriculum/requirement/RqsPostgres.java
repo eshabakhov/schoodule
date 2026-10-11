@@ -69,11 +69,11 @@ public final class RqsPostgres implements Requirements {
                     RqsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
                         .and(RqsPostgres.REQUIREMENT.GRADE.eq(grade))
                         .and(RqsPostgres.REQUIREMENT.SUBJECT_NAME.eq(subject)).and(
-                            RqsPostgres.REQUIREMENT.PART_TYPE.eq(
-                                CurriculumPartType.valueOf(part.name())
-                            )
+                        RqsPostgres.REQUIREMENT.PART_TYPE.eq(
+                            CurriculumPartType.valueOf(part.name())
                         )
-                        .and(RqsPostgres.REQUIREMENT.IS_DELETED.eq(false))
+                    )
+                    .and(RqsPostgres.REQUIREMENT.IS_DELETED.eq(false))
                     )
                     .fetchOne() != null) {
                     throw new RequirementAlreadyExistsException();
@@ -155,9 +155,8 @@ public final class RqsPostgres implements Requirements {
     }
 
     @Override
-    public <M extends Media> M print(final M media) {
-        media.with("items", this.iterate());
-        return media;
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        return media.with("items", this.iterate());
     }
 
     @Override
