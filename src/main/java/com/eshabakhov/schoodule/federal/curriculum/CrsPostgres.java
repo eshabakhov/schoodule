@@ -31,8 +31,7 @@ public final class CrsPostgres implements Curriculums {
     /**
      * JOOQ Table for Curriculum.
      */
-    private static final FederalCurriculum CURRICULUM =
-        FederalCurriculum.FEDERAL_CURRICULUM;
+    private static final FederalCurriculum CURRICULUM = FederalCurriculum.FEDERAL_CURRICULUM;
 
     /**
      * JOOQ DSL context for executing database queries.

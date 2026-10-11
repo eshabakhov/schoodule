@@ -54,7 +54,9 @@ public class RqsApiHttp implements Requirements {
      */
     private final DSLContext ctx;
 
-    /** Federal curriculum ID for the current request. */
+    /**
+     * Federal curriculum ID for the current request.
+     */
     private long curriculum;
 
     RqsApiHttp(final DSLContext ctx) {

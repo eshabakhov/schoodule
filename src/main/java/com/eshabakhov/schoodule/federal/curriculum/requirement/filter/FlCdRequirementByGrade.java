@@ -26,16 +26,6 @@ public final class FlCdRequirementByGrade implements FlConditional {
     private final Optional<Integer> grade;
 
     /**
-     * New grade filter.
-     *
-     * @param origin Origin filter
-     * @param grade Grade to search
-     */
-    public FlCdRequirementByGrade(final FlConditional origin, final Integer grade) {
-        this(origin, Optional.ofNullable(grade));
-    }
-
-    /**
      * New grade filter from a string value.
      *
      * @param origin Origin filter

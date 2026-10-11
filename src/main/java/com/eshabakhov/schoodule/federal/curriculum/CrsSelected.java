@@ -18,13 +18,19 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public final class CrsSelected implements Curriculums {
 
-    /** Complete collection. */
+    /**
+     * Complete collection.
+     */
     private final Curriculums origin;
 
-    /** Selected curriculums. */
+    /**
+     * Selected curriculums.
+     */
     private final Iterable<Curriculum> items;
 
-    /** Selection pagination. */
+    /**
+     * Selection pagination.
+     */
     private final ResultPage page;
 
     /**

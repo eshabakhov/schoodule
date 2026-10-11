@@ -22,8 +22,7 @@ public final class CrPostgres implements Curriculum {
     /**
      * JOOQ table reference.
      */
-    private static final FederalCurriculum CURRICULUM =
-        FederalCurriculum.FEDERAL_CURRICULUM;
+    private static final FederalCurriculum CURRICULUM = FederalCurriculum.FEDERAL_CURRICULUM;
 
     /**
      * Federal curriculum id.

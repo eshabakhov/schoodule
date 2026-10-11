@@ -28,19 +28,6 @@ public final class FlCdRequirementByPart implements FlConditional {
     private final Optional<Requirement.PartType> part;
 
     /**
-     * New part filter.
-     *
-     * @param origin Origin filter
-     * @param part Part to search
-     */
-    public FlCdRequirementByPart(
-        final FlConditional origin,
-        final Requirement.PartType part
-    ) {
-        this(origin, Optional.ofNullable(part));
-    }
-
-    /**
      * New part filter from a string value.
      *
      * @param origin Origin filter

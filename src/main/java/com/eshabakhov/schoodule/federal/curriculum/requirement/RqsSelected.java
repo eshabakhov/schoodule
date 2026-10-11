@@ -18,13 +18,19 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public final class RqsSelected implements Requirements {
 
-    /** Complete collection. */
+    /**
+     * Complete collection.
+     */
     private final Requirements origin;
 
-    /** Selected requirements. */
+    /**
+     * Selected requirements.
+     */
     private final Iterable<Requirement> items;
 
-    /** Selection pagination. */
+    /**
+     * Selection pagination.
+     */
     private final ResultPage page;
 
     /**
