@@ -76,9 +76,8 @@ public final class CrsSelected implements Curriculums {
     }
 
     @Override
-    public <M extends Media> M print(final M media) {
-        media.with("items", this.items).with("page", this.page);
-        return media;
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        return media.with("items", this.items).with("page", this.page);
     }
 
     @Override

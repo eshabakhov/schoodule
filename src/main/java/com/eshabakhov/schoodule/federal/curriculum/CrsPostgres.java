@@ -160,9 +160,8 @@ public final class CrsPostgres implements Curriculums {
     }
 
     @Override
-    public <M extends Media> M print(final M media) {
-        media.with("items", this.iterate());
-        return media;
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        return media.with("items", this.iterate());
     }
 
     @Override
