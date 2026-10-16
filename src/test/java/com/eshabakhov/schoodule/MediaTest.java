@@ -68,15 +68,15 @@ final class MediaTest {
     @Test
     void printsThymeleafView() {
         final ModelAndView printed = new MdThymeleaf(
-            "federal-curriculums/details", "curriculum"
+            "schools/details", "school"
         ).with("id", 1L).print();
         Assertions.assertEquals(
-            "federal-curriculums/details",
+            "schools/details",
             printed.getViewName()
         );
         Assertions.assertEquals(
             1L,
-            ((Map<?, ?>) printed.getModel().get("curriculum")).get("id")
+            ((Map<?, ?>) printed.getModel().get("school")).get("id")
         );
     }
 
