@@ -44,7 +44,7 @@ import org.springframework.web.context.annotation.RequestScope;
  */
 @RestController
 @RequestScope
-@RequestMapping("/api/federal/curriculums/{curriculum}/requirements")
+@RequestMapping("/federal/curriculums/{curriculum}/requirements")
 @Tag(name = "Federal Curriculums")
 @PreAuthorize("hasRole('ADMIN')")
 public class RqsApiHttp implements Requirements {
@@ -54,7 +54,9 @@ public class RqsApiHttp implements Requirements {
      */
     private final DSLContext ctx;
 
-    /** Federal curriculum ID for the current request. */
+    /**
+     * Federal curriculum ID for the current request.
+     */
     private long curriculum;
 
     RqsApiHttp(final DSLContext ctx) {
@@ -206,7 +208,7 @@ public class RqsApiHttp implements Requirements {
                 yield ResponseEntity.created(
                     URI.create(
                         String.format(
-                            "/api/federal/curriculums/%d/requirements/%d",
+                            "/federal/curriculums/%d/requirements/%d",
                             this.curriculum, requirement.uid()
                         )
                     )
@@ -354,7 +356,7 @@ public class RqsApiHttp implements Requirements {
                     yield ResponseEntity.created(
                         URI.create(
                             String.format(
-                                "/api/federal/curriculums/%d/requirements/%d",
+                                "/federal/curriculums/%d/requirements/%d",
                                 this.curriculum, created.uid()
                             )
                         )

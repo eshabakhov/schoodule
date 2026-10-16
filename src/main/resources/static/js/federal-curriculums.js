@@ -74,9 +74,8 @@ $(() => {
         const name = $(this).data('name');
         if (!confirm(`Удалить «${name}»?`)) return;
         $.ajax({
-            url: `/api/federal/curriculums/${id}`,
-            method: 'DELETE',
-            headers: { version: 'SIMPLE' }
+            url: `/federal/curriculums/${id}`,
+            method: 'DELETE'
         })
             .done(() => {
                 window.location.href = '/federal/curriculums';
@@ -89,9 +88,8 @@ $(() => {
         const name = $(this).data('name');
         if (!confirm(`Удалить требование «${name}»?`)) return;
         $.ajax({
-            url: `/api/federal/curriculums/${curriculum}/requirements/${id}`,
-            method: 'DELETE',
-            headers: { version: 'SIMPLE' }
+            url: `/federal/curriculums/${curriculum}/requirements/${id}`,
+            method: 'DELETE'
         })
             .done(() => {
                 window.location.reload();

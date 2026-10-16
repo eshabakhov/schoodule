@@ -10,7 +10,7 @@ import org.jooq.Condition;
  *
  * @since 0.0.1
  */
-public interface Schools {
+public interface Schools extends Printable {
 
     /**
      * Creates a new school in the collection.

@@ -3,6 +3,7 @@
  */
 package com.eshabakhov.schoodule.user;
 
+import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.User;
 import java.util.Collection;
 import java.util.Map;
@@ -98,5 +99,10 @@ public final class AuthUser implements UserDetails, OAuth2User, User {
     @Override
     public boolean isAdmin() {
         return this.user.isAdmin();
+    }
+
+    @Override
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        return this.user.print(media);
     }
 }

@@ -3,74 +3,37 @@
  */
 package com.eshabakhov.schoodule;
 
-import com.eshabakhov.schoodule.header.HeaderArgumentResolver;
-import com.eshabakhov.schoodule.header.HrHtml;
-import com.eshabakhov.schoodule.header.HrJson;
-import com.eshabakhov.schoodule.header.HrXml;
 import com.eshabakhov.schoodule.media.MdJson;
+import com.eshabakhov.schoodule.media.MdThymeleaf;
+import com.eshabakhov.schoodule.media.MdXml;
+import com.eshabakhov.schoodule.media.MdXslt;
+import com.eshabakhov.schoodule.media.XsClasspath;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.io.StringWriter;
+import java.util.List;
 import java.util.Map;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpHeaders;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * Tests media selection and printing.
+ * Tests media printing.
  *
  * @since 0.0.1
  */
-@SuppressWarnings({
-    "PMD.UnitTestContainsTooManyAsserts",
-    "UnusedMethod"
-})
+@SuppressWarnings("PMD.UnitTestContainsTooManyAsserts")
 final class MediaTest {
 
     @Test
-    void resolvesHtmlHeader() throws Exception {
-        final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(HttpHeaders.ACCEPT, "text/html");
-        Assertions.assertEquals(
-            HrHtml.class,
-            new HeaderArgumentResolver().resolveArgument(
-                MediaTest.parameter(),
-                null,
-                new ServletWebRequest(request),
-                null
-            ).getClass()
-        );
-    }
-
-    @Test
-    void resolvesVendorJsonHeader() throws Exception {
-        final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(
-            HttpHeaders.ACCEPT,
-            "application/vnd.schoodule.federal-curriculum.simple.v1+json"
-        );
-        Assertions.assertEquals(
-            HrJson.class,
-            new HeaderArgumentResolver().resolveArgument(
-                MediaTest.parameter(),
-                null,
-                new ServletWebRequest(request),
-                null
-            ).getClass()
-        );
+    void keepsJsonMediaImmutable() {
+        final Media<ObjectNode> initial = new MdJson();
+        final Media<ObjectNode> changed = initial.with("id", 1L);
+        Assertions.assertFalse(initial.print().has("id"));
+        Assertions.assertTrue(changed.print().has("id"));
     }
 
     @Test
     void printsSelectedJsonFields() {
-        final ObjectNode printed = new HrJson(
-            "vnd.schoodule.federal-curriculum.simple.v1+json"
-        ).media("", "")
+        final ObjectNode printed = new MdJson().include("id")
             .with("id", 1L)
             .with("description", "Hidden")
             .print();
@@ -79,67 +42,62 @@ final class MediaTest {
     }
 
     @Test
-    void keepsMdJsonImmutable() {
-        final Media<ObjectNode> initial = new MdJson();
-        final Media<ObjectNode> changed = initial.with("id", 1L);
-        Assertions.assertFalse(initial.print().has("id"));
-        Assertions.assertTrue(changed.print().has("id"));
-    }
-
-    @Test
     void printsSelectedXmlFields() throws Exception {
-        final Source printed = new HrXml(
-            "vnd.schoodule.federal-curriculum.simple.v1+xml"
-        ).media("", "")
+        final String printed = new MdXml("curriculum").include("id")
             .with("id", 1L)
             .with("description", "Hidden")
             .print();
-        final StringWriter output = new StringWriter();
-        TransformerFactory.newInstance().newTransformer().transform(
-            printed,
-            new StreamResult(output)
+        Assertions.assertTrue(printed.startsWith("<curriculum>"));
+        Assertions.assertFalse(printed.contains("response"));
+        Assertions.assertTrue(printed.contains("<id>1</id>"));
+        Assertions.assertFalse(printed.contains("description"));
+    }
+
+    @Test
+    void printsCollectionItemsUnderInterfaceName() throws Exception {
+        Assertions.assertEquals(
+            "<curriculums><curriculum><id>1</id></curriculum></curriculums>",
+            new MdXml("curriculums").with(
+                new PrItems(
+                    "curriculum", List.of(new MediaTest.PrId())
+                )
+            ).print()
         );
-        Assertions.assertTrue(output.toString().contains("<id>1</id>"));
-        Assertions.assertFalse(output.toString().contains("description"));
     }
 
     @Test
     void printsThymeleafView() {
-        final ModelAndView printed = new HrHtml()
-            .media("federal-curriculums/details", "curriculum")
-            .with("id", 1L)
-            .print();
+        final ModelAndView printed = new MdThymeleaf(
+            "federal-curriculums/details", "curriculum"
+        ).with("id", 1L).print();
         Assertions.assertEquals(
             "federal-curriculums/details",
             printed.getViewName()
         );
         Assertions.assertEquals(
             1L,
-            ((Map<?, ?>) printed.getModel().get("curriculum"))
-                .get("id")
+            ((Map<?, ?>) printed.getModel().get("curriculum")).get("id")
         );
     }
 
-    private static MethodParameter parameter() throws NoSuchMethodException {
-        return new MethodParameter(
-            Endpoint.class.getDeclaredMethod("print", Header.class),
-            0
+    @Test
+    void transformsXmlIntoHtml() {
+        final String printed = new MdXslt(
+            new MdXml("schoodule"),
+            new XsClasspath("xslt/federal-curriculums.xsl", "list")
+        ).print();
+        Assertions.assertTrue(
+            printed.contains("id=\"federal-curriculums-results\"")
         );
+        Assertions.assertTrue(printed.contains("/js/federal-curriculums.js"));
     }
 
-    /**
-     * Test endpoint fixture.
-     *
-     * @since 0.0.1
-     */
-    @FunctionalInterface
-    private interface Endpoint {
+    /** Printable identifier. */
+    private static final class PrId implements Printable {
 
-        /**
-         * Accepts a representation header.
-         *
-         * @param header Representation header
-         */
-        void print(Header<?> header);
+        @Override
+        public <T> Media<T> print(final Media<T> media) {
+            return media.with("id", 1L);
+        }
     }
 }

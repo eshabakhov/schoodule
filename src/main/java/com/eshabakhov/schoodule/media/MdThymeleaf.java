@@ -116,22 +116,50 @@ public final class MdThymeleaf implements Media<ModelAndView> {
     }
 
     @Override
-    public MdThymeleaf with(
-        final String name,
-        final Iterable<? extends Printable> values
-    ) throws Exception {
-        final List<Map<String, Object>> printed = new ArrayList<>(0);
-        for (final Printable value : values) {
-            printed.add(
-                Collections.unmodifiableMap(
-                    new LinkedHashMap<>(
-                        value.print(new MdThymeleaf("", ""))
-                            .print().getModel()
-                    )
-                )
+    public MdThymeleaf with(final String name, final Printable value)
+        throws Exception {
+        final Map<String, Object> printed = Collections.unmodifiableMap(
+            new LinkedHashMap<>(
+                value.print(new MdThymeleaf("", ""))
+                    .print().getModel()
+            )
+        );
+        final Object rendered;
+        if ("item".equals(name) || this.data.containsKey(name)) {
+            final Object current = this.data.getOrDefault(
+                name, Collections.emptyList()
             );
+            final List<Object> items = new ArrayList<>(0);
+            if (List.class.isAssignableFrom(current.getClass())) {
+                items.addAll((List<?>) current);
+            } else {
+                items.add(current);
+            }
+            items.add(printed);
+            rendered = Collections.unmodifiableList(items);
+        } else if (printed.size() == 1 && printed.containsKey("item")) {
+            rendered = printed.get("item");
+        } else {
+            rendered = printed;
         }
-        return this.with(name, printed);
+        return this.with(name, rendered);
+    }
+
+    @Override
+    public MdThymeleaf with(final Printable value) throws Exception {
+        final Map<String, Object> printed = value.print(
+            new MdThymeleaf("", "")
+        ).print().getModel();
+        final List<Object> items = new ArrayList<>(0);
+        if (!printed.isEmpty()) {
+            final Object selected = printed.values().iterator().next();
+            if (List.class.isAssignableFrom(selected.getClass())) {
+                items.addAll((List<?>) selected);
+            } else {
+                items.add(selected);
+            }
+        }
+        return this.with("items", Collections.unmodifiableList(items));
     }
 
     @Override

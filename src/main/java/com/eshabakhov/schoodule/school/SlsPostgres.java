@@ -3,6 +3,7 @@
  */
 package com.eshabakhov.schoodule.school;
 
+import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PageableList;
 import com.eshabakhov.schoodule.School;
@@ -111,5 +112,10 @@ public final class SlsPostgres implements Schools {
                     .where(SlsPostgres.SCHOOL.ID.eq(sid))
                     .execute()
         );
+    }
+
+    @Override
+    public <T> Media<T> print(final Media<T> media) {
+        return media.with("href", "/schools");
     }
 }

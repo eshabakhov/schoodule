@@ -6,33 +6,20 @@ package com.eshabakhov.schoodule.media;
 import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.Printable;
 import com.eshabakhov.schoodule.ResultPage;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.springframework.web.util.HtmlUtils;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * XML implementation of {@link Media}.
  *
  * @since 0.0.1
  */
-public final class MdXml implements Media<Source> {
+public final class MdXml implements Media<String> {
 
     /** XML root element. */
     private final String root;
@@ -50,11 +37,13 @@ public final class MdXml implements Media<Source> {
     private final String pattern;
 
     /**
-     * New XML media.
+     * New XML media with the specified root element.
+     *
+     * @param root Root element
      */
-    public MdXml() {
+    public MdXml(final String root) {
         this(
-            "response",
+            root,
             new LinkedHashMap<>(0),
             new LinkedHashSet<>(0),
             false,
@@ -132,33 +121,15 @@ public final class MdXml implements Media<Source> {
     }
 
     @Override
-    public MdXml with(
-        final String name,
-        final Iterable<? extends Printable> values
-    ) throws Exception {
+    public MdXml with(final String name, final Printable value)
+        throws Exception {
         final Map<String, String> copied = new LinkedHashMap<>(this.elements);
         if (this.allowed(name)) {
-            final StringBuilder items = new StringBuilder(0);
-            final Transformer transformer = TransformerFactory.newInstance()
-                .newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            for (final Printable value : values) {
-                final StringWriter output = new StringWriter();
-                transformer.transform(
-                    value.print(
-                        new MdXml(
-                            "item",
-                            Collections.emptyMap(),
-                            Collections.emptySet(),
-                            false,
-                            this.pattern
-                        )
-                    ).print(),
-                    new StreamResult(output)
-                );
-                items.append(output);
-            }
-            copied.put(name, this.element(name, items.toString()));
+            copied.merge(
+                name,
+                value.print(new MdXml(name)).print(),
+                String::concat
+            );
         }
         return new MdXml(
             this.root,
@@ -167,6 +138,11 @@ public final class MdXml implements Media<Source> {
             this.restricted,
             this.pattern
         );
+    }
+
+    @Override
+    public MdXml with(final Printable value) throws Exception {
+        return (MdXml) value.print(this);
     }
 
     @Override
@@ -233,17 +209,8 @@ public final class MdXml implements Media<Source> {
     }
 
     @Override
-    public Source print() {
-        try (StringReader input = new StringReader(this.xml())) {
-            return new DOMSource(
-                DocumentBuilderFactory.newDefaultInstance()
-                    .newDocumentBuilder().parse(new InputSource(input))
-            );
-        } catch (
-            final IOException | ParserConfigurationException | SAXException err
-        ) {
-            throw new IllegalStateException("Failed to print XML", err);
-        }
+    public String print() {
+        return this.xml();
     }
 
     private boolean allowed(final String name) {

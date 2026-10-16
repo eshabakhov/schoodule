@@ -47,6 +47,38 @@ public interface Curriculums extends Printable {
     Curriculum curriculum(long id) throws Exception;
 
     /**
+     * Revises a federal curriculum.
+     *
+     * @param id The federal curriculum ID
+     * @param title The federal curriculum title
+     * @param level The federal curriculum level
+     * @param week The federal curriculum week
+     * @param version The federal curriculum version
+     * @param year The federal curriculum year
+     * @param description The federal curriculum description
+     * @return Revised federal curriculum
+     * @throws Exception if revision fails
+     * @checkstyle ParameterNumberCheck (2 lines)
+     */
+    default Curriculum revise(
+        final long id,
+        final String title,
+        final Curriculum.Level level,
+        final Curriculum.Week week,
+        final String version,
+        final String year,
+        final String description
+    ) throws Exception {
+        return this.curriculum(id)
+            .retitled(title)
+            .releveled(level)
+            .reweeked(week)
+            .reversioned(version)
+            .reyeared(year)
+            .redescriptioned(description);
+    }
+
+    /**
      * Returns a paginated list of federal curriculums.
      *
      * @param filters Filters for selecting federal curriculums

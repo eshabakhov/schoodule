@@ -7,11 +7,11 @@ import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.Requirements;
 
 /**
- * Simple implementation of {@link Curriculum}.
+ * Version 1 implementation of {@link Curriculum}.
  *
  * @since 0.0.1
  */
-public final class CrSimple implements Curriculum {
+public final class CrV1 implements Curriculum {
 
     /**
      * Original federal curriculum.
@@ -19,11 +19,11 @@ public final class CrSimple implements Curriculum {
     private final Curriculum origin;
 
     /**
-     * Creates a Simple curriculum.
+     * Creates a version 1 curriculum.
      *
      * @param origin Original federal curriculum
      */
-    public CrSimple(final Curriculum origin) {
+    public CrV1(final Curriculum origin) {
         this.origin = origin;
     }
 

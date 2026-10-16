@@ -6,6 +6,7 @@ package com.eshabakhov.schoodule.federal.curriculum.requirement;
 import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.Page;
+import com.eshabakhov.schoodule.PrItems;
 import com.eshabakhov.schoodule.ResultPage;
 import com.eshabakhov.schoodule.Sorts;
 import lombok.EqualsAndHashCode;
@@ -18,13 +19,19 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public final class RqsSelected implements Requirements {
 
-    /** Complete collection. */
+    /**
+     * Complete collection.
+     */
     private final Requirements origin;
 
-    /** Selected requirements. */
+    /**
+     * Selected requirements.
+     */
     private final Iterable<Requirement> items;
 
-    /** Selection pagination. */
+    /**
+     * Selection pagination.
+     */
     private final ResultPage page;
 
     /**
@@ -75,7 +82,8 @@ public final class RqsSelected implements Requirements {
 
     @Override
     public <T> Media<T> print(final Media<T> media) throws Exception {
-        return media.with("items", this.items).with("page", this.page);
+        return media.with(new PrItems("requirement", this.items))
+            .with("page", this.page);
     }
 
     @Override
