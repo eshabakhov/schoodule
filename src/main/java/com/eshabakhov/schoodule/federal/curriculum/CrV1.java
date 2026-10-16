@@ -7,11 +7,11 @@ import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.Requirements;
 
 /**
- * Full implementation of {@link Curriculum}.
+ * Version 1 implementation of {@link Curriculum}.
  *
  * @since 0.0.1
  */
-public final class CrFull implements Curriculum {
+public final class CrV1 implements Curriculum {
 
     /**
      * Original federal curriculum.
@@ -19,11 +19,11 @@ public final class CrFull implements Curriculum {
     private final Curriculum origin;
 
     /**
-     * Creates a Full curriculum.
+     * Creates a version 1 curriculum.
      *
      * @param origin Original federal curriculum
      */
-    public CrFull(final Curriculum origin) {
+    public CrV1(final Curriculum origin) {
         this.origin = origin;
     }
 
@@ -35,7 +35,7 @@ public final class CrFull implements Curriculum {
     @Override
     public <T> Media<T> print(final Media<T> media) throws Exception {
         return this.origin.print(media).include(
-            "id", "title", "level", "week", "version", "year", "description"
+            "id", "title", "level", "week", "version", "year"
         );
     }
 

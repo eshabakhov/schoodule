@@ -3,10 +3,6 @@
  */
 package com.eshabakhov.schoodule.config;
 
-import com.eshabakhov.schoodule.filter.FiltersArgumentResolver;
-import com.eshabakhov.schoodule.header.HeaderArgumentResolver;
-import com.eshabakhov.schoodule.page.PageArgumentResolver;
-import com.eshabakhov.schoodule.sort.SortsArgumentResolver;
 import java.util.List;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -20,52 +16,21 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration(proxyBeanMethods = false)
 public final class WebMvcConfig implements WebMvcConfigurer {
 
-    /**
-     * Page argument resolver.
-     */
-    private final PageArgumentResolver page;
-
-    /**
-     * Filters argument resolver.
-     */
-    private final FiltersArgumentResolver filters;
-
-    /**
-     * Sorts argument resolver.
-     */
-    private final SortsArgumentResolver sorts;
-
-    /**
-     * Representation header argument resolver.
-     */
-    private final HeaderArgumentResolver header;
+    /** Argument resolvers. */
+    private final List<HandlerMethodArgumentResolver> arguments;
 
     /**
      * Ctor.
      *
-     * @param page Page argument resolver
-     * @param filters Filters argument resolver
-     * @param sorts Sorts argument resolver
-     * @param header Representation header argument resolver
+     * @param arguments Argument resolvers
      * @since 0.0.1
      */
-    public WebMvcConfig(
-        final PageArgumentResolver page,
-        final FiltersArgumentResolver filters,
-        final SortsArgumentResolver sorts,
-        final HeaderArgumentResolver header
-    ) {
-        this.page = page;
-        this.filters = filters;
-        this.sorts = sorts;
-        this.header = header;
+    public WebMvcConfig(final List<HandlerMethodArgumentResolver> arguments) {
+        this.arguments = arguments;
     }
 
     @Override
     public void addArgumentResolvers(final List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(this.page);
-        resolvers.add(this.filters);
-        resolvers.add(this.sorts);
-        resolvers.add(this.header);
+        resolvers.addAll(this.arguments);
     }
 }
