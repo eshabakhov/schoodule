@@ -5,20 +5,28 @@ package com.eshabakhov.schoodule.federal.curriculum.requirement;
 
 import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
-import com.eshabakhov.schoodule.Sort;
 import com.eshabakhov.schoodule.Sorts;
+import com.eshabakhov.schoodule.User;
+import com.eshabakhov.schoodule.federal.curriculum.CrWithRequirements;
 import com.eshabakhov.schoodule.federal.curriculum.CrsPostgres;
+import com.eshabakhov.schoodule.federal.curriculum.CrsSingle;
 import com.eshabakhov.schoodule.media.MdJson;
-import com.eshabakhov.schoodule.media.MdThymeleaf;
 import com.eshabakhov.schoodule.media.MdXml;
-import java.util.Locale;
-import java.util.Map;
+import com.eshabakhov.schoodule.media.MdXslt;
+import com.eshabakhov.schoodule.media.ScWeb;
+import com.eshabakhov.schoodule.media.XsClasspath;
+import com.eshabakhov.schoodule.school.SlsBrief;
+import com.eshabakhov.schoodule.school.SlsPostgres;
+import com.eshabakhov.schoodule.security.CsToken;
+import com.eshabakhov.schoodule.user.UrBrief;
 import java.util.Objects;
 import org.jooq.DSLContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,13 +37,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.ModelAndView;
-import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 
 /**
  * HTTP controller for federal curriculum requirements.
  *
  * @since 0.0.1
+ * @checkstyle ClassFanOutComplexityCheck (1000 lines)
  * @checkstyle ParameterNumberCheck (1000 lines)
  */
 @Controller
@@ -46,19 +53,14 @@ public class RqsHttp {
     /** JOOQ context. */
     private final DSLContext ctx;
 
-    /** Thymeleaf resolver. */
-    private final ThymeleafViewResolver views;
-
     /**
      * New controller.
      *
      * @param ctx JOOQ context
-     * @param views Thymeleaf resolver
      * @since 0.0.1
      */
-    public RqsHttp(final DSLContext ctx, final ThymeleafViewResolver views) {
+    public RqsHttp(final DSLContext ctx) {
         this.ctx = ctx;
-        this.views = views;
     }
 
     /**
@@ -96,30 +98,39 @@ public class RqsHttp {
             case String html when
                 html.contains(MediaType.TEXT_HTML_VALUE)
                     || html.contains(MediaType.ALL_VALUE) -> {
-                final ModelAndView view = selected.print(
-                    new CrsPostgres(this.ctx).curriculum(current).print(
-                        new MdThymeleaf(
-                            "federal-curriculums/requirements", ""
+                yield new ScWeb(
+                    new UrBrief(
+                        (User) SecurityContextHolder.getContext()
+                            .getAuthentication().getPrincipal()
+                    ),
+                    new SlsBrief(new SlsPostgres(this.ctx)),
+                    new CsToken(
+                        (CsrfToken) servlet.getRequest().getAttribute(
+                            CsrfToken.class.getName()
                         )
                     )
-                ).title("Требования: %s").attributes(
-                    RqsHttp.requirementsModel(current, sorts)
-                ).print();
-                Objects.requireNonNull(
-                    this.views.resolveViewName(
-                        view.getViewName(), servlet.getRequest().getLocale()
+                ).print(
+                    new MdXslt(
+                        new MdXml("schoodule"),
+                        new XsClasspath(
+                            "xslt/federal-curriculums.xsl", "requirements"
+                        )
                     )
-                ).render(
-                    view.getModel(),
-                    servlet.getRequest(),
-                    Objects.requireNonNull(servlet.getResponse())
-                );
-                yield null;
+                ).with(
+                    "curriculums",
+                    new CrsSingle(
+                        new CrsPostgres(this.ctx),
+                        new CrWithRequirements(
+                            new CrsPostgres(this.ctx).curriculum(current),
+                            new RqsWeb(selected, filters, sorts)
+                        )
+                    )
+                ).print();
             }
             case "application/vnd.schoodule.federal-curriculum-requirements.v1+json" ->
                 selected.print(new MdJson()).print();
             case "application/vnd.schoodule.federal-curriculum-requirements.v1+xml" ->
-                selected.print(new MdXml()).print();
+                selected.print(new MdXml("requirements")).print();
             default -> throw new ResponseStatusException(
                 HttpStatus.NOT_ACCEPTABLE,
                 "Unsupported Accept header"
@@ -154,25 +165,41 @@ public class RqsHttp {
             case String html when
                 html.contains(MediaType.TEXT_HTML_VALUE)
                     || html.contains(MediaType.ALL_VALUE) -> {
-                final ModelAndView view = new RqsPostgres(this.ctx, current)
-                    .selection(filters, page, sorts).print(
-                        new MdThymeleaf(
-                            "federal-curriculums/requirements :: requirements-results",
-                            ""
+                yield new ScWeb(
+                    new UrBrief(
+                        (User) SecurityContextHolder.getContext()
+                            .getAuthentication().getPrincipal()
+                    ),
+                    new SlsBrief(new SlsPostgres(this.ctx)),
+                    new CsToken(
+                        (CsrfToken) servlet.getRequest().getAttribute(
+                            CsrfToken.class.getName()
                         )
-                    ).attributes(
-                        RqsHttp.requirementsModel(current, sorts)
-                    ).print();
-                Objects.requireNonNull(
-                    this.views.resolveViewName(
-                        view.getViewName(), servlet.getRequest().getLocale()
                     )
-                ).render(
-                    view.getModel(),
-                    servlet.getRequest(),
-                    Objects.requireNonNull(servlet.getResponse())
-                );
-                yield null;
+                ).print(
+                    new MdXslt(
+                        new MdXml("schoodule"),
+                        new XsClasspath(
+                            "xslt/federal-curriculums.xsl",
+                            "requirements-fragment"
+                        )
+                    )
+                ).with(
+                    "curriculums",
+                    new CrsSingle(
+                        new CrsPostgres(this.ctx),
+                        new CrWithRequirements(
+                            new CrsPostgres(this.ctx).curriculum(current),
+                            new RqsWeb(
+                                new RqsPostgres(this.ctx, current).selection(
+                                    filters, page, sorts
+                                ),
+                                filters,
+                                sorts
+                            )
+                        )
+                    )
+                ).print();
             }
             default -> throw new ResponseStatusException(
                 HttpStatus.NOT_ACCEPTABLE,
@@ -220,7 +247,7 @@ public class RqsHttp {
                     .equals(xml) -> new RqSimple(
                         new RqsPostgres(this.ctx, current)
                             .requirement(requirement)
-                    ).print(new MdXml()).print();
+                    ).print(new MdXml("requirement")).print();
             default -> throw new ResponseStatusException(
                 HttpStatus.NOT_ACCEPTABLE,
                 "Unsupported Accept header"
@@ -325,40 +352,5 @@ public class RqsHttp {
                 "Unsupported Accept header"
             );
         };
-    }
-
-    private static Map<String, Object> requirementsModel(
-        final long curriculum,
-        final Sorts sorts
-    ) {
-        String grade = "";
-        String subject = "";
-        String hours = "";
-        String part = "";
-        for (final Sort item : sorts.sorts()) {
-            final String direction;
-            if (Sort.Direction.NONE.equals(item.direction())) {
-                direction = "";
-            } else {
-                direction = item.direction().name().toLowerCase(Locale.ROOT);
-            }
-            if ("grade".equals(item.name())) {
-                grade = direction;
-            } else if ("subject".equals(item.name())) {
-                subject = direction;
-            } else if ("hours".equals(item.name())) {
-                hours = direction;
-            } else if ("part".equals(item.name())) {
-                part = direction;
-            }
-        }
-        return Map.ofEntries(
-            Map.entry("id", curriculum),
-            Map.entry("partTypes", Requirement.PartType.values()),
-            Map.entry("gradeSort", grade),
-            Map.entry("subjectSort", subject),
-            Map.entry("hoursSort", hours),
-            Map.entry("partSort", part)
-        );
     }
 }

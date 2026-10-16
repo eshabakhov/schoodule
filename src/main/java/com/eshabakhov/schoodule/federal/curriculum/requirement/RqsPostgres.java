@@ -6,6 +6,7 @@ package com.eshabakhov.schoodule.federal.curriculum.requirement;
 import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.Page;
+import com.eshabakhov.schoodule.PrItems;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.enums.CurriculumPartType;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlsCdRequirement;
@@ -156,7 +157,7 @@ public final class RqsPostgres implements Requirements {
 
     @Override
     public <T> Media<T> print(final Media<T> media) throws Exception {
-        return media.with("items", this.iterate());
+        return media.with(new PrItems("requirement", this.iterate()));
     }
 
     @Override

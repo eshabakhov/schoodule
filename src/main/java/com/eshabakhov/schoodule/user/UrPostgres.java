@@ -3,6 +3,7 @@
  */
 package com.eshabakhov.schoodule.user;
 
+import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.User;
 import org.jooq.DSLContext;
 
@@ -56,5 +57,13 @@ public final class UrPostgres implements User {
             .list()
             .stream()
             .anyMatch(role -> "ADMIN".equalsIgnoreCase(role.name()));
+    }
+
+    @Override
+    public <T> Media<T> print(final Media<T> media) {
+        return media
+            .with("id", this.uid())
+            .with("username", this.credentials().username())
+            .with("admin", this.isAdmin());
     }
 }

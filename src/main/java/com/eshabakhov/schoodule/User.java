@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @since 0.0.1
  */
-public interface User {
+public interface User extends Printable {
 
     /**
      * User unique identifier.

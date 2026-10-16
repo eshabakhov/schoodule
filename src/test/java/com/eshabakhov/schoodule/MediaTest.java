@@ -6,12 +6,11 @@ package com.eshabakhov.schoodule;
 import com.eshabakhov.schoodule.media.MdJson;
 import com.eshabakhov.schoodule.media.MdThymeleaf;
 import com.eshabakhov.schoodule.media.MdXml;
+import com.eshabakhov.schoodule.media.MdXslt;
+import com.eshabakhov.schoodule.media.XsClasspath;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.io.StringWriter;
+import java.util.List;
 import java.util.Map;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.ModelAndView;
@@ -44,17 +43,26 @@ final class MediaTest {
 
     @Test
     void printsSelectedXmlFields() throws Exception {
-        final Source printed = new MdXml().include("id")
+        final String printed = new MdXml("curriculum").include("id")
             .with("id", 1L)
             .with("description", "Hidden")
             .print();
-        final StringWriter output = new StringWriter();
-        TransformerFactory.newInstance().newTransformer().transform(
-            printed,
-            new StreamResult(output)
+        Assertions.assertTrue(printed.startsWith("<curriculum>"));
+        Assertions.assertFalse(printed.contains("response"));
+        Assertions.assertTrue(printed.contains("<id>1</id>"));
+        Assertions.assertFalse(printed.contains("description"));
+    }
+
+    @Test
+    void printsCollectionItemsUnderInterfaceName() throws Exception {
+        Assertions.assertEquals(
+            "<curriculums><curriculum><id>1</id></curriculum></curriculums>",
+            new MdXml("curriculums").with(
+                new PrItems(
+                    "curriculum", List.of(new MediaTest.PrId())
+                )
+            ).print()
         );
-        Assertions.assertTrue(output.toString().contains("<id>1</id>"));
-        Assertions.assertFalse(output.toString().contains("description"));
     }
 
     @Test
@@ -70,5 +78,26 @@ final class MediaTest {
             1L,
             ((Map<?, ?>) printed.getModel().get("curriculum")).get("id")
         );
+    }
+
+    @Test
+    void transformsXmlIntoHtml() {
+        final String printed = new MdXslt(
+            new MdXml("schoodule"),
+            new XsClasspath("xslt/federal-curriculums.xsl", "list")
+        ).print();
+        Assertions.assertTrue(
+            printed.contains("id=\"federal-curriculums-results\"")
+        );
+        Assertions.assertTrue(printed.contains("/js/federal-curriculums.js"));
+    }
+
+    /** Printable identifier. */
+    private static final class PrId implements Printable {
+
+        @Override
+        public <T> Media<T> print(final Media<T> media) {
+            return media.with("id", 1L);
+        }
     }
 }

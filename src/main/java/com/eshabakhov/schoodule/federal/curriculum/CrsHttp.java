@@ -6,16 +6,22 @@ package com.eshabakhov.schoodule.federal.curriculum;
 import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.Sorts;
+import com.eshabakhov.schoodule.User;
 import com.eshabakhov.schoodule.media.MdJson;
-import com.eshabakhov.schoodule.media.MdThymeleaf;
 import com.eshabakhov.schoodule.media.MdXml;
+import com.eshabakhov.schoodule.media.MdXslt;
+import com.eshabakhov.schoodule.media.ScWeb;
+import com.eshabakhov.schoodule.media.XsClasspath;
+import com.eshabakhov.schoodule.school.SlsBrief;
+import com.eshabakhov.schoodule.school.SlsPostgres;
+import com.eshabakhov.schoodule.security.CsToken;
+import com.eshabakhov.schoodule.user.UrBrief;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.jooq.DSLContext;
@@ -23,6 +29,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,8 +44,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.HandlerMapping;
-import org.springframework.web.servlet.ModelAndView;
-import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 
 /**
  * HTTP controller for federal curriculums.
@@ -52,22 +58,21 @@ import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 @PreAuthorize("hasRole('ADMIN')")
 public class CrsHttp {
 
+    /** JOOQ context. */
+    private final DSLContext ctx;
+
     /** Origin curriculums. */
     private final Curriculums origin;
-
-    /** Thymeleaf resolver. */
-    private final ThymeleafViewResolver views;
 
     /**
      * New controller.
      *
      * @param ctx JOOQ context
-     * @param views Thymeleaf resolver
      * @since 0.0.1
      */
-    public CrsHttp(final DSLContext ctx, final ThymeleafViewResolver views) {
+    public CrsHttp(final DSLContext ctx) {
+        this.ctx = ctx;
         this.origin = new CrsPostgres(ctx);
-        this.views = views;
     }
 
     /**
@@ -165,7 +170,9 @@ public class CrsHttp {
                         "/federal/curriculums/%d", created.uid()
                     )
                 );
-                yield new CrV1(created).print(new MdXml()).print();
+                yield new CrV1(created).print(
+                    new MdXml("curriculum")
+                ).print();
             }
             case "application/vnd.schoodule.federal-curriculum-v2+xml" -> {
                 response.setStatus(HttpStatus.CREATED.value());
@@ -175,7 +182,9 @@ public class CrsHttp {
                         "/federal/curriculums/%d", created.uid()
                     )
                 );
-                yield new CrV2(created).print(new MdXml()).print();
+                yield new CrV2(created).print(
+                    new MdXml("curriculum")
+                ).print();
             }
             default -> throw new ResponseStatusException(
                 HttpStatus.NOT_ACCEPTABLE,
@@ -214,6 +223,19 @@ public class CrsHttp {
         final Curriculum selected = this.origin.curriculum(curriculum);
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();
+        final String view;
+        if (
+            Objects.toString(
+                servlet.getRequest().getAttribute(
+                    HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE
+                ),
+                ""
+            ).endsWith("/{curriculum}/edit")
+        ) {
+            view = "edit";
+        } else {
+            view = "details";
+        }
         return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
             case null -> throw new ResponseStatusException(
                 HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
@@ -221,54 +243,41 @@ public class CrsHttp {
             case String html when
                 html.contains(MediaType.TEXT_HTML_VALUE)
                     || html.contains(MediaType.ALL_VALUE) -> {
-                final String pattern = Objects.toString(
-                    servlet.getRequest().getAttribute(
-                        HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE
+                yield new ScWeb(
+                    new UrBrief(
+                        (User) SecurityContextHolder.getContext()
+                            .getAuthentication().getPrincipal()
                     ),
-                    ""
-                );
-                final ModelAndView view;
-                if (pattern.endsWith("/{curriculum}/edit")) {
-                    view = selected.print(
-                        new MdThymeleaf(
-                            "federal-curriculums/edit", ""
-                        ).attributes(
-                            Map.of(
-                                "pageTitle",
-                                "Редактировать федеральный учебный план",
-                                "levels",
-                                Curriculum.Level.values(),
-                                "studyWeeks",
-                                Curriculum.Week.values()
-                            )
+                    new SlsBrief(new SlsPostgres(this.ctx)),
+                    new CsToken(
+                        (CsrfToken) servlet.getRequest().getAttribute(
+                            CsrfToken.class.getName()
                         )
-                    ).print();
-                } else {
-                    view = selected.print(
-                        new MdThymeleaf(
-                            "federal-curriculums/details", "curriculum"
-                        )
-                    ).print();
-                }
-                Objects.requireNonNull(
-                    this.views.resolveViewName(
-                        view.getViewName(), servlet.getRequest().getLocale()
                     )
-                ).render(
-                    view.getModel(),
-                    servlet.getRequest(),
-                    Objects.requireNonNull(servlet.getResponse())
-                );
-                yield null;
+                ).print(
+                    new MdXslt(
+                        new MdXml("schoodule"),
+                        new XsClasspath(
+                            "xslt/federal-curriculums.xsl",
+                            view
+                        )
+                    )
+                ).with(
+                    "curriculums", new CrsSingle(this.origin, selected)
+                ).print();
             }
             case "application/vnd.schoodule.federal-curriculum-v1+json" ->
                 new CrV1(selected).print(new MdJson()).print();
             case "application/vnd.schoodule.federal-curriculum-v2+json" ->
                 new CrV2(selected).print(new MdJson()).print();
             case "application/vnd.schoodule.federal-curriculum-v1+xml" ->
-                new CrV1(selected).print(new MdXml()).print();
+                new CrV1(selected).print(
+                    new MdXml("curriculum")
+                ).print();
             case "application/vnd.schoodule.federal-curriculum-v2+xml" ->
-                new CrV2(selected).print(new MdXml()).print();
+                new CrV2(selected).print(
+                    new MdXml("curriculum")
+                ).print();
             default -> throw new ResponseStatusException(
                 HttpStatus.NOT_ACCEPTABLE,
                 "Unsupported Accept header"
@@ -349,9 +358,13 @@ public class CrsHttp {
             case "application/vnd.schoodule.federal-curriculum-v2+json" ->
                 new CrV2(revised).print(new MdJson()).print();
             case "application/vnd.schoodule.federal-curriculum-v1+xml" ->
-                new CrV1(revised).print(new MdXml()).print();
+                new CrV1(revised).print(
+                    new MdXml("curriculum")
+                ).print();
             case "application/vnd.schoodule.federal-curriculum-v2+xml" ->
-                new CrV2(revised).print(new MdXml()).print();
+                new CrV2(revised).print(
+                    new MdXml("curriculum")
+                ).print();
             default -> throw new ResponseStatusException(
                 HttpStatus.NOT_ACCEPTABLE,
                 "Unsupported Accept header"
@@ -393,6 +406,20 @@ public class CrsHttp {
         );
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();
+        final String pattern = Objects.toString(
+            servlet.getRequest().getAttribute(
+                HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE
+            ),
+            ""
+        );
+        final String view;
+        if (pattern.endsWith("/fragment")) {
+            view = "list-fragment";
+        } else if (pattern.endsWith("/create")) {
+            view = "create";
+        } else {
+            view = "list";
+        }
         return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
             case null -> throw new ResponseStatusException(
                 HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
@@ -400,57 +427,33 @@ public class CrsHttp {
             case String html when
                 html.contains(MediaType.TEXT_HTML_VALUE)
                     || html.contains(MediaType.ALL_VALUE) -> {
-                final String pattern = Objects.toString(
-                    servlet.getRequest().getAttribute(
-                        HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE
+                yield new ScWeb(
+                    new UrBrief(
+                        (User) SecurityContextHolder.getContext()
+                            .getAuthentication().getPrincipal()
                     ),
-                    ""
-                );
-                final ModelAndView view;
-                if (pattern.endsWith("/fragment")) {
-                    view = selected.print(
-                        new MdThymeleaf(
-                            "federal-curriculums/list :: curriculums-grid",
-                            ""
+                    new SlsBrief(new SlsPostgres(this.ctx)),
+                    new CsToken(
+                        (CsrfToken) servlet.getRequest().getAttribute(
+                            CsrfToken.class.getName()
                         )
-                    ).print();
-                } else if (pattern.endsWith("/create")) {
-                    view = selected.print(
-                        new MdThymeleaf(
-                            "federal-curriculums/create", ""
-                        ).attributes(
-                            Map.of(
-                                "pageTitle",
-                                "Новый федеральный учебный план",
-                                "levels",
-                                Curriculum.Level.values(),
-                                "studyWeeks",
-                                Curriculum.Week.values()
-                            )
-                        )
-                    ).print();
-                } else {
-                    view = selected.print(
-                        new MdThymeleaf(
-                            "federal-curriculums/list", ""
-                        )
-                    ).print();
-                }
-                Objects.requireNonNull(
-                    this.views.resolveViewName(
-                        view.getViewName(), servlet.getRequest().getLocale()
                     )
-                ).render(
-                    view.getModel(),
-                    servlet.getRequest(),
-                    Objects.requireNonNull(servlet.getResponse())
-                );
-                yield null;
+                ).print(
+                    new MdXslt(
+                        new MdXml("schoodule"),
+                        new XsClasspath(
+                            "xslt/federal-curriculums.xsl",
+                            view
+                        )
+                    )
+                ).with(
+                    "curriculums", new CrsWeb(selected, filters)
+                ).print();
             }
             case "application/vnd.schoodule.federal-curriculums.v1+json" ->
                 selected.print(new MdJson()).print();
             case "application/vnd.schoodule.federal-curriculums.v1+xml" ->
-                selected.print(new MdXml()).print();
+                selected.print(new MdXml("curriculums")).print();
             default -> throw new ResponseStatusException(
                 HttpStatus.NOT_ACCEPTABLE,
                 "Unsupported Accept header"

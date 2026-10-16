@@ -12,6 +12,7 @@ import java.util.Map;
  * @param <T> Printed representation type
  * @since 0.0.1
  */
+@SuppressWarnings("PMD.TooManyMethods")
 public interface Media<T> {
 
     /**
@@ -51,14 +52,23 @@ public interface Media<T> {
     Media<T> with(String name, Boolean value);
 
     /**
-     * Adds printable values to the media.
+     * Adds a printable object to the media.
      *
      * @param name Field name
-     * @param values Printable values
+     * @param value Printable object
      * @return Updated media
+     * @throws Exception If the object cannot be printed
      */
-    Media<T> with(String name, Iterable<? extends Printable> values)
-        throws Exception;
+    Media<T> with(String name, Printable value) throws Exception;
+
+    /**
+     * Adds a printable object to the current media level.
+     *
+     * @param value Printable object
+     * @return Updated media
+     * @throws Exception If the object cannot be printed
+     */
+    Media<T> with(Printable value) throws Exception;
 
     /**
      * Adds result pagination to the media.

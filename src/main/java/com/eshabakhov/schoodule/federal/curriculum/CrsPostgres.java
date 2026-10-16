@@ -6,6 +6,7 @@ package com.eshabakhov.schoodule.federal.curriculum;
 import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.Page;
+import com.eshabakhov.schoodule.PrItems;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.enums.EducationLevelType;
 import com.eshabakhov.schoodule.enums.StudyWeekType;
@@ -160,7 +161,7 @@ public final class CrsPostgres implements Curriculums {
 
     @Override
     public <T> Media<T> print(final Media<T> media) throws Exception {
-        return media.with("items", this.iterate());
+        return media.with(new PrItems("curriculum", this.iterate()));
     }
 
     @Override
