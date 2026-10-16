@@ -240,7 +240,7 @@ public class CrsHttp {
                     new MdXslt(
                         new MdXml("schoodule"),
                         new XsClasspath(
-                            "xslt/federal-curriculums.xsl",
+                            "xslt/federal-curriculum.xsl",
                             switch (
                                 servlet.getRequest().getRequestURI()
                             ) {

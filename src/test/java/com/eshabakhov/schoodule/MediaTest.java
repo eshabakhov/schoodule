@@ -92,6 +92,37 @@ final class MediaTest {
         Assertions.assertTrue(printed.contains("/js/federal-curriculums.js"));
     }
 
+    @Test
+    void transformsCurriculumXmlIntoHtml() {
+        final String printed = new XsClasspath(
+            "xslt/federal-curriculum.xsl", "details"
+        ).transform(
+            """
+            <schoodule><curriculums><curriculum><id>1</id>
+            <title>Plan</title></curriculum></curriculums></schoodule>
+            """
+        );
+        Assertions.assertTrue(printed.contains("class=\"school-info\""));
+        Assertions.assertTrue(printed.contains("/js/federal-curriculums.js"));
+    }
+
+    @Test
+    void transformsRequirementsXmlIntoHtml() {
+        final String printed = new XsClasspath(
+            "xslt/federal-curriculum-requirements.xsl", "list"
+        ).transform(
+            """
+            <schoodule><curriculums><curriculum><id>1</id>
+            <title>Plan</title><requirements/></curriculum>
+            </curriculums></schoodule>
+            """
+        );
+        Assertions.assertTrue(printed.contains("id=\"req-results\""));
+        Assertions.assertTrue(
+            printed.contains("/js/federal-curriculum-details.js")
+        );
+    }
+
     /** Printable identifier. */
     private static final class PrId implements Printable {
 
