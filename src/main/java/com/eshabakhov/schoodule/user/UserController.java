@@ -245,11 +245,11 @@ public class UserController {
             .identification(user)
             .roles().grant(
                 switch (rolenode.asText()) {
-                    case null -> Roles.RoleEnum.STUDENT;
                     case "ADMIN" -> Roles.RoleEnum.ADMIN;
                     case "DIRECTOR" -> Roles.RoleEnum.DIRECTOR;
                     case "DEPUTY_DIRECTOR" -> Roles.RoleEnum.DEPUTY_DIRECTOR;
                     case "TEACHER" -> Roles.RoleEnum.TEACHER;
+                    case null -> Roles.RoleEnum.STUDENT;
                     default -> Roles.RoleEnum.STUDENT;
                 }
             );

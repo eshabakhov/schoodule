@@ -14,6 +14,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 /**
  * Classpath XSLT transformation.
@@ -42,14 +43,15 @@ public final class XsClasspath implements Xslt {
     @Override
     public String transform(final String xml) {
         final TransformerFactory factory = TransformerFactory.newInstance();
+        final Resource located = new ClassPathResource(this.resource);
         try {
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+            factory.setURIResolver(new XsClasspathResolver(located));
             final StringWriter output = new StringWriter();
             try (
-                InputStream input = new ClassPathResource(this.resource)
-                    .getInputStream();
+                InputStream input = located.getInputStream();
                 StringReader source = new StringReader(xml)
             ) {
                 final StreamSource stylesheet = new StreamSource(input);

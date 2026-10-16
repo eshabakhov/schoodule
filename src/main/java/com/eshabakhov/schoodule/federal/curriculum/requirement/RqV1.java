@@ -6,23 +6,21 @@ package com.eshabakhov.schoodule.federal.curriculum.requirement;
 import com.eshabakhov.schoodule.Media;
 
 /**
- * Simple implementation of {@link Requirement}.
+ * Version 1 implementation of {@link Requirement}.
  *
  * @since 0.0.1
  */
-public final class RqSimple implements Requirement {
+public final class RqV1 implements Requirement {
 
-    /**
-     * Original federal curriculum requirement.
-     */
+    /** Original federal curriculum requirement. */
     private final Requirement origin;
 
     /**
-     * Creates a Postgres-backed requirement.
+     * New version 1 requirement.
      *
      * @param origin Original federal curriculum requirement
      */
-    public RqSimple(final Requirement origin) {
+    public RqV1(final Requirement origin) {
         this.origin = origin;
     }
 

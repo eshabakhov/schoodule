@@ -43,13 +43,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.HandlerMapping;
 
 /**
  * HTTP controller for federal curriculums.
  *
  * @since 0.0.1
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
+ * @checkstyle CyclomaticComplexityCheck (1000 lines)
+ * @checkstyle NestedSwitchCheck (1000 lines)
  * @checkstyle ParameterNumberCheck (1000 lines)
  */
 @Controller
@@ -129,12 +130,8 @@ public class CrsHttp {
             servlet.getResponse()
         );
         return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
-            case String html when
-                html.contains(MediaType.TEXT_HTML_VALUE)
-                    || html.contains(MediaType.ALL_VALUE) -> {
+            case String html when html.contains(MediaType.TEXT_HTML_VALUE)
+                || html.contains(MediaType.ALL_VALUE) -> {
                 response.sendRedirect(
                     String.format(
                         "/federal/curriculums/%d", created.uid()
@@ -186,6 +183,9 @@ public class CrsHttp {
                     new MdXml("curriculum")
                 ).print();
             }
+            case null -> throw new ResponseStatusException(
+                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
+            );
             default -> throw new ResponseStatusException(
                 HttpStatus.NOT_ACCEPTABLE,
                 "Unsupported Accept header"
@@ -223,27 +223,9 @@ public class CrsHttp {
         final Curriculum selected = this.origin.curriculum(curriculum);
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();
-        final String view;
-        if (
-            Objects.toString(
-                servlet.getRequest().getAttribute(
-                    HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE
-                ),
-                ""
-            ).endsWith("/{curriculum}/edit")
-        ) {
-            view = "edit";
-        } else {
-            view = "details";
-        }
         return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
-            case String html when
-                html.contains(MediaType.TEXT_HTML_VALUE)
-                    || html.contains(MediaType.ALL_VALUE) -> {
-                yield new ScWeb(
+            case String html when html.contains(MediaType.TEXT_HTML_VALUE)
+                || html.contains(MediaType.ALL_VALUE) -> new ScWeb(
                     new UrBrief(
                         (User) SecurityContextHolder.getContext()
                             .getAuthentication().getPrincipal()
@@ -258,14 +240,20 @@ public class CrsHttp {
                     new MdXslt(
                         new MdXml("schoodule"),
                         new XsClasspath(
-                            "xslt/federal-curriculums.xsl",
-                            view
+                            "xslt/federal-curriculum.xsl",
+                            switch (
+                                servlet.getRequest().getRequestURI()
+                            ) {
+                                case String uri when
+                                    uri.endsWith("/edit") -> "edit";
+                                case null -> "details";
+                                default -> "details";
+                            }
                         )
                     )
                 ).with(
                     "curriculums", new CrsSingle(this.origin, selected)
                 ).print();
-            }
             case "application/vnd.schoodule.federal-curriculum-v1+json" ->
                 new CrV1(selected).print(new MdJson()).print();
             case "application/vnd.schoodule.federal-curriculum-v2+json" ->
@@ -278,9 +266,11 @@ public class CrsHttp {
                 new CrV2(selected).print(
                     new MdXml("curriculum")
                 ).print();
+            case null -> throw new ResponseStatusException(
+                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
+            );
             default -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE,
-                "Unsupported Accept header"
+                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
             );
         };
     }
@@ -340,12 +330,8 @@ public class CrsHttp {
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();
         return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
-            case String html when
-                html.contains(MediaType.TEXT_HTML_VALUE)
-                    || html.contains(MediaType.ALL_VALUE) -> {
+            case String html when html.contains(MediaType.TEXT_HTML_VALUE)
+                || html.contains(MediaType.ALL_VALUE) -> {
                 Objects.requireNonNull(servlet.getResponse()).sendRedirect(
                     String.format(
                         "/federal/curriculums/%d", revised.uid()
@@ -365,9 +351,11 @@ public class CrsHttp {
                 new CrV2(revised).print(
                     new MdXml("curriculum")
                 ).print();
+            case null -> throw new ResponseStatusException(
+                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
+            );
             default -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE,
-                "Unsupported Accept header"
+                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
             );
         };
     }
@@ -401,33 +389,12 @@ public class CrsHttp {
         final Page page,
         final Sorts sorts
     ) throws Exception {
-        final Curriculums selected = this.origin.selection(
-            filters, page, sorts
-        );
+        final Curriculums selected = this.origin.selection(filters, page, sorts);
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();
-        final String pattern = Objects.toString(
-            servlet.getRequest().getAttribute(
-                HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE
-            ),
-            ""
-        );
-        final String view;
-        if (pattern.endsWith("/fragment")) {
-            view = "list-fragment";
-        } else if (pattern.endsWith("/create")) {
-            view = "create";
-        } else {
-            view = "list";
-        }
         return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
-            case String html when
-                html.contains(MediaType.TEXT_HTML_VALUE)
-                    || html.contains(MediaType.ALL_VALUE) -> {
-                yield new ScWeb(
+            case String html when html.contains(MediaType.TEXT_HTML_VALUE)
+                || html.contains(MediaType.ALL_VALUE) -> new ScWeb(
                     new UrBrief(
                         (User) SecurityContextHolder.getContext()
                             .getAuthentication().getPrincipal()
@@ -443,20 +410,26 @@ public class CrsHttp {
                         new MdXml("schoodule"),
                         new XsClasspath(
                             "xslt/federal-curriculums.xsl",
-                            view
+                            switch (servlet.getRequest().getRequestURI()) {
+                                case String uri when uri.endsWith("/fragment") -> "list-fragment";
+                                case String uri when uri.endsWith("/create") -> "create";
+                                case null -> "list";
+                                default -> "list";
+                            }
                         )
                     )
                 ).with(
                     "curriculums", new CrsWeb(selected, filters)
                 ).print();
-            }
             case "application/vnd.schoodule.federal-curriculums.v1+json" ->
                 selected.print(new MdJson()).print();
             case "application/vnd.schoodule.federal-curriculums.v1+xml" ->
                 selected.print(new MdXml("curriculums")).print();
+            case null -> throw new ResponseStatusException(
+                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
+            );
             default -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE,
-                "Unsupported Accept header"
+                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
             );
         };
     }
@@ -475,9 +448,7 @@ public class CrsHttp {
         description = "Federal curriculum removed"
     )
     @ApiResponse(responseCode = "404", description = "Curriculum not found")
-    public void remove(
-        @PathVariable(name = "curriculum") final long id
-    ) throws Exception {
+    public void remove(@PathVariable(name = "curriculum") final long id) throws Exception {
         this.origin.remove(id);
     }
 }

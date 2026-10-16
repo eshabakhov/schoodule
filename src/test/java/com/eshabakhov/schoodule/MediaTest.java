@@ -68,15 +68,15 @@ final class MediaTest {
     @Test
     void printsThymeleafView() {
         final ModelAndView printed = new MdThymeleaf(
-            "federal-curriculums/details", "curriculum"
+            "schools/details", "school"
         ).with("id", 1L).print();
         Assertions.assertEquals(
-            "federal-curriculums/details",
+            "schools/details",
             printed.getViewName()
         );
         Assertions.assertEquals(
             1L,
-            ((Map<?, ?>) printed.getModel().get("curriculum")).get("id")
+            ((Map<?, ?>) printed.getModel().get("school")).get("id")
         );
     }
 
@@ -90,6 +90,37 @@ final class MediaTest {
             printed.contains("id=\"federal-curriculums-results\"")
         );
         Assertions.assertTrue(printed.contains("/js/federal-curriculums.js"));
+    }
+
+    @Test
+    void transformsCurriculumXmlIntoHtml() {
+        final String printed = new XsClasspath(
+            "xslt/federal-curriculum.xsl", "details"
+        ).transform(
+            """
+            <schoodule><curriculums><curriculum><id>1</id>
+            <title>Plan</title></curriculum></curriculums></schoodule>
+            """
+        );
+        Assertions.assertTrue(printed.contains("class=\"school-info\""));
+        Assertions.assertTrue(printed.contains("/js/federal-curriculums.js"));
+    }
+
+    @Test
+    void transformsRequirementsXmlIntoHtml() {
+        final String printed = new XsClasspath(
+            "xslt/federal-curriculum-requirements.xsl", "list"
+        ).transform(
+            """
+            <schoodule><curriculums><curriculum><id>1</id>
+            <title>Plan</title><requirements/></curriculum>
+            </curriculums></schoodule>
+            """
+        );
+        Assertions.assertTrue(printed.contains("id=\"req-results\""));
+        Assertions.assertTrue(
+            printed.contains("/js/federal-curriculum-details.js")
+        );
     }
 
     /** Printable identifier. */
