@@ -92,13 +92,8 @@ public class RqsHttp {
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();
         return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
-            case String html when
-                html.contains(MediaType.TEXT_HTML_VALUE)
-                    || html.contains(MediaType.ALL_VALUE) -> {
-                yield new ScWeb(
+            case String html when html.contains(MediaType.TEXT_HTML_VALUE)
+                || html.contains(MediaType.ALL_VALUE) -> new ScWeb(
                     new UrBrief(
                         (User) SecurityContextHolder.getContext()
                             .getAuthentication().getPrincipal()
@@ -126,14 +121,15 @@ public class RqsHttp {
                         )
                     )
                 ).print();
-            }
             case "application/vnd.schoodule.federal-curriculum-requirements.v1+json" ->
                 selected.print(new MdJson()).print();
             case "application/vnd.schoodule.federal-curriculum-requirements.v1+xml" ->
                 selected.print(new MdXml("requirements")).print();
+            case null -> throw new ResponseStatusException(
+                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
+            );
             default -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE,
-                "Unsupported Accept header"
+                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
             );
         };
     }
@@ -159,13 +155,8 @@ public class RqsHttp {
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();
         return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
-            case String html when
-                html.contains(MediaType.TEXT_HTML_VALUE)
-                    || html.contains(MediaType.ALL_VALUE) -> {
-                yield new ScWeb(
+            case String html when html.contains(MediaType.TEXT_HTML_VALUE)
+                || html.contains(MediaType.ALL_VALUE) -> new ScWeb(
                     new UrBrief(
                         (User) SecurityContextHolder.getContext()
                             .getAuthentication().getPrincipal()
@@ -200,10 +191,11 @@ public class RqsHttp {
                         )
                     )
                 ).print();
-            }
+            case null -> throw new ResponseStatusException(
+                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
+            );
             default -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE,
-                "Unsupported Accept header"
+                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
             );
         };
     }
@@ -233,9 +225,6 @@ public class RqsHttp {
                 .currentRequestAttributes()).getRequest()
                 .getHeader(HttpHeaders.ACCEPT)
         ) {
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
             case String json when
                 "application/vnd.schoodule.federal-curriculum-requirement.simple.v1+json"
                     .equals(json) -> new RqSimple(
@@ -248,9 +237,11 @@ public class RqsHttp {
                         new RqsPostgres(this.ctx, current)
                             .requirement(requirement)
                     ).print(new MdXml("requirement")).print();
+            case null -> throw new ResponseStatusException(
+                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
+            );
             default -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE,
-                "Unsupported Accept header"
+                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
             );
         };
     }
@@ -281,12 +272,8 @@ public class RqsHttp {
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();
         return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
-            case String html when
-                html.contains(MediaType.TEXT_HTML_VALUE)
-                    || html.contains(MediaType.ALL_VALUE) -> {
+            case String html when html.contains(MediaType.TEXT_HTML_VALUE)
+                || html.contains(MediaType.ALL_VALUE) -> {
                 Objects.requireNonNull(servlet.getResponse()).sendRedirect(
                     String.format(
                         "/federal/curriculums/%d/requirements", current
@@ -294,9 +281,11 @@ public class RqsHttp {
                 );
                 yield null;
             }
+            case null -> throw new ResponseStatusException(
+                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
+            );
             default -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE,
-                "Unsupported Accept header"
+                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
             );
         };
     }
@@ -334,12 +323,8 @@ public class RqsHttp {
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();
         return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
-            case String html when
-                html.contains(MediaType.TEXT_HTML_VALUE)
-                    || html.contains(MediaType.ALL_VALUE) -> {
+            case String html when html.contains(MediaType.TEXT_HTML_VALUE)
+                || html.contains(MediaType.ALL_VALUE) -> {
                 Objects.requireNonNull(servlet.getResponse()).sendRedirect(
                     String.format(
                         "/federal/curriculums/%d/requirements", current
@@ -347,9 +332,11 @@ public class RqsHttp {
                 );
                 yield null;
             }
+            case null -> throw new ResponseStatusException(
+                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
+            );
             default -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE,
-                "Unsupported Accept header"
+                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
             );
         };
     }
