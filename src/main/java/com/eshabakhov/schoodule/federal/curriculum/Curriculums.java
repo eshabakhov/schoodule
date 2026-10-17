@@ -18,24 +18,11 @@ public interface Curriculums extends Printable {
     /**
      * Creates a new federal curriculum.
      *
-     * @param title The federal curriculum title
-     * @param level The federal curriculum level
-     * @param week The federal curriculum week
-     * @param version The federal curriculum version
-     * @param year The federal curriculum year
-     * @param description The federal curriculum description
+     * @param input Federal curriculum input
      * @return The created {@link Curriculum}
      * @throws Exception if creation fails
-     * @checkstyle ParameterNumberCheck (2 lines)
      */
-    Curriculum create(
-        String title,
-        Curriculum.Level level,
-        Curriculum.Week week,
-        String version,
-        String year,
-        String description
-    ) throws Exception;
+    Curriculum create(CurriculumInput input) throws Exception;
 
     /**
      * Finds a federal curriculum by its unique identifier.
@@ -50,32 +37,15 @@ public interface Curriculums extends Printable {
      * Revises a federal curriculum.
      *
      * @param id The federal curriculum ID
-     * @param title The federal curriculum title
-     * @param level The federal curriculum level
-     * @param week The federal curriculum week
-     * @param version The federal curriculum version
-     * @param year The federal curriculum year
-     * @param description The federal curriculum description
+     * @param input Federal curriculum input
      * @return Revised federal curriculum
      * @throws Exception if revision fails
-     * @checkstyle ParameterNumberCheck (2 lines)
      */
     default Curriculum revise(
         final long id,
-        final String title,
-        final Curriculum.Level level,
-        final Curriculum.Week week,
-        final String version,
-        final String year,
-        final String description
+        final CurriculumInput input
     ) throws Exception {
-        return this.curriculum(id)
-            .retitled(title)
-            .releveled(level)
-            .reweeked(week)
-            .reversioned(version)
-            .reyeared(year)
-            .redescriptioned(description);
+        return this.curriculum(id).revise(input);
     }
 
     /**

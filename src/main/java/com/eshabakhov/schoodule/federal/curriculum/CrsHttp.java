@@ -7,6 +7,7 @@ import com.eshabakhov.schoodule.Filters;
 import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.User;
+import com.eshabakhov.schoodule.federal.curriculum.input.CrInputHttp;
 import com.eshabakhov.schoodule.media.MdJson;
 import com.eshabakhov.schoodule.media.MdXml;
 import com.eshabakhov.schoodule.media.MdXslt;
@@ -23,7 +24,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Objects;
-import java.util.Optional;
 import org.jooq.DSLContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -32,6 +32,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,7 +52,6 @@ import org.springframework.web.server.ResponseStatusException;
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
  * @checkstyle CyclomaticComplexityCheck (1000 lines)
  * @checkstyle NestedSwitchCheck (1000 lines)
- * @checkstyle ParameterNumberCheck (1000 lines)
  */
 @Controller
 @RequestMapping("/federal/curriculums")
@@ -79,12 +79,7 @@ public class CrsHttp {
     /**
      * Creates a federal curriculum.
      *
-     * @param title Title
-     * @param level Education level
-     * @param week Study week
-     * @param version Version
-     * @param year Academic year
-     * @param description Description
+     * @param parameters Curriculum input parameters
      * @return Printed representation
      * @throws Exception If creation fails
      */
@@ -109,20 +104,10 @@ public class CrsHttp {
         description = "HTML client redirected to the created curriculum"
     )
     public Object create(
-        @RequestParam final String title,
-        @RequestParam(name = "level") final Curriculum.Level level,
-        @RequestParam(name = "week") final Curriculum.Week week,
-        @RequestParam final String version,
-        @RequestParam(name = "year") final String year,
-        @RequestParam(required = false) final String description
+        @RequestParam final MultiValueMap<String, String> parameters
     ) throws Exception {
         final Curriculum created = this.origin.create(
-            title.trim(),
-            level,
-            week,
-            version.trim(),
-            year.trim(),
-            Optional.ofNullable(description).map(String::trim).orElse(null)
+            new CrInputHttp(parameters)
         );
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();
@@ -279,12 +264,7 @@ public class CrsHttp {
      * Updates a federal curriculum.
      *
      * @param curriculum Curriculum ID
-     * @param title Title
-     * @param level Education level
-     * @param week Study week
-     * @param version Version
-     * @param year Academic year
-     * @param description Description
+     * @param parameters Curriculum input parameters
      * @return Printed representation
      * @throws Exception If update fails
      */
@@ -311,21 +291,11 @@ public class CrsHttp {
     @ApiResponse(responseCode = "404", description = "Curriculum not found")
     public Object revise(
         @PathVariable final long curriculum,
-        @RequestParam final String title,
-        @RequestParam(name = "level") final Curriculum.Level level,
-        @RequestParam(name = "week") final Curriculum.Week week,
-        @RequestParam final String version,
-        @RequestParam(name = "year") final String year,
-        @RequestParam(required = false) final String description
+        @RequestParam final MultiValueMap<String, String> parameters
     ) throws Exception {
         final Curriculum revised = this.origin.revise(
             curriculum,
-            title.trim(),
-            level,
-            week,
-            version.trim(),
-            year.trim(),
-            Optional.ofNullable(description).map(String::trim).orElse(null)
+            new CrInputHttp(parameters)
         );
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();

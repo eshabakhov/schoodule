@@ -40,33 +40,8 @@ public final class CrV1 implements Curriculum {
     }
 
     @Override
-    public Curriculum retitled(final String title) {
-        return this.origin.retitled(title);
-    }
-
-    @Override
-    public Curriculum releveled(final Level level) {
-        return this.origin.releveled(level);
-    }
-
-    @Override
-    public Curriculum reweeked(final Week week) {
-        return this.origin.reweeked(week);
-    }
-
-    @Override
-    public Curriculum reversioned(final String version) {
-        return this.origin.reversioned(version);
-    }
-
-    @Override
-    public Curriculum reyeared(final String year) {
-        return this.origin.reyeared(year);
-    }
-
-    @Override
-    public Curriculum redescriptioned(final String description) {
-        return this.origin.redescriptioned(description);
+    public Curriculum revise(final CurriculumInput input) throws Exception {
+        return this.origin.revise(input);
     }
 
     @Override

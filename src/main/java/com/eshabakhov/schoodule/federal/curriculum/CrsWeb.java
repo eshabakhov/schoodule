@@ -35,17 +35,8 @@ public final class CrsWeb implements Curriculums {
     }
 
     @Override
-    public Curriculum create(
-        final String title,
-        final Curriculum.Level level,
-        final Curriculum.Week week,
-        final String version,
-        final String year,
-        final String description
-    ) throws Exception {
-        return this.origin.create(
-            title, level, week, version, year, description
-        );
+    public Curriculum create(final CurriculumInput input) throws Exception {
+        return this.origin.create(input);
     }
 
     @Override

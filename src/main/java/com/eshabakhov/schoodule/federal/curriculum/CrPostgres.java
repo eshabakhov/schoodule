@@ -6,9 +6,11 @@ package com.eshabakhov.schoodule.federal.curriculum;
 import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.enums.EducationLevelType;
 import com.eshabakhov.schoodule.enums.StudyWeekType;
+import com.eshabakhov.schoodule.federal.curriculum.input.MdCrInput;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.Requirements;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.RqsPostgres;
 import com.eshabakhov.schoodule.tables.FederalCurriculum;
+import java.util.Map;
 import org.jooq.DSLContext;
 
 /**
@@ -66,73 +68,27 @@ public final class CrPostgres implements Curriculum {
     }
 
     @Override
-    public Curriculum retitled(final String title) {
+    public Curriculum revise(final CurriculumInput input) throws Exception {
+        final Map<String, String> fields = input.print(
+            new MdCrInput()
+        ).print();
         return new CrPostgres(
             this.ctx,
             this.ctx.update(CrPostgres.CURRICULUM)
-                .set(CrPostgres.CURRICULUM.TITLE, title)
-                .where(CrPostgres.CURRICULUM.ID.eq(this.fid))
-                .returningResult(CrPostgres.CURRICULUM.ID)
-                .fetchOne(CrPostgres.CURRICULUM.ID)
-        );
-    }
-
-    @Override
-    public Curriculum releveled(final Level level) {
-        return new CrPostgres(
-            this.ctx,
-            this.ctx.update(CrPostgres.CURRICULUM).set(
-                CrPostgres.CURRICULUM.EDUCATION_LEVEL,
-                EducationLevelType.valueOf(level.name())
-            ).where(CrPostgres.CURRICULUM.ID.eq(this.fid))
-                .returningResult(CrPostgres.CURRICULUM.ID)
-                .fetchOne(CrPostgres.CURRICULUM.ID)
-        );
-    }
-
-    @Override
-    public Curriculum reweeked(final Week week) {
-        return new CrPostgres(
-            this.ctx,
-            this.ctx.update(CrPostgres.CURRICULUM).set(
-                CrPostgres.CURRICULUM.STUDY_WEEK_TYPE,
-                StudyWeekType.valueOf(week.name())
-            ).where(CrPostgres.CURRICULUM.ID.eq(this.fid))
-                .returningResult(CrPostgres.CURRICULUM.ID)
-                .fetchOne(CrPostgres.CURRICULUM.ID)
-        );
-    }
-
-    @Override
-    public Curriculum reversioned(final String version) {
-        return new CrPostgres(
-            this.ctx,
-            this.ctx.update(CrPostgres.CURRICULUM)
-                .set(CrPostgres.CURRICULUM.VERSION, version)
-                .where(CrPostgres.CURRICULUM.ID.eq(this.fid))
-                .returningResult(CrPostgres.CURRICULUM.ID)
-                .fetchOne(CrPostgres.CURRICULUM.ID)
-        );
-    }
-
-    @Override
-    public Curriculum reyeared(final String year) {
-        return new CrPostgres(
-            this.ctx,
-            this.ctx.update(CrPostgres.CURRICULUM)
-                .set(CrPostgres.CURRICULUM.ACADEMIC_YEAR, year)
-                .where(CrPostgres.CURRICULUM.ID.eq(this.fid))
-                .returningResult(CrPostgres.CURRICULUM.ID)
-                .fetchOne(CrPostgres.CURRICULUM.ID)
-        );
-    }
-
-    @Override
-    public Curriculum redescriptioned(final String description) {
-        return new CrPostgres(
-            this.ctx,
-            this.ctx.update(CrPostgres.CURRICULUM)
-                .set(CrPostgres.CURRICULUM.DESCRIPTION, description)
+                .set(CrPostgres.CURRICULUM.TITLE, fields.get("title")).set(
+                    CrPostgres.CURRICULUM.EDUCATION_LEVEL,
+                    EducationLevelType.valueOf(fields.get("level"))
+                ).set(
+                    CrPostgres.CURRICULUM.STUDY_WEEK_TYPE,
+                    StudyWeekType.valueOf(fields.get("week"))
+                )
+                .set(CrPostgres.CURRICULUM.VERSION, fields.get("version")).set(
+                    CrPostgres.CURRICULUM.ACADEMIC_YEAR,
+                    fields.get("year")
+                ).set(
+                    CrPostgres.CURRICULUM.DESCRIPTION,
+                    fields.get("description")
+                )
                 .where(CrPostgres.CURRICULUM.ID.eq(this.fid))
                 .returningResult(CrPostgres.CURRICULUM.ID)
                 .fetchOne(CrPostgres.CURRICULUM.ID)
