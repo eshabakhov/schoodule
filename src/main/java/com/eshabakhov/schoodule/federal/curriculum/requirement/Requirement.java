@@ -24,36 +24,13 @@ public interface Requirement extends Printable {
     Long uid();
 
     /**
-     * Returns a new requirement with an updated grade.
+     * Revises this requirement.
      *
-     * @param grade New grade
-     * @return Updated requirement
+     * @param input Requirement input
+     * @return Revised requirement
+     * @throws Exception If revision fails
      */
-    Requirement regraded(Integer grade);
-
-    /**
-     * Returns a new requirement with an updated subject name.
-     *
-     * @param subject New subject name
-     * @return Updated requirement
-     */
-    Requirement resubjected(String subject);
-
-    /**
-     * Returns a new requirement with an updated weekly hours count.
-     *
-     * @param hours New weekly hours
-     * @return Updated requirement
-     */
-    Requirement reweekled(Integer hours);
-
-    /**
-     * Returns a new requirement with an updated curriculum part type.
-     *
-     * @param part New part type
-     * @return Updated requirement
-     */
-    Requirement reparted(PartType part);
+    Requirement revise(RequirementInput input) throws Exception;
 
     /**
      * Parts of a federal curriculum requirement.

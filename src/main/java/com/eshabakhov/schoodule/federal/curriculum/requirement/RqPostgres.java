@@ -5,7 +5,9 @@ package com.eshabakhov.schoodule.federal.curriculum.requirement;
 
 import com.eshabakhov.schoodule.Media;
 import com.eshabakhov.schoodule.enums.CurriculumPartType;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.input.MdRqInput;
 import com.eshabakhov.schoodule.tables.FederalCurriculumRequirement;
+import java.util.Map;
 import org.jooq.DSLContext;
 
 /**
@@ -62,48 +64,24 @@ public final class RqPostgres implements Requirement {
     }
 
     @Override
-    public Requirement regraded(final Integer grade) {
-        return new RqPostgres(
-            this.ctx,
-            this.ctx.update(RqPostgres.REQUIREMENT)
-                .set(RqPostgres.REQUIREMENT.GRADE, grade)
-                .where(RqPostgres.REQUIREMENT.ID.eq(this.rid))
-                .returningResult(RqPostgres.REQUIREMENT.ID)
-                .fetchOne(RqPostgres.REQUIREMENT.ID)
-        );
-    }
-
-    @Override
-    public Requirement resubjected(final String subject) {
-        return new RqPostgres(
-            this.ctx,
-            this.ctx.update(RqPostgres.REQUIREMENT)
-                .set(RqPostgres.REQUIREMENT.SUBJECT_NAME, subject)
-                .where(RqPostgres.REQUIREMENT.ID.eq(this.rid))
-                .returningResult(RqPostgres.REQUIREMENT.ID)
-                .fetchOne(RqPostgres.REQUIREMENT.ID)
-        );
-    }
-
-    @Override
-    public Requirement reweekled(final Integer hours) {
-        return new RqPostgres(
-            this.ctx,
-            this.ctx.update(RqPostgres.REQUIREMENT)
-                .set(RqPostgres.REQUIREMENT.WEEKLY_HOURS, hours)
-                .where(RqPostgres.REQUIREMENT.ID.eq(this.rid))
-                .returningResult(RqPostgres.REQUIREMENT.ID)
-                .fetchOne(RqPostgres.REQUIREMENT.ID)
-        );
-    }
-
-    @Override
-    public Requirement reparted(final PartType part) {
+    public Requirement revise(final RequirementInput input) throws Exception {
+        final Map<String, String> fields = input.print(
+            new MdRqInput()
+        ).print();
         return new RqPostgres(
             this.ctx,
             this.ctx.update(RqPostgres.REQUIREMENT).set(
+                RqPostgres.REQUIREMENT.GRADE,
+                Integer.valueOf(fields.get("grade"))
+            ).set(
+                RqPostgres.REQUIREMENT.SUBJECT_NAME,
+                fields.get("subjectName")
+            ).set(
+                RqPostgres.REQUIREMENT.WEEKLY_HOURS,
+                Integer.valueOf(fields.get("weeklyHours"))
+            ).set(
                 RqPostgres.REQUIREMENT.PART_TYPE,
-                CurriculumPartType.valueOf(part.name())
+                CurriculumPartType.valueOf(fields.get("partType"))
             ).where(RqPostgres.REQUIREMENT.ID.eq(this.rid))
                 .returningResult(RqPostgres.REQUIREMENT.ID)
                 .fetchOne(RqPostgres.REQUIREMENT.ID)

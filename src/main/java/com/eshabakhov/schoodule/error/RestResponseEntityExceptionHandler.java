@@ -10,6 +10,7 @@ import com.eshabakhov.schoodule.controller.api.SchoolRequiredFieldException;
 import com.eshabakhov.schoodule.controller.api.SubjectRequiredFieldException;
 import com.eshabakhov.schoodule.controller.api.TeacherRequiredFieldException;
 import com.eshabakhov.schoodule.federal.curriculum.input.CurriculumInputException;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.input.RequirementInputException;
 import com.eshabakhov.schoodule.school.SchoolFailedCreateException;
 import com.eshabakhov.schoodule.school.SchoolNotFoundException;
 import com.eshabakhov.schoodule.school.building.cabinet.CabinetAlreadyExistsException;
@@ -77,7 +78,8 @@ public final class RestResponseEntityExceptionHandler {
             SchoolClassRequiredFieldException.class,
             SubjectRequiredFieldException.class,
             TeacherRequiredFieldException.class,
-            CurriculumInputException.class
+            CurriculumInputException.class,
+            RequirementInputException.class
         }
     )
     public static ResponseEntity<Object> handleClientException(final Exception exception) {

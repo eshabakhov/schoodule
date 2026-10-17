@@ -37,22 +37,7 @@ public final class RqV1 implements Requirement {
     }
 
     @Override
-    public Requirement regraded(final Integer grade) {
-        return this.origin.regraded(grade);
-    }
-
-    @Override
-    public Requirement resubjected(final String subject) {
-        return this.origin.resubjected(subject);
-    }
-
-    @Override
-    public Requirement reweekled(final Integer hours) {
-        return this.origin.reweekled(hours);
-    }
-
-    @Override
-    public Requirement reparted(final PartType part) {
-        return this.origin.reparted(part);
+    public Requirement revise(final RequirementInput input) throws Exception {
+        return this.origin.revise(input);
     }
 }

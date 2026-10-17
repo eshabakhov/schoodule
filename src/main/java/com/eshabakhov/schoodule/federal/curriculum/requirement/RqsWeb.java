@@ -45,13 +45,8 @@ public final class RqsWeb implements Requirements {
     }
 
     @Override
-    public Requirement create(
-        final Integer grade,
-        final String subject,
-        final Integer hours,
-        final Requirement.PartType part
-    ) throws Exception {
-        return this.origin.create(grade, subject, hours, part);
+    public Requirement create(final RequirementInput input) throws Exception {
+        return this.origin.create(input);
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.eshabakhov.schoodule.User;
 import com.eshabakhov.schoodule.federal.curriculum.CrWithRequirements;
 import com.eshabakhov.schoodule.federal.curriculum.CrsPostgres;
 import com.eshabakhov.schoodule.federal.curriculum.CrsSingle;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.input.RqInputHttp;
 import com.eshabakhov.schoodule.media.MdJson;
 import com.eshabakhov.schoodule.media.MdXml;
 import com.eshabakhov.schoodule.media.MdXslt;
@@ -34,6 +35,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -217,10 +219,7 @@ public class RqsHttp {
      * Creates a curriculum requirement.
      *
      * @param current Curriculum ID
-     * @param grade Grade
-     * @param subject Subject
-     * @param hours Weekly hours
-     * @param part Curriculum part
+     * @param parameters Requirement input parameters
      * @return Printed representation
      * @throws Exception If creation fails
      */
@@ -244,13 +243,10 @@ public class RqsHttp {
     )
     public Object create(
         @PathVariable("curriculum") final long current,
-        @RequestParam final Integer grade,
-        @RequestParam(name = "subjectName") final String subject,
-        @RequestParam(name = "weeklyHours") final Integer hours,
-        @RequestParam(name = "partType") final Requirement.PartType part
+        @RequestParam final MultiValueMap<String, String> parameters
     ) throws Exception {
         final Requirement created = new RqsPostgres(this.ctx, current).create(
-            grade, subject.trim(), hours, part
+            new RqInputHttp(parameters)
         );
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();
@@ -307,10 +303,7 @@ public class RqsHttp {
      *
      * @param current Curriculum ID
      * @param requirement Requirement ID
-     * @param grade Grade
-     * @param subject Subject
-     * @param hours Weekly hours
-     * @param part Curriculum part
+     * @param parameters Requirement input parameters
      * @return Printed representation
      * @throws Exception If update fails
      */
@@ -336,17 +329,10 @@ public class RqsHttp {
     public Object revise(
         @PathVariable("curriculum") final long current,
         @PathVariable final long requirement,
-        @RequestParam final Integer grade,
-        @RequestParam(name = "subjectName") final String subject,
-        @RequestParam(name = "weeklyHours") final Integer hours,
-        @RequestParam(name = "partType") final Requirement.PartType part
+        @RequestParam final MultiValueMap<String, String> parameters
     ) throws Exception {
         final Requirement revised = new RqsPostgres(this.ctx, current)
-            .requirement(requirement)
-            .regraded(grade)
-            .resubjected(subject.trim())
-            .reweekled(hours)
-            .reparted(part);
+            .revise(requirement, new RqInputHttp(parameters));
         final ServletRequestAttributes servlet = (ServletRequestAttributes)
             RequestContextHolder.currentRequestAttributes();
         return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {

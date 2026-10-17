@@ -10,10 +10,12 @@ import com.eshabakhov.schoodule.PrItems;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.enums.CurriculumPartType;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.filter.FlsCdRequirement;
+import com.eshabakhov.schoodule.federal.curriculum.requirement.input.MdRqInput;
 import com.eshabakhov.schoodule.federal.curriculum.requirement.sort.StsJqRequirement;
 import com.eshabakhov.schoodule.page.ResponsePage;
 import com.eshabakhov.schoodule.tables.FederalCurriculumRequirement;
 import com.eshabakhov.schoodule.tables.records.FederalCurriculumRequirementRecord;
+import java.util.Map;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -57,36 +59,48 @@ public final class RqsPostgres implements Requirements {
     }
 
     @Override
-    public Requirement create(
-        final Integer grade,
-        final String subject,
-        final Integer hours,
-        final Requirement.PartType part
-    ) throws Exception {
+    public Requirement create(final RequirementInput input) throws Exception {
+        final Map<String, String> fields = input.print(
+            new MdRqInput()
+        ).print();
+        final Integer grade = Integer.valueOf(fields.get("grade"));
+        final CurriculumPartType part = CurriculumPartType.valueOf(
+            fields.get("partType")
+        );
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
                 if (ttx.selectFrom(RqsPostgres.REQUIREMENT).where(
                     RqsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID.eq(this.fid)
-                        .and(RqsPostgres.REQUIREMENT.GRADE.eq(grade))
-                        .and(RqsPostgres.REQUIREMENT.SUBJECT_NAME.eq(subject)).and(
-                        RqsPostgres.REQUIREMENT.PART_TYPE.eq(
-                            CurriculumPartType.valueOf(part.name())
+                        .and(RqsPostgres.REQUIREMENT.GRADE.eq(grade)).and(
+                            RqsPostgres.REQUIREMENT.SUBJECT_NAME.eq(
+                                fields.get("subjectName")
+                            )
+                        ).and(
+                            RqsPostgres.REQUIREMENT.PART_TYPE.eq(part)
+                        ).and(
+                            RqsPostgres.REQUIREMENT.IS_DELETED.eq(false)
                         )
-                    )
-                    .and(RqsPostgres.REQUIREMENT.IS_DELETED.eq(false))
                     )
                     .fetchOne() != null) {
                     throw new RequirementAlreadyExistsException();
                 }
                 final FederalCurriculumRequirementRecord created = ttx
-                    .insertInto(RqsPostgres.REQUIREMENT)
-                    .set(RqsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID, this.fid)
-                    .set(RqsPostgres.REQUIREMENT.GRADE, grade)
-                    .set(RqsPostgres.REQUIREMENT.SUBJECT_NAME, subject)
-                    .set(RqsPostgres.REQUIREMENT.WEEKLY_HOURS, hours).set(
+                    .insertInto(RqsPostgres.REQUIREMENT).set(
+                        RqsPostgres.REQUIREMENT.FEDERAL_CURRICULUM_ID,
+                        this.fid
+                    ).set(
+                        RqsPostgres.REQUIREMENT.GRADE,
+                        grade
+                    ).set(
+                        RqsPostgres.REQUIREMENT.SUBJECT_NAME,
+                        fields.get("subjectName")
+                    ).set(
+                        RqsPostgres.REQUIREMENT.WEEKLY_HOURS,
+                        Integer.valueOf(fields.get("weeklyHours"))
+                    ).set(
                         RqsPostgres.REQUIREMENT.PART_TYPE,
-                        CurriculumPartType.valueOf(part.name())
+                        part
                     )
                     .set(RqsPostgres.REQUIREMENT.IS_DELETED, false)
                     .returning()
