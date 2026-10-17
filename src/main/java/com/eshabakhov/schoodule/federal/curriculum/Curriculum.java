@@ -25,52 +25,13 @@ public interface Curriculum extends Printable {
     Long uid();
 
     /**
-     * Returns a new curriculum with an updated title.
+     * Revises this curriculum with the supplied input.
      *
-     * @param title New title
-     * @return Updated curriculum
+     * @param input Curriculum input
+     * @return Revised curriculum
+     * @throws Exception If revision fails
      */
-    Curriculum retitled(String title);
-
-    /**
-     * Returns a new curriculum with an updated education level.
-     *
-     * @param level New education level
-     * @return Updated curriculum
-     */
-    Curriculum releveled(Level level);
-
-    /**
-     * Returns a new curriculum with an updated study week type.
-     *
-     * @param week New study week type
-     * @return Updated curriculum
-     */
-    Curriculum reweeked(Week week);
-
-    /**
-     * Returns a new curriculum with an updated version.
-     *
-     * @param version New version
-     * @return Updated curriculum
-     */
-    Curriculum reversioned(String version);
-
-    /**
-     * Returns a new curriculum with an updated academic year.
-     *
-     * @param year New academic year
-     * @return Updated curriculum
-     */
-    Curriculum reyeared(String year);
-
-    /**
-     * Returns a new curriculum with an updated description.
-     *
-     * @param description New description
-     * @return Updated curriculum
-     */
-    Curriculum redescriptioned(String description);
+    Curriculum revise(CurriculumInput input) throws Exception;
 
     /**
      * Returns the requirements collection for this curriculum.

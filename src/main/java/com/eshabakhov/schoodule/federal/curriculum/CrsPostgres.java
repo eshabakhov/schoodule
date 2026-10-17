@@ -11,10 +11,12 @@ import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.enums.EducationLevelType;
 import com.eshabakhov.schoodule.enums.StudyWeekType;
 import com.eshabakhov.schoodule.federal.curriculum.filter.FlsCdCurriculum;
+import com.eshabakhov.schoodule.federal.curriculum.input.MdCrInput;
 import com.eshabakhov.schoodule.federal.curriculum.sort.StsJqCurriculum;
 import com.eshabakhov.schoodule.page.ResponsePage;
 import com.eshabakhov.schoodule.tables.FederalCurriculum;
 import com.eshabakhov.schoodule.tables.records.FederalCurriculumRecord;
+import java.util.Map;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -50,47 +52,63 @@ public final class CrsPostgres implements Curriculums {
     }
 
     @Override
-    public Curriculum create(
-        final String title,
-        final Curriculum.Level level,
-        final Curriculum.Week week,
-        final String version,
-        final String year,
-        final String description
-    ) throws Exception {
+    public Curriculum create(final CurriculumInput input) throws Exception {
+        final Map<String, String> fields = input.print(
+            new MdCrInput()
+        ).print();
+        final EducationLevelType level = EducationLevelType.valueOf(
+            fields.get("level")
+        );
+        final StudyWeekType week = StudyWeekType.valueOf(
+            fields.get("week")
+        );
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
                 if (ttx.selectFrom(CrsPostgres.CURRICULUM).where(
                     CrsPostgres.CURRICULUM.EDUCATION_LEVEL.eq(
-                        EducationLevelType.valueOf(level.name())
+                        level
                     ).and(
                         CrsPostgres.CURRICULUM.STUDY_WEEK_TYPE.eq(
-                            StudyWeekType.valueOf(week.name())
+                            week
                         )
-                    ).and(CrsPostgres.CURRICULUM.VERSION.eq(version))
-                        .and(CrsPostgres.CURRICULUM.ACADEMIC_YEAR.eq(year))
-                        .and(CrsPostgres.CURRICULUM.IS_DELETED.eq(false))
+                    ).and(
+                        CrsPostgres.CURRICULUM.VERSION.eq(
+                            fields.get("version")
+                        )
+                    ).and(
+                        CrsPostgres.CURRICULUM.ACADEMIC_YEAR.eq(
+                            fields.get("year")
+                        )
+                    ).and(CrsPostgres.CURRICULUM.IS_DELETED.eq(false))
                 ).fetchOne() != null) {
                     throw new CurriculumAlreadyExistsException(
                         String.format(
                             "Curriculum `%s` already exists",
-                            title
+                            fields.get("title")
                         )
                     );
                 }
                 final FederalCurriculumRecord created = ttx
-                    .insertInto(CrsPostgres.CURRICULUM)
-                    .set(CrsPostgres.CURRICULUM.TITLE, title).set(
+                    .insertInto(CrsPostgres.CURRICULUM).set(
+                        CrsPostgres.CURRICULUM.TITLE,
+                        fields.get("title")
+                    ).set(
                         CrsPostgres.CURRICULUM.EDUCATION_LEVEL,
-                        EducationLevelType.valueOf(level.name())
+                        level
                     ).set(
                         CrsPostgres.CURRICULUM.STUDY_WEEK_TYPE,
-                        StudyWeekType.valueOf(week.name())
+                        week
+                    ).set(
+                        CrsPostgres.CURRICULUM.VERSION,
+                        fields.get("version")
+                    ).set(
+                        CrsPostgres.CURRICULUM.ACADEMIC_YEAR,
+                        fields.get("year")
+                    ).set(
+                        CrsPostgres.CURRICULUM.DESCRIPTION,
+                        fields.get("description")
                     )
-                    .set(CrsPostgres.CURRICULUM.VERSION, version)
-                    .set(CrsPostgres.CURRICULUM.ACADEMIC_YEAR, year)
-                    .set(CrsPostgres.CURRICULUM.DESCRIPTION, description)
                     .set(CrsPostgres.CURRICULUM.IS_DELETED, false)
                     .returning()
                     .fetchOne();

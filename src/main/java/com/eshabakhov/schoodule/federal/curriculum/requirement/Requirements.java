@@ -18,20 +18,11 @@ public interface Requirements extends Printable {
     /**
      * Creates a new federal curriculum requirement.
      *
-     * @param grade The federal curriculum requirement grade
-     * @param subject The federal curriculum requirement subject
-     * @param hours The federal curriculum requirement hours
-     * @param part The federal curriculum requirement part
+     * @param input Federal curriculum requirement input
      * @return The created {@link Requirement}
      * @throws Exception if creation fails
-     * @checkstyle ParameterNumberCheck (2 lines)
      */
-    Requirement create(
-        Integer grade,
-        String subject,
-        Integer hours,
-        Requirement.PartType part
-    ) throws Exception;
+    Requirement create(RequirementInput input) throws Exception;
 
     /**
      * Finds a federal curriculum requirement by its unique identifier.
@@ -41,6 +32,21 @@ public interface Requirements extends Printable {
      * @throws Exception if not found
      */
     Requirement requirement(long id) throws Exception;
+
+    /**
+     * Revises a federal curriculum requirement.
+     *
+     * @param id The federal curriculum requirement ID
+     * @param input Federal curriculum requirement input
+     * @return Revised federal curriculum requirement
+     * @throws Exception if revision fails
+     */
+    default Requirement revise(
+        final long id,
+        final RequirementInput input
+    ) throws Exception {
+        return this.requirement(id).revise(input);
+    }
 
     /**
      * Returns a paginated list of federal curriculum requirements.
