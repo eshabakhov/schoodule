@@ -103,7 +103,7 @@ final class MediaTest {
             """
         );
         Assertions.assertTrue(printed.contains("class=\"school-info\""));
-        Assertions.assertTrue(printed.contains("/js/federal-curriculums.js"));
+        Assertions.assertTrue(printed.contains("/js/federal-curriculum.js"));
     }
 
     @Test
@@ -119,7 +119,7 @@ final class MediaTest {
         );
         Assertions.assertTrue(printed.contains("id=\"req-results\""));
         Assertions.assertTrue(
-            printed.contains("/js/federal-curriculum-details.js")
+            printed.contains("/js/federal-curriculum-requirements.js")
         );
     }
 

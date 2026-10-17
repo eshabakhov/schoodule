@@ -195,6 +195,7 @@
 }
 
 .req-inline-input {
+    display: none;
     width: 100%;
     box-sizing: border-box;
     padding: .3rem .4rem;
@@ -211,6 +212,14 @@
 .req-inline-input:focus {
     border-color: var(--ring);
     box-shadow: 0 0 0 2px rgb(24 24 27 / 8%);
+}
+
+tr.req-editing .req-cell-value {
+    display: none;
+}
+
+tr.req-editing .req-inline-input {
+    display: block;
 }
 
 .req-row-save,

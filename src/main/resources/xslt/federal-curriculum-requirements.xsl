@@ -36,9 +36,8 @@
     </xsl:template>
 
     <xsl:template name="scripts">
-        <script type="module" src="/js/federal-curriculums.js"></script>
         <script type="module"
-                src="/js/federal-curriculum-details.js"></script>
+                src="/js/federal-curriculum-requirements.js"></script>
     </xsl:template>
 
     <xsl:template name="requirements">
@@ -198,10 +197,47 @@
                             <xsl:attribute name="data-grade"><xsl:value-of select="grade"/></xsl:attribute>
                             <xsl:attribute name="data-part"><xsl:value-of select="partType"/></xsl:attribute>
                             <xsl:attribute name="data-subject"><xsl:value-of select="subjectName"/></xsl:attribute>
-                            <td class="view-grade"><xsl:value-of select="grade"/></td>
-                            <td class="view-subject"><xsl:value-of select="subjectName"/></td>
-                            <td class="view-hours"><xsl:value-of select="weeklyHours"/></td>
-                            <td class="view-part"><xsl:value-of select="partType"/></td>
+                            <td class="view-grade">
+                                <span class="req-cell-value"><xsl:value-of select="grade"/></span>
+                                <input class="req-inline-input req-grade-input"
+                                       type="number"
+                                       min="1"
+                                       max="11">
+                                    <xsl:attribute name="value"><xsl:value-of select="grade"/></xsl:attribute>
+                                </input>
+                            </td>
+                            <td class="view-subject">
+                                <span class="req-cell-value"><xsl:value-of select="subjectName"/></span>
+                                <input class="req-inline-input req-subject-input"
+                                       type="text">
+                                    <xsl:attribute name="value"><xsl:value-of select="subjectName"/></xsl:attribute>
+                                </input>
+                            </td>
+                            <td class="view-hours">
+                                <span class="req-cell-value"><xsl:value-of select="weeklyHours"/></span>
+                                <input class="req-inline-input req-hours-input"
+                                       type="number"
+                                       min="1">
+                                    <xsl:attribute name="value"><xsl:value-of select="weeklyHours"/></xsl:attribute>
+                                </input>
+                            </td>
+                            <td class="view-part">
+                                <span class="req-cell-value"><xsl:value-of select="partType"/></span>
+                                <select class="req-inline-input req-part-input">
+                                    <option value="MANDATORY">
+                                        <xsl:if test="partType = 'MANDATORY'">
+                                            <xsl:attribute name="selected">selected</xsl:attribute>
+                                        </xsl:if>
+                                        <xsl:text>MANDATORY</xsl:text>
+                                    </option>
+                                    <option value="OPTIONAL">
+                                        <xsl:if test="partType = 'OPTIONAL'">
+                                            <xsl:attribute name="selected">selected</xsl:attribute>
+                                        </xsl:if>
+                                        <xsl:text>OPTIONAL</xsl:text>
+                                    </option>
+                                </select>
+                            </td>
                             <td>
                                 <div class="td-actions">
                                     <button class="td-icon-btn req-row-edit"
