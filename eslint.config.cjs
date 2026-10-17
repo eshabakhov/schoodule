@@ -5,7 +5,7 @@ module.exports = [
         files: ['src/main/resources/static/js/**/*.js'],
         languageOptions: {
             ecmaVersion: 2023,
-            sourceType: 'script',
+            sourceType: 'module',
             globals: {
                 window: 'readonly',
                 document: 'readonly',
