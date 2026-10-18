@@ -23,7 +23,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
  * final AuthUser user = new AuthUser(dbUser);
  * user.uid();           // always available
  * user.getUsername();   // from UserDetails
- * user.getName();       // from OAuth2User — same as username
+ * user.getName();       // from OAuth2User - same as username
  * </pre>
  *
  * @since 0.0.1

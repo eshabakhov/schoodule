@@ -1,0 +1,25 @@
+.federal-curriculums-add {
+    text-decoration: none;
+}
+
+.federal-curriculums-add svg {
+    width: 15px;
+    height: 15px;
+}
+
+.federal-curriculums-search {
+    width: 100%;
+    max-width: 360px;
+    margin-bottom: 1.25rem;
+}
+
+.federal-curriculums-empty {
+    grid-column: 1 / -1;
+    padding: 3rem;
+    color: var(--muted-fg);
+    text-align: center;
+}
+
+.federal-curriculum-card {
+    cursor: pointer;
+}

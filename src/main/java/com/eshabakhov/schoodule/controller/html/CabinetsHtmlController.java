@@ -84,7 +84,7 @@ public class CabinetsHtmlController {
             Map.of(
                 "school", sch,
                 "building", build,
-                "pageTitle", String.format("%s — кабинеты", sch.name()),
+                "pageTitle", String.format("%s - кабинеты", sch.name()),
                 "cabinets", cabinets.list(),
                 "page", offset,
                 "limit", limit,

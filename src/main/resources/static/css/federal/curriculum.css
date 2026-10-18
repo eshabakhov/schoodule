@@ -1,0 +1,49 @@
+.curriculum-requirements-link {
+    color: var(--fg);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.curriculum-requirements-link:hover {
+    color: var(--muted-fg);
+}
+
+.curriculum-delete {
+    border-color: var(--error-border);
+    background: var(--error-bg);
+    color: var(--destructive);
+}
+
+.curriculum-form-heading {
+    justify-content: center;
+}
+
+.curriculum-form-heading h1 {
+    margin: 0;
+}
+
+.curriculum-form-wrap {
+    max-width: 640px;
+    margin-inline: auto;
+}
+
+.curriculum-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.curriculum-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+    font-size: .875rem;
+    font-weight: 500;
+}
+
+.curriculum-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .75rem;
+    margin-top: .25rem;
+}

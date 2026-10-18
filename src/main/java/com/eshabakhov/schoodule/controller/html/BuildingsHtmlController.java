@@ -79,7 +79,7 @@ public class BuildingsHtmlController {
         return new ModelAndView("buildings/list").addAllObjects(
             Map.of(
                 "school", sch,
-                "pageTitle", String.format("%s — корпуса", sch.name()),
+                "pageTitle", String.format("%s - корпуса", sch.name()),
                 "buildings", buildings.list(),
                 "page", offset,
                 "limit", limit,

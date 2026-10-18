@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
  * {@link org.springframework.security.core.userdetails.UserDetails} and
  * {@link OAuth2User}, controllers can declare
  * {@code @AuthenticationPrincipal AuthUser} without any casting or special
- * handling — it works identically for form-login and OAuth2 sessions.</p>
+ * handling - it works identically for form-login and OAuth2 sessions.</p>
  * Usage example:
  * <pre>
  * // Wired automatically via SecurityConfig.oauth2Login()

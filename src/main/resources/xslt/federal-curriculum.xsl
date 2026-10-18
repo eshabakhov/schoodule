@@ -27,10 +27,7 @@
     </xsl:template>
 
     <xsl:template name="styles">
-        <xsl:if test="$view = 'details'">
-            <link rel="stylesheet"
-                  href="/css/federal-curriculum-details.css"/>
-        </xsl:if>
+        <link rel="stylesheet" href="/css/federal/curriculum.css"/>
     </xsl:template>
 
     <xsl:template name="content">
@@ -46,7 +43,7 @@
 
     <xsl:template name="scripts">
         <xsl:if test="$view = 'details'">
-            <script type="module" src="/js/federal-curriculums.js"></script>
+            <script type="module" src="/js/federal-curriculum.js"></script>
         </xsl:if>
     </xsl:template>
 
@@ -64,7 +61,7 @@
                 <xsl:value-of select="$curriculum/title"/>
             </span>
         </nav>
-        <div class="page-title-row" style="margin-bottom:1.5rem;">
+        <div class="page-title-row">
             <div>
                 <h1 class="title-with-action">
                     <span><xsl:value-of select="$curriculum/title"/></span>
@@ -117,14 +114,14 @@
                         <xsl:when test="normalize-space($curriculum/description)">
                             <xsl:value-of select="$curriculum/description"/>
                         </xsl:when>
-                        <xsl:otherwise>—</xsl:otherwise>
+                        <xsl:otherwise>-</xsl:otherwise>
                     </xsl:choose>
                 </span>
             </div>
             <div class="info-row">
                 <span class="info-label">Требования:</span>
                 <span class="info-value">
-                    <a class="req-info-link"
+                    <a class="curriculum-requirements-link"
                        title="Перейти к требованиям учебного плана">
                         <xsl:attribute name="href">
                             <xsl:value-of select="concat('/federal/curriculums/', $curriculum/id, '/requirements')"/>
@@ -135,9 +132,8 @@
             </div>
         </div>
         <div class="details-footer-actions">
-            <button class="btn-outline-action btn-delete-curriculum"
-                    type="submit"
-                    style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;">
+            <button class="btn-outline-action curriculum-delete btn-delete-curriculum"
+                    type="submit">
                 <xsl:attribute name="data-id">
                     <xsl:value-of select="$curriculum/id"/>
                 </xsl:attribute>

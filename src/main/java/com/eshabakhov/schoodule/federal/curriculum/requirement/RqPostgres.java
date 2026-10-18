@@ -12,7 +12,7 @@ import org.jooq.DSLContext;
 
 /**
  * Postgres implementation of {@link Requirement}.
- * Holds only {@code rid} and {@code ctx} — all data is read from DB on demand.
+ * Holds only {@code rid} and {@code ctx} - all data is read from DB on demand.
  *
  * @since 0.0.1
  */

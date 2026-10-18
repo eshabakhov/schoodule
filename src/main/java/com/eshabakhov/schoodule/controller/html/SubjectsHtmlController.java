@@ -79,7 +79,7 @@ public class SubjectsHtmlController {
         return new ModelAndView("subjects/list").addAllObjects(
             Map.of(
                 "school", sch,
-                "pageTitle", String.format("%s — предметы", sch.name()),
+                "pageTitle", String.format("%s - предметы", sch.name()),
                 "subjects", subjects.list(),
                 "page", offset,
                 "limit", limit,

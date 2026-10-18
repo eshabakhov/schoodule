@@ -81,7 +81,7 @@ public class SchedulesHtmlController {
         return new ModelAndView("schedules/list").addAllObjects(
             Map.of(
                 "school", sch,
-                "pageTitle", String.format("%s — расписания", sch.name()),
+                "pageTitle", String.format("%s - расписания", sch.name()),
                 "schedules", schedules.list(),
                 "page", offset,
                 "limit", limit,

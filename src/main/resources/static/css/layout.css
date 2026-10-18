@@ -54,6 +54,11 @@ body {
     background: var(--accent);
 }
 
+.app-header-logo > svg {
+    width: 18px;
+    height: 18px;
+}
+
 .app-header-title {
     font-size: .875rem;
     color: var(--muted-fg);

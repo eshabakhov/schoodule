@@ -1,4 +1,33 @@
 /* ── Card ── */
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .375rem;
+    margin-bottom: 1rem;
+    color: var(--muted-fg);
+    font-size: .8125rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.breadcrumb-link {
+    color: var(--muted-fg);
+    transition: color var(--ease);
+}
+
+.breadcrumb-link:hover {
+    color: var(--fg);
+}
+
+.breadcrumb-separator {
+    color: var(--border);
+}
+
+.breadcrumb-current {
+    color: var(--fg);
+}
+
 .card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -747,6 +776,11 @@ table.shadcn-table tbody tr:hover {
 
 .pagination-btn:hover {
     background: var(--muted);
+}
+
+.pagination-btn svg {
+    width: 14px;
+    height: 14px;
 }
 
 .pagination-btn.active {
