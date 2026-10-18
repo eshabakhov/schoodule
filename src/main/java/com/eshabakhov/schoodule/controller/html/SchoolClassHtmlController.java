@@ -83,7 +83,7 @@ public class SchoolClassHtmlController {
         return new ModelAndView("schoolclasses/list").addAllObjects(
             Map.of(
                 "school", sch,
-                "pageTitle", String.format("%s — школьные классы", sch.name()),
+                "pageTitle", String.format("%s - школьные классы", sch.name()),
                 "classes", classes.list(),
                 "page", offset,
                 "limit", limit,

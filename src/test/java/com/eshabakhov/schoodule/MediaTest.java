@@ -117,7 +117,9 @@ final class MediaTest {
             </curriculums></schoodule>
             """
         );
-        Assertions.assertTrue(printed.contains("id=\"req-results\""));
+        Assertions.assertTrue(
+            printed.contains("id=\"requirements-results\"")
+        );
         Assertions.assertTrue(
             printed.contains("/js/federal-curriculum-requirements.js")
         );

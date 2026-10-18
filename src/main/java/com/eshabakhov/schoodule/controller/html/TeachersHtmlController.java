@@ -81,7 +81,7 @@ public class TeachersHtmlController {
         return new ModelAndView("teachers/list").addAllObjects(
             Map.of(
                 "school", sch,
-                "pageTitle", String.format("%s — учителя", sch.name()),
+                "pageTitle", String.format("%s - учителя", sch.name()),
                 "teachers", teachers.list(),
                 "page", offset,
                 "limit", limit,

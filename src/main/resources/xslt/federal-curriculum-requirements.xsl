@@ -28,7 +28,7 @@
 
     <xsl:template name="styles">
         <link rel="stylesheet"
-              href="/css/federal-curriculum-details.css"/>
+              href="/css/federal/requirements.css"/>
     </xsl:template>
 
     <xsl:template name="content">
@@ -60,7 +60,7 @@
             <span class="breadcrumb-separator">-&gt;</span>
             <span class="breadcrumb-current">Требования</span>
         </nav>
-        <div class="page-title-row" style="margin-bottom:1.5rem;">
+        <div class="page-title-row">
             <div>
                 <h1 class="title-with-action">
                     <span>Требования учебного плана</span>
@@ -70,15 +70,15 @@
                 </p>
             </div>
         </div>
-        <form class="req-add-panel" id="req-add-panel" method="post">
+        <form class="requirements-add" id="requirements-add" method="post">
             <xsl:attribute name="action">
                 <xsl:value-of select="concat('/federal/curriculums/', $curriculum/id, '/requirements/create')"/>
             </xsl:attribute>
             <xsl:call-template name="csrf-input"/>
-            <fieldset class="req-form-group req-add-group">
+            <fieldset class="requirements-group requirements-group-add">
                 <legend>Добавление требования</legend>
-                <div class="req-form-grid req-form-grid-add">
-                    <label class="req-field req-field-grade"
+                <div class="requirements-grid requirements-grid-add">
+                    <label class="requirements-field requirements-field-grade"
                            for="grade-number">
                         <input id="grade-number"
                                name="grade"
@@ -88,14 +88,14 @@
                                placeholder="Класс"
                                required="required"/>
                     </label>
-                    <label class="req-field" for="subject-name">
+                    <label class="requirements-field" for="subject-name">
                         <input id="subject-name"
                                name="subjectName"
                                type="text"
                                placeholder="Предмет"
                                required="required"/>
                     </label>
-                    <label class="req-field req-field-hours"
+                    <label class="requirements-field requirements-field-hours"
                            for="weekly-hours">
                         <input id="weekly-hours"
                                name="weeklyHours"
@@ -112,17 +112,17 @@
                 </div>
             </fieldset>
         </form>
-        <fieldset class="req-form-group req-search-panel">
+        <fieldset class="requirements-group requirements-search">
             <legend>Поиск требований</legend>
-            <div class="req-form-grid req-form-grid-search">
-                <label class="req-field" for="filter-grade">
+            <div class="requirements-grid requirements-grid-search">
+                <label class="requirements-field" for="filter-grade">
                     <input id="filter-grade"
                            type="number"
                            max="11"
                            min="1"
                            placeholder="Класс"/>
                 </label>
-                <label class="req-field" for="filter-subject">
+                <label class="requirements-field" for="filter-subject">
                     <input id="filter-subject"
                            type="text"
                            placeholder="Поиск по предмету..."/>
@@ -142,7 +142,7 @@
                       select="/schoodule/curriculums/curriculum"/>
         <xsl:variable name="requirements"
                       select="$curriculum/requirements"/>
-        <div id="req-results">
+        <div id="requirements-results">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -178,52 +178,52 @@
                             <xsl:with-param name="requirements"
                                             select="$requirements"/>
                         </xsl:call-template>
-                        <th style="text-align:right;padding-right:1rem;">Действия</th>
+                        <th class="requirements-actions-heading">Действия</th>
                     </tr>
                 </thead>
-                <tbody id="req-tbody">
+                <tbody id="requirements-body">
                     <xsl:attribute name="data-search-url">
                         <xsl:value-of select="concat('/federal/curriculums/', $curriculum/id, '/requirements/fragment')"/>
                     </xsl:attribute>
                     <xsl:if test="not($requirements/requirement)">
-                        <tr id="req-empty-row">
+                        <tr id="requirements-empty">
                             <td class="empty-state" colspan="5">
                                 <xsl:text>Требования пока не добавлены.</xsl:text>
                             </td>
                         </tr>
                     </xsl:if>
                     <xsl:for-each select="$requirements/requirement">
-                        <tr class="req-data-row">
+                        <tr class="requirement-row">
                             <xsl:attribute name="data-grade"><xsl:value-of select="grade"/></xsl:attribute>
                             <xsl:attribute name="data-part"><xsl:value-of select="partType"/></xsl:attribute>
                             <xsl:attribute name="data-subject"><xsl:value-of select="subjectName"/></xsl:attribute>
-                            <td class="view-grade">
-                                <span class="req-cell-value"><xsl:value-of select="grade"/></span>
-                                <input class="req-inline-input req-grade-input"
+                            <td class="requirement-grade">
+                                <span class="requirement-value"><xsl:value-of select="grade"/></span>
+                                <input class="requirement-input requirement-grade-input"
                                        type="number"
                                        min="1"
                                        max="11">
                                     <xsl:attribute name="value"><xsl:value-of select="grade"/></xsl:attribute>
                                 </input>
                             </td>
-                            <td class="view-subject">
-                                <span class="req-cell-value"><xsl:value-of select="subjectName"/></span>
-                                <input class="req-inline-input req-subject-input"
+                            <td class="requirement-subject">
+                                <span class="requirement-value"><xsl:value-of select="subjectName"/></span>
+                                <input class="requirement-input requirement-subject-input"
                                        type="text">
                                     <xsl:attribute name="value"><xsl:value-of select="subjectName"/></xsl:attribute>
                                 </input>
                             </td>
-                            <td class="view-hours">
-                                <span class="req-cell-value"><xsl:value-of select="weeklyHours"/></span>
-                                <input class="req-inline-input req-hours-input"
+                            <td class="requirement-hours">
+                                <span class="requirement-value"><xsl:value-of select="weeklyHours"/></span>
+                                <input class="requirement-input requirement-hours-input"
                                        type="number"
                                        min="1">
                                     <xsl:attribute name="value"><xsl:value-of select="weeklyHours"/></xsl:attribute>
                                 </input>
                             </td>
-                            <td class="view-part">
-                                <span class="req-cell-value"><xsl:value-of select="partType"/></span>
-                                <select class="req-inline-input req-part-input">
+                            <td class="requirement-part">
+                                <span class="requirement-value"><xsl:value-of select="partType"/></span>
+                                <select class="requirement-input requirement-part-input">
                                     <option value="MANDATORY">
                                         <xsl:if test="partType = 'MANDATORY'">
                                             <xsl:attribute name="selected">selected</xsl:attribute>
@@ -240,12 +240,12 @@
                             </td>
                             <td>
                                 <div class="td-actions">
-                                    <button class="td-icon-btn req-row-edit"
+                                    <button class="requirement-action requirement-edit"
                                             type="button"
                                             title="Редактировать">
                                         <xsl:call-template name="edit-icon"/>
                                     </button>
-                                    <button class="td-icon-btn btn-icon-delete req-row-delete btn-delete-requirement"
+                                    <button class="requirement-action requirement-delete"
                                             type="button"
                                             title="Удалить">
                                         <xsl:attribute name="data-curriculum"><xsl:value-of select="$curriculum/id"/></xsl:attribute>
@@ -253,7 +253,7 @@
                                         <xsl:attribute name="data-name"><xsl:value-of select="subjectName"/></xsl:attribute>
                                         <xsl:call-template name="cross-icon"/>
                                     </button>
-                                    <button class="td-icon-btn btn-icon-save req-row-save"
+                                    <button class="requirement-action requirement-save"
                                             type="button"
                                             title="Сохранить">
                                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -264,28 +264,27 @@
                                             <polyline points="20 6 9 17 4 12"/>
                                         </svg>
                                     </button>
-                                    <button class="td-icon-btn req-row-cancel"
+                                    <button class="requirement-action requirement-cancel"
                                             type="button"
                                             title="Отмена">
                                         <xsl:call-template name="cross-icon"/>
                                     </button>
-                                    <form class="req-edit-form"
-                                          method="post"
-                                          style="display:none;">
+                                    <form class="requirement-edit-form"
+                                          method="post">
                                         <xsl:attribute name="action">
                                             <xsl:value-of select="concat('/federal/curriculums/', $curriculum/id, '/requirements/', id, '/edit')"/>
                                         </xsl:attribute>
                                         <xsl:call-template name="csrf-input"/>
-                                        <input class="edit-grade"
+                                        <input class="requirement-form-grade"
                                                name="grade"
                                                type="hidden"/>
-                                        <input class="edit-subject"
+                                        <input class="requirement-form-subject"
                                                name="subjectName"
                                                type="hidden"/>
-                                        <input class="edit-hours"
+                                        <input class="requirement-form-hours"
                                                name="weeklyHours"
                                                type="hidden"/>
-                                        <input class="edit-part"
+                                        <input class="requirement-form-part"
                                                name="partType"
                                                type="hidden"/>
                                     </form>
@@ -297,7 +296,7 @@
             </table>
             <xsl:call-template name="pagination">
                 <xsl:with-param name="page" select="$requirements/page"/>
-                <xsl:with-param name="prefix" select="'req'"/>
+                <xsl:with-param name="prefix" select="'requirements'"/>
                 <xsl:with-param name="ellipsis" select="'...'"/>
             </xsl:call-template>
         </div>
@@ -313,7 +312,7 @@
         <th>
             <button type="button">
                 <xsl:attribute name="class">
-                    <xsl:text>req-sort-btn</xsl:text>
+                    <xsl:text>requirements-sort</xsl:text>
                     <xsl:if test="$direction = 'ASC' or $direction = 'DESC'">
                         <xsl:text> active</xsl:text>
                     </xsl:if>
@@ -321,7 +320,7 @@
                 <xsl:attribute name="title"><xsl:value-of select="$title"/></xsl:attribute>
                 <xsl:attribute name="data-sort"><xsl:value-of select="$field"/></xsl:attribute>
                 <span><xsl:value-of select="$label"/></span>
-                <span class="req-sort-icon">
+                <span class="requirements-sort-icon">
                     <xsl:choose>
                         <xsl:when test="$direction = 'ASC'">↑</xsl:when>
                         <xsl:when test="$direction = 'DESC'">↓</xsl:when>

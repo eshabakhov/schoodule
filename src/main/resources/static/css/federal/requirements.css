@@ -1,49 +1,9 @@
-.breadcrumbs {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: .375rem;
-    margin-bottom: 1rem;
-    color: var(--muted-fg);
-    font-size: .8125rem;
-    font-weight: 500;
-    line-height: 1.4;
-}
-
-.breadcrumb-link {
-    color: var(--muted-fg);
-    transition: color var(--ease);
-}
-
-.breadcrumb-link:hover {
-    color: var(--fg);
-}
-
-.breadcrumb-separator {
-    color: var(--border);
-}
-
-.breadcrumb-current {
-    color: var(--fg);
-}
-
-.req-info-link {
-    color: var(--fg);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-}
-
-.req-info-link:hover {
-    color: var(--muted-fg);
-}
-
-.req-add-panel {
+.requirements-add {
     display: block;
-    margin-top: 0;
-    margin-bottom: 1rem;
+    margin-block: 0 1rem;
 }
 
-.req-form-group {
+.requirements-group {
     width: 100%;
     min-width: 0;
     min-inline-size: 0;
@@ -54,73 +14,76 @@
     background: var(--card);
 }
 
-.req-add-group {
-    border-color: #bbf7d0;
-    background: #f0fdf4;
+.requirements-group-add {
+    border-color: var(--success-border);
+    background: var(--success-bg);
 }
 
-.req-search-panel {
-    border-color: #fde68a;
-    background: #fffbeb;
+.requirements-search {
+    border-color: var(--warning-border);
+    background: var(--warning-bg);
 }
 
-.req-form-group legend {
-    padding: 0 .375rem;
+.requirements-group legend {
+    padding-inline: .375rem;
     color: var(--muted-fg);
-    font-family: 'DM Sans', system-ui, sans-serif;
     font-size: .8125rem;
     font-weight: 600;
     line-height: 1.2;
 }
 
-.req-form-grid {
+.requirements-grid {
     display: grid;
     width: 100%;
     align-items: center;
     gap: .75rem;
 }
 
-.req-form-grid-add {
+.requirements-grid-add {
     grid-template-columns: 90px minmax(180px, 1fr) 140px 180px auto;
 }
 
-.req-form-grid-search {
+.requirements-grid-search {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.req-field {
+.requirements-field {
     display: block;
     min-width: 0;
 }
 
-.req-field-grade {
+.requirements-field-grade {
     width: 90px;
 }
 
-.req-field-hours {
+.requirements-field-hours {
     width: 140px;
 }
 
-.req-form-group input[type='number'],
-.req-form-group input[type='text'],
-.req-form-group select,
-.req-form-group button {
+.requirements-group input[type='number'],
+.requirements-group input[type='text'],
+.requirements-group select,
+.requirements-group button {
     box-sizing: border-box;
     height: 38px;
     margin: 0;
-    font-family: 'DM Sans', system-ui, sans-serif;
     font-size: .875rem;
     line-height: 1;
 }
 
-.req-form-group input[type='number'],
-.req-form-group input[type='text'],
-.req-form-group select {
+.requirements-group input[type='number'],
+.requirements-group input[type='text'],
+.requirements-group select {
     width: 100%;
     padding: .5rem .75rem;
 }
 
-.td-icon-btn {
+.requirements-actions-heading {
+    padding-right: 1rem;
+    text-align: right;
+}
+
+.requirement-action {
     all: unset;
     box-sizing: border-box;
     display: inline-flex;
@@ -128,8 +91,8 @@
     justify-content: center;
     width: 28px;
     height: 28px;
-    border-radius: var(--radius-sm);
     border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--muted-fg);
     cursor: pointer;
@@ -137,32 +100,38 @@
     flex-shrink: 0;
 }
 
-.td-icon-btn:hover {
+.requirement-save,
+.requirement-cancel,
+.requirement-edit-form {
+    display: none;
+}
+
+.requirement-action:hover {
     background: var(--accent);
     color: var(--fg);
 }
 
-.td-icon-btn.btn-icon-delete:hover {
-    background: #fef2f2;
+.requirement-delete:hover {
+    border-color: var(--error-border);
+    background: var(--error-bg);
     color: var(--destructive);
-    border-color: #fecaca;
 }
 
-.td-icon-btn.btn-icon-save {
-    border-color: #bbf7d0;
-    color: #15803d;
+.requirement-save {
+    border-color: var(--success-border);
+    color: var(--success-text);
 }
 
-.td-icon-btn.btn-icon-save:hover {
-    background: #f0fdf4;
+.requirement-save:hover {
+    background: var(--success-bg);
 }
 
-.td-icon-btn svg {
+.requirement-action svg {
     width: 14px;
     height: 14px;
 }
 
-.req-sort-btn {
+.requirements-sort {
     all: unset;
     box-sizing: border-box;
     display: inline-flex;
@@ -175,12 +144,12 @@
     line-height: 1;
 }
 
-.req-sort-btn:hover,
-.req-sort-btn.active {
+.requirements-sort:hover,
+.requirements-sort.active {
     color: var(--fg);
 }
 
-.req-sort-icon {
+.requirements-sort-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -190,61 +159,55 @@
     line-height: 1;
 }
 
-.req-sort-btn.active .req-sort-icon {
+.requirements-sort.active .requirements-sort-icon {
     color: var(--fg);
 }
 
-.req-inline-input {
+.requirement-input {
     display: none;
-    width: 100%;
     box-sizing: border-box;
+    width: 100%;
     padding: .3rem .4rem;
-    font-size: .875rem;
-    font-family: 'DM Sans', system-ui, sans-serif;
     border: 1px solid var(--input);
     border-radius: var(--radius-sm);
+    outline: none;
     background: var(--card);
     color: var(--fg);
-    outline: none;
+    font-size: .875rem;
     transition: border-color var(--ease), box-shadow var(--ease);
 }
 
-.req-inline-input:focus {
+.requirement-input:focus {
     border-color: var(--ring);
     box-shadow: 0 0 0 2px rgb(24 24 27 / 8%);
 }
 
-tr.req-editing .req-cell-value {
+.requirement-editing .requirement-value {
     display: none;
 }
 
-tr.req-editing .req-inline-input {
+.requirement-editing .requirement-input {
     display: block;
 }
 
-.req-row-save,
-.req-row-cancel {
+.requirement-editing .requirement-edit,
+.requirement-editing .requirement-delete {
     display: none;
 }
 
-tr.req-editing .req-row-edit,
-tr.req-editing .req-row-delete {
-    display: none;
-}
-
-tr.req-editing .req-row-save,
-tr.req-editing .req-row-cancel {
+.requirement-editing .requirement-save,
+.requirement-editing .requirement-cancel {
     display: inline-flex;
 }
 
 @media (width <= 760px) {
-    .req-form-grid-add,
-    .req-form-grid-search {
+    .requirements-grid-add,
+    .requirements-grid-search {
         grid-template-columns: 1fr;
     }
 
-    .req-field-grade,
-    .req-field-hours {
+    .requirements-field-grade,
+    .requirements-field-hours {
         width: 100%;
     }
 }

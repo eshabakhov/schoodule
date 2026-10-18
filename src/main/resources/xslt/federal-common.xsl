@@ -188,7 +188,6 @@
                              fill="none"
                              stroke="currentColor"
                              stroke-width="2"
-                             style="width:14px;height:14px;"
                              viewBox="0 0 24 24">
                             <polyline points="15 18 9 12 15 6"/>
                         </svg>
@@ -252,7 +251,6 @@
                              fill="none"
                              stroke="currentColor"
                              stroke-width="2"
-                             style="width:14px;height:14px;"
                              viewBox="0 0 24 24">
                             <polyline points="9 18 15 12 9 6"/>
                         </svg>
@@ -371,7 +369,6 @@
              fill="none"
              stroke="currentColor"
              stroke-width="2"
-             style="width:18px;height:18px;"
              viewBox="0 0 24 24">
             <rect height="18" rx="2" ry="2" width="18" x="3" y="4"/>
             <line x1="16" x2="16" y1="2" y2="6"/>

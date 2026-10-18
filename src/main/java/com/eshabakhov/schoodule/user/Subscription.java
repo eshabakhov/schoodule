@@ -50,7 +50,7 @@ public interface Subscription {
      *
      * <p>Corporate users (TEACHER, DIRECTOR, DEPUTY_DIRECTOR, STUDENT)
      * belong to a school and receive their roles through the school
-     * administrator — they never use subscriptions.</p>
+     * administrator - they never use subscriptions.</p>
      *
      * <p>The roles each plan grants are stored in {@code subscription_plan_roles}.
      * Changing a plan's role set requires only a database update, no code change.</p>

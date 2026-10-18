@@ -44,6 +44,17 @@
         </xsl:choose>
     </xsl:template>
 
+    <xsl:template name="styles">
+        <xsl:choose>
+            <xsl:when test="$view = 'create'">
+                <link rel="stylesheet" href="/css/federal/curriculum.css"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <link rel="stylesheet" href="/css/federal/curriculums.css"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
     <xsl:template name="scripts">
         <xsl:if test="$view = 'list'">
             <script type="module" src="/js/federal-curriculums.js"></script>
@@ -56,15 +67,13 @@
                 <h1>Федеральные учебные планы</h1>
                 <p class="page-subtitle">Справочник нормативных учебных планов для школ</p>
             </div>
-            <a class="btn-primary"
+            <a class="btn btn-primary federal-curriculums-add"
                href="/federal/curriculums/create"
-               title="Добавить федеральный учебный план в систему"
-               style="display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border-radius:var(--radius-sm);font-size:.875rem;font-weight:500;text-decoration:none;">
+               title="Добавить федеральный учебный план в систему">
                 <svg xmlns="http://www.w3.org/2000/svg"
                      fill="none"
                      stroke="currentColor"
                      stroke-width="2"
-                     style="width:15px;height:15px;"
                      viewBox="0 0 24 24">
                     <line x1="12" x2="12" y1="5" y2="19"/>
                     <line x1="5" x2="19" y1="12" y2="12"/>
@@ -72,8 +81,7 @@
                 <xsl:text>Добавить план</xsl:text>
             </a>
         </div>
-        <div class="search-wrap"
-             style="width:100%;max-width:360px;margin-bottom:1.25rem;">
+        <div class="search-wrap federal-curriculums-search">
             <svg xmlns="http://www.w3.org/2000/svg"
                  fill="none"
                  stroke="currentColor"
@@ -99,13 +107,12 @@
         <div id="federal-curriculums-results">
             <div class="card-grid" id="federal-curriculums-container">
                 <xsl:if test="not(/schoodule/curriculums/curriculum)">
-                    <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted-fg);">
+                    <div class="federal-curriculums-empty">
                         <xsl:text>Федеральные учебные планы не найдены.</xsl:text>
                     </div>
                 </xsl:if>
                 <xsl:for-each select="/schoodule/curriculums/curriculum">
-                    <div class="card-item federal-curriculum-row"
-                         style="cursor:pointer;">
+                    <div class="card-item federal-curriculum-row federal-curriculum-card">
                         <xsl:attribute name="data-id">
                             <xsl:value-of select="id"/>
                         </xsl:attribute>

@@ -15,7 +15,7 @@ import org.jooq.DSLContext;
 
 /**
  * Postgres implementation of {@link Curriculum}.
- * Holds only {@code fid} and {@code ctx} — all data is read from DB on demand.
+ * Holds only {@code fid} and {@code ctx} - all data is read from DB on demand.
  *
  * @since 0.0.1
  */

@@ -10,7 +10,10 @@ $(() => {
     const path = window.location.pathname;
     const filterFields = ['grade', 'subject', 'part'];
     const sortFields = ['grade', 'subject', 'hours', 'part'];
-    const results = fragment('#req-results', $('#req-tbody').data('search-url'));
+    const results = fragment(
+        '#requirements-results',
+        $('#requirements-body').data('search-url')
+    );
     const shown = remembered(results, path);
     const restored = filters(query(window.location.search), filterFields);
     $('#filter-grade').val(restored.value('grade'));
@@ -31,7 +34,8 @@ $(() => {
 
     $(document).on(
         'click',
-        '#req-pagination .pagination-btn, #req-pagination .pagination-size-btn',
+        '#requirements-pagination .pagination-btn, '
+            + '#requirements-pagination .pagination-size-btn',
         function (event) {
             event.preventDefault();
             const current = query(window.location.search);
@@ -43,7 +47,7 @@ $(() => {
             );
         }
     );
-    $(document).on('click', '.req-sort-btn', function () {
+    $(document).on('click', '.requirements-sort', function () {
         const current = query(window.location.search);
         shown.show(
             sorts(current, sortFields)
@@ -69,21 +73,21 @@ $(() => {
         $('#filter-part').val(currentFilters.value('part'));
         results.show(current);
     });
-    $(document).on('click', '.req-row-edit', function () {
-        $('#req-tbody tr.req-editing').each(function () {
+    $(document).on('click', '.requirement-edit', function () {
+        $('#requirements-body tr.requirement-editing').each(function () {
             requirement($(this)).cancel();
         });
         const editable = requirement($(this).closest('tr'));
         editable.cancel();
         editable.edit();
     });
-    $(document).on('click', '.req-row-cancel', function () {
+    $(document).on('click', '.requirement-cancel', function () {
         requirement($(this).closest('tr')).cancel();
     });
-    $(document).on('click', '.req-row-save', function () {
+    $(document).on('click', '.requirement-save', function () {
         requirement($(this).closest('tr')).save();
     });
-    $(document).on('click', '.btn-delete-requirement', function () {
+    $(document).on('click', '.requirement-delete', function () {
         confirmed(
             `Удалить требование «${$(this).data('name')}»?`,
             removal(

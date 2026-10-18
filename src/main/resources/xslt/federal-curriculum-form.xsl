@@ -5,9 +5,9 @@
         <xsl:param name="editing"/>
         <xsl:variable name="curriculum"
                       select="/schoodule/curriculums/curriculum"/>
-        <div class="page-title-row" style="justify-content:center;">
+        <div class="page-title-row curriculum-form-heading">
             <div>
-                <h1 style="margin:0;">
+                <h1>
                     <xsl:choose>
                         <xsl:when test="$editing">
                             <xsl:text>Редактировать федеральный учебный план</xsl:text>
@@ -22,9 +22,8 @@
                 </xsl:if>
             </div>
         </div>
-        <div style="max-width:640px;margin:0 auto;">
-            <form method="post"
-                  style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="curriculum-form-wrap">
+            <form class="curriculum-form" method="post">
                 <xsl:attribute name="action">
                     <xsl:choose>
                         <xsl:when test="$editing">
@@ -34,8 +33,7 @@
                     </xsl:choose>
                 </xsl:attribute>
                 <xsl:call-template name="csrf-input"/>
-                <label for="title-name"
-                       style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                <label class="curriculum-form-field" for="title-name">
                     <xsl:text>Название</xsl:text>
                     <input id="title-name"
                            name="title"
@@ -49,7 +47,7 @@
                         </xsl:if>
                     </input>
                 </label>
-                <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                <label class="curriculum-form-field">
                     <xsl:text>Уровень образования</xsl:text>
                     <select name="level" required="required">
                         <xsl:call-template name="option">
@@ -69,7 +67,7 @@
                         </xsl:call-template>
                     </select>
                 </label>
-                <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                <label class="curriculum-form-field">
                     <xsl:text>Учебная неделя</xsl:text>
                     <select name="week" required="required">
                         <xsl:call-template name="option">
@@ -84,8 +82,7 @@
                         </xsl:call-template>
                     </select>
                 </label>
-                <label for="version-name"
-                       style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                <label class="curriculum-form-field" for="version-name">
                     <xsl:text>Версия</xsl:text>
                     <input id="version-name"
                            name="version"
@@ -98,8 +95,7 @@
                         </xsl:if>
                     </input>
                 </label>
-                <label for="year-name"
-                       style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                <label class="curriculum-form-field" for="year-name">
                     <xsl:text>Учебный год</xsl:text>
                     <input id="year-name"
                            name="year"
@@ -117,11 +113,11 @@
                         </xsl:choose>
                     </input>
                 </label>
-                <label style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                <label class="curriculum-form-field">
                     <xsl:text>Описание</xsl:text>
                     <textarea name="description" rows="4"><xsl:if test="$editing"><xsl:value-of select="$curriculum/description"/></xsl:if></textarea>
                 </label>
-                <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
+                <div class="curriculum-form-actions">
                     <a class="btn-outline-action"
                        title="Отменить изменение федерального учебного плана">
                         <xsl:attribute name="href">
