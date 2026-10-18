@@ -10,7 +10,7 @@ import org.springframework.util.MultiValueMap;
 /**
  * Federal curriculum input read from HTTP request parameters.
  *
- * @since 0.1.0
+ * @since 0.0.1
  */
 public final class CrInputHttp implements CurriculumInput {
 

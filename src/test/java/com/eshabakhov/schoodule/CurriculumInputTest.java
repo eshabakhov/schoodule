@@ -15,7 +15,7 @@ import org.springframework.util.MultiValueMap;
 /**
  * Tests federal curriculum input.
  *
- * @since 0.1.0
+ * @since 0.0.1
  */
 final class CurriculumInputTest {
 

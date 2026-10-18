@@ -11,7 +11,7 @@ package com.eshabakhov.schoodule;
  * the built-in media are immutable. No getters or reflective inspection of
  * domain fields are required.</p>
  *
- * @since 0.1.0
+ * @since 0.0.1
  */
 @FunctionalInterface
 public interface Printable {

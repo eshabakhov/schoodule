@@ -389,7 +389,7 @@ public class CrsHttp {
                         )
                     )
                 ).with(
-                    "curriculums", new CrsWeb(selected, filters)
+                    "curriculums", new CrsWeb(selected, filters, sorts)
                 ).print();
             case "application/vnd.schoodule.federal-curriculums.v1+json" ->
                 selected.print(new MdJson()).print();

@@ -2,10 +2,12 @@ import { delayed } from './federal/delayed.js';
 import { filters } from './federal/filters.js';
 import { fragment, remembered } from './federal/fragment.js';
 import { query } from './federal/query.js';
+import { sorts } from './federal/sorts.js';
 
 $(() => {
     const path = window.location.pathname;
     const fields = ['title'];
+    const sortFields = ['title', 'level', 'week', 'year'];
     const results = fragment('#federal-curriculums-results', `${path}/fragment`);
     const shown = remembered(results, path);
     const search = $('#federal-curriculum-search');
@@ -49,6 +51,15 @@ $(() => {
     });
     $(document).on('input', '#federal-curriculum-search', function () {
         lookup($(this).val().trim());
+    });
+    $(document).on('click', '.federal-curriculums-sort', function () {
+        const current = query(window.location.search);
+        shown.show(
+            sorts(current, sortFields)
+                .cycled($(this).data('sort'))
+                .query()
+                .paged(1, current.parameter('limit', '15'))
+        );
     });
     window.addEventListener('popstate', () => {
         const current = query(window.location.search);
