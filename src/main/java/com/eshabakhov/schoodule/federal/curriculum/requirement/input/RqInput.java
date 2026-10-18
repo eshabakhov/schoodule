@@ -9,7 +9,7 @@ import com.eshabakhov.schoodule.federal.curriculum.requirement.RequirementInput;
 /**
  * Empty federal curriculum requirement input.
  *
- * @since 0.1.0
+ * @since 0.0.1
  */
 public final class RqInput implements RequirementInput {
 

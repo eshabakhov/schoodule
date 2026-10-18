@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test for {@link FlsCdRequirement}.
  *
- * @since 0.1.0
+ * @since 0.0.1
  */
 final class FlsCdRequirementTest {
 

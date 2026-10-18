@@ -5,6 +5,6 @@
 /**
  * Federal curriculum requirement input objects.
  *
- * @since 0.1.0
+ * @since 0.0.1
  */
 package com.eshabakhov.schoodule.federal.curriculum.requirement.input;

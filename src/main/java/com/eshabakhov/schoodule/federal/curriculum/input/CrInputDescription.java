@@ -9,7 +9,7 @@ import com.eshabakhov.schoodule.federal.curriculum.CurriculumInput;
 /**
  * Federal curriculum input with a description.
  *
- * @since 0.1.0
+ * @since 0.0.1
  */
 public final class CrInputDescription implements CurriculumInput {
 

@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Immutable map medium for federal curriculum requirement input.
  *
- * @since 0.1.0
+ * @since 0.0.1
  */
 public final class MdRqInput implements Media<Map<String, String>> {
 

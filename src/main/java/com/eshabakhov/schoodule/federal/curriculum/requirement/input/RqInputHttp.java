@@ -10,7 +10,7 @@ import org.springframework.util.MultiValueMap;
 /**
  * Federal curriculum requirement input read from HTTP request parameters.
  *
- * @since 0.1.0
+ * @since 0.0.1
  */
 public final class RqInputHttp implements RequirementInput {
 

@@ -17,7 +17,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 /**
  * Test for {@link FlCdRequirementByPart}.
  *
- * @since 0.1.0
+ * @since 0.0.1
  */
 final class FlCdRequirementByPartTest {
 

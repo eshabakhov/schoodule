@@ -6,7 +6,7 @@ package com.eshabakhov.schoodule.federal.curriculum.requirement.input;
 /**
  * Invalid federal curriculum requirement input.
  *
- * @since 0.1.0
+ * @since 0.0.1
  */
 public final class RequirementInputException extends Exception {
 

@@ -10,7 +10,7 @@ import com.eshabakhov.schoodule.federal.curriculum.CurriculumInput;
 /**
  * Federal curriculum input with a study week.
  *
- * @since 0.1.0
+ * @since 0.0.1
  */
 public final class CrInputWeek implements CurriculumInput {
 
