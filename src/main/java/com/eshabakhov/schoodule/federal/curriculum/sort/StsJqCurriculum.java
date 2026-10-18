@@ -48,10 +48,14 @@ public final class StsJqCurriculum implements StsJooq {
     @Override
     public List<SortField<?>> fields() {
         final List<SortField<?>> fields = new ArrayList<>(this.origin.sorts().size());
-        for (final Sort sort : this.origin.sorts()) {
-            final StJooq field = new StJqCurriculum(sort);
-            if (field.field() != null) {
-                fields.add(field.field());
+        for (final String name : List.of("title", "level", "week", "year")) {
+            for (final Sort sort : this.origin.sorts()) {
+                if (name.equals(sort.name())) {
+                    final StJooq field = new StJqCurriculum(sort);
+                    if (field.field() != null) {
+                        fields.add(field.field());
+                    }
+                }
             }
         }
         if (fields.isEmpty()) {

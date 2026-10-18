@@ -7,10 +7,66 @@
     height: 15px;
 }
 
+.federal-curriculums-content {
+    display: grid;
+    grid-template-columns: minmax(240px, 360px) minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+}
+
 .federal-curriculums-search {
     width: 100%;
-    max-width: 360px;
-    margin-bottom: 1.25rem;
+    max-width: none;
+    margin: 0;
+}
+
+.federal-curriculums-results {
+    display: contents;
+}
+
+.federal-curriculums-sort-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: .5rem;
+}
+
+.federal-curriculums-sort {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .375rem;
+    min-height: 34px;
+    padding: .375rem .75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--muted-fg);
+    font-size: .8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--ease), color var(--ease), border-color var(--ease);
+}
+
+.federal-curriculums-sort:hover {
+    background: var(--accent);
+    color: var(--fg);
+}
+
+.federal-curriculums-sort.active {
+    border-color: var(--primary);
+    color: var(--fg);
+}
+
+.federal-curriculums-sort-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1em;
+    line-height: 1;
 }
 
 .federal-curriculums-empty {
@@ -22,4 +78,26 @@
 
 .federal-curriculum-card {
     cursor: pointer;
+}
+
+/* List and pagination occupy the full width below the toolbar. */
+.federal-curriculums-content .card-grid,
+.federal-curriculums-content .pagination-wrap {
+    grid-column: 1 / -1;
+}
+
+@media (width <= 900px) {
+    .federal-curriculums-content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .federal-curriculums-sort-controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        justify-content: stretch;
+    }
+
+    .federal-curriculums-sort {
+        width: 100%;
+    }
 }

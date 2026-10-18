@@ -9,6 +9,7 @@ import com.eshabakhov.schoodule.Page;
 import com.eshabakhov.schoodule.PrItems;
 import com.eshabakhov.schoodule.Sorts;
 import com.eshabakhov.schoodule.filter.FlWeb;
+import com.eshabakhov.schoodule.sort.StWeb;
 
 /**
  * Browser representation of federal curriculums.
@@ -23,15 +24,24 @@ public final class CrsWeb implements Curriculums {
     /** Applied filters. */
     private final Filters filters;
 
+    /** Applied sorts. */
+    private final Sorts sorts;
+
     /**
      * New browser representation.
      *
      * @param origin Origin curriculums
      * @param filters Applied filters
+     * @param sorts Applied sorts
      */
-    public CrsWeb(final Curriculums origin, final Filters filters) {
+    public CrsWeb(
+        final Curriculums origin,
+        final Filters filters,
+        final Sorts sorts
+    ) {
         this.origin = origin;
         this.filters = filters;
+        this.sorts = sorts;
     }
 
     @Override
@@ -48,9 +58,9 @@ public final class CrsWeb implements Curriculums {
     public Curriculums selection(
         final Filters selected,
         final Page page,
-        final Sorts sorts
+        final Sorts selecteds
     ) throws Exception {
-        return this.origin.selection(selected, page, sorts);
+        return this.origin.selection(selected, page, selecteds);
     }
 
     @Override
@@ -70,6 +80,12 @@ public final class CrsWeb implements Curriculums {
             new PrItems(
                 "item",
                 this.filters.filters().stream().map(FlWeb::new).toList()
+            )
+        ).with(
+            "sorts",
+            new PrItems(
+                "item",
+                this.sorts.sorts().stream().map(StWeb::new).toList()
             )
         );
     }

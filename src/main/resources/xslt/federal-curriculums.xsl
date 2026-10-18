@@ -81,30 +81,59 @@
                 <xsl:text>Добавить план</xsl:text>
             </a>
         </div>
-        <div class="search-wrap federal-curriculums-search">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 fill="none"
-                 stroke="currentColor"
-                 stroke-width="2"
-                 viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8"/>
-                <line x1="21" x2="16.65" y1="21" y2="16.65"/>
-            </svg>
-            <label for="federal-curriculum-search">
-                <input id="federal-curriculum-search"
-                       type="text"
-                       placeholder="Поиск плана...">
-                    <xsl:attribute name="value">
-                        <xsl:value-of select="/schoodule/curriculums/filters/item[name = 'title']/value"/>
-                    </xsl:attribute>
-                </input>
-            </label>
+        <div class="federal-curriculums-content">
+            <div class="search-wrap federal-curriculums-search">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" x2="16.65" y1="21" y2="16.65"/>
+                </svg>
+                <label for="federal-curriculum-search">
+                    <input id="federal-curriculum-search"
+                           type="text"
+                           placeholder="Поиск плана...">
+                        <xsl:attribute name="value">
+                            <xsl:value-of select="/schoodule/curriculums/filters/item[name = 'title']/value"/>
+                        </xsl:attribute>
+                    </input>
+                </label>
+            </div>
+            <xsl:call-template name="curriculums-results"/>
         </div>
-        <xsl:call-template name="curriculums-results"/>
     </xsl:template>
 
     <xsl:template name="curriculums-results">
-        <div id="federal-curriculums-results">
+        <div class="federal-curriculums-results"
+             id="federal-curriculums-results">
+            <div class="federal-curriculums-sort-controls">
+                <xsl:call-template name="curriculum-sort">
+                    <xsl:with-param name="field" select="'title'"/>
+                    <xsl:with-param name="label" select="'Название'"/>
+                    <xsl:with-param name="title"
+                                    select="'Сортировать по названию'"/>
+                </xsl:call-template>
+                <xsl:call-template name="curriculum-sort">
+                    <xsl:with-param name="field" select="'level'"/>
+                    <xsl:with-param name="label" select="'Уровень'"/>
+                    <xsl:with-param name="title"
+                                    select="'Сортировать по уровню образования'"/>
+                </xsl:call-template>
+                <xsl:call-template name="curriculum-sort">
+                    <xsl:with-param name="field" select="'week'"/>
+                    <xsl:with-param name="label" select="'Неделя'"/>
+                    <xsl:with-param name="title"
+                                    select="'Сортировать по учебной неделе'"/>
+                </xsl:call-template>
+                <xsl:call-template name="curriculum-sort">
+                    <xsl:with-param name="field" select="'year'"/>
+                    <xsl:with-param name="label" select="'Учебный год'"/>
+                    <xsl:with-param name="title"
+                                    select="'Сортировать по учебному году'"/>
+                </xsl:call-template>
+            </div>
             <div class="card-grid" id="federal-curriculums-container">
                 <xsl:if test="not(/schoodule/curriculums/curriculum)">
                     <div class="federal-curriculums-empty">
@@ -153,6 +182,32 @@
                 <xsl:with-param name="ellipsis" select="'…'"/>
             </xsl:call-template>
         </div>
+    </xsl:template>
+
+    <xsl:template name="curriculum-sort">
+        <xsl:param name="field"/>
+        <xsl:param name="label"/>
+        <xsl:param name="title"/>
+        <xsl:variable name="direction"
+                      select="/schoodule/curriculums/sorts/item[name = $field]/direction"/>
+        <button type="button">
+            <xsl:attribute name="class">
+                <xsl:text>federal-curriculums-sort</xsl:text>
+                <xsl:if test="$direction = 'ASC' or $direction = 'DESC'">
+                    <xsl:text> active</xsl:text>
+                </xsl:if>
+            </xsl:attribute>
+            <xsl:attribute name="title"><xsl:value-of select="$title"/></xsl:attribute>
+            <xsl:attribute name="data-sort"><xsl:value-of select="$field"/></xsl:attribute>
+            <span><xsl:value-of select="$label"/></span>
+            <span class="federal-curriculums-sort-icon">
+                <xsl:choose>
+                    <xsl:when test="$direction = 'ASC'">↑</xsl:when>
+                    <xsl:when test="$direction = 'DESC'">↓</xsl:when>
+                    <xsl:otherwise>↕</xsl:otherwise>
+                </xsl:choose>
+            </span>
+        </button>
     </xsl:template>
 
     <xsl:template name="create">

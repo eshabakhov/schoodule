@@ -89,6 +89,7 @@ final class MediaTest {
         Assertions.assertTrue(
             printed.contains("id=\"federal-curriculums-results\"")
         );
+        Assertions.assertTrue(printed.contains("data-sort=\"title\""));
         Assertions.assertTrue(printed.contains("/js/federal-curriculums.js"));
     }
 
