@@ -15,33 +15,41 @@ import org.junit.jupiter.api.Test;
 final class RequirementInputExceptionTest {
 
     @Test
-    void createsExceptionWithoutCause() {
+    void retainsMessageWithoutCause() {
         MatcherAssert.assertThat(
-            "Single-argument exception must retain its state",
-            new RequirementInputException("Invalid input"),
-            Matchers.allOf(
-                Matchers.hasProperty(
-                    "message", Matchers.is("Invalid input")
-                ),
-                Matchers.hasProperty("cause", Matchers.nullValue())
-            )
+            "Single-argument exception must retain its message",
+            new RequirementInputException("Invalid input").getMessage(),
+            Matchers.is("Invalid input")
         );
     }
 
     @Test
-    void createsExceptionWithCause() {
+    void exposesEmptyCause() {
+        MatcherAssert.assertThat(
+            "Single-argument exception must expose an empty cause",
+            new RequirementInputException("Invalid input").getCause(),
+            Matchers.nullValue()
+        );
+    }
+
+    @Test
+    void retainsMessageWithCause() {
+        MatcherAssert.assertThat(
+            "Two-argument exception must retain its message",
+            new RequirementInputException(
+                "Invalid input", new IllegalArgumentException("Invalid value")
+            ).getMessage(),
+            Matchers.is("Invalid input")
+        );
+    }
+
+    @Test
+    void retainsCause() {
         final Throwable cause = new IllegalArgumentException("Invalid value");
         MatcherAssert.assertThat(
-            "Two-argument exception must retain its state",
-            new RequirementInputException("Invalid input", cause),
-            Matchers.allOf(
-                Matchers.hasProperty(
-                    "message", Matchers.is("Invalid input")
-                ),
-                Matchers.hasProperty(
-                    "cause", Matchers.sameInstance(cause)
-                )
-            )
+            "Two-argument exception must retain its cause",
+            new RequirementInputException("Invalid input", cause).getCause(),
+            Matchers.sameInstance(cause)
         );
     }
 }
