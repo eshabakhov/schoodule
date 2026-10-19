@@ -11,7 +11,7 @@
     <meta charset="UTF-8">
     <meta name="description" content="Surok - система управления школьными расписаниями">
     <title th:text="${pageTitle} ?: 'Surok'">Surok</title>
-    <link type="image/png" rel="icon" href="/favicon.svg">
+    <link type="image/svg+xml" rel="icon" href="/favicon.svg">
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
@@ -20,17 +20,7 @@
             <a class="app-header-logo"
                href="/"
                title="Перейти на главную страницу">
-                <svg fill="none"
-                     stroke="currentColor"
-                     stroke-width="2"
-                     style="width:18px;height:18px;"
-                     viewBox="0 0 24 24"
-                     xmlns="http://www.w3.org/2000/svg">
-                    <rect height="18" rx="2" ry="2" width="18" x="3" y="4"/>
-                    <line x1="16" x2="16" y1="2" y2="6"/>
-                    <line x1="8" x2="8" y1="2" y2="6"/>
-                    <line x1="3" x2="21" y1="10" y2="10"/>
-                </svg>
+                <span class="brand-mark" aria-hidden="true"></span>
                 Surok
                 <span class="app-header-logo-version">v0.0.1</span>
             </a>

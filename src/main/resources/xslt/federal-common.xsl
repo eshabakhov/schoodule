@@ -33,7 +33,7 @@
                 <meta name="description"
                       content="Surok - система управления школьными расписаниями"/>
                 <title><xsl:call-template name="page-title"/></title>
-                <link type="image/png" rel="icon" href="/favicon.svg"/>
+                <link type="image/svg+xml" rel="icon" href="/favicon.svg"/>
                 <link rel="stylesheet" href="/css/main.css"/>
                 <xsl:call-template name="styles"/>
             </head>
@@ -66,7 +66,7 @@
                 <a class="app-header-logo"
                    href="/"
                    title="Перейти на главную страницу">
-                    <xsl:call-template name="calendar-icon"/>
+                    <xsl:call-template name="brand-mark"/>
                     <xsl:text>Surok</xsl:text>
                     <span class="app-header-logo-version">v0.0.1</span>
                 </a>
@@ -364,17 +364,8 @@
         </option>
     </xsl:template>
 
-    <xsl:template name="calendar-icon">
-        <svg xmlns="http://www.w3.org/2000/svg"
-             fill="none"
-             stroke="currentColor"
-             stroke-width="2"
-             viewBox="0 0 24 24">
-            <rect height="18" rx="2" ry="2" width="18" x="3" y="4"/>
-            <line x1="16" x2="16" y1="2" y2="6"/>
-            <line x1="8" x2="8" y1="2" y2="6"/>
-            <line x1="3" x2="21" y1="10" y2="10"/>
-        </svg>
+    <xsl:template name="brand-mark">
+        <span class="brand-mark" aria-hidden="true"></span>
     </xsl:template>
 
     <xsl:template name="edit-icon">

@@ -75,14 +75,14 @@ body::before {
     width: 44px;
     height: 44px;
     border-radius: var(--radius);
-    background: var(--primary);
+    background: var(--card);
+    border: 1px solid var(--border);
     margin-bottom: 0.25rem;
 }
 
-.logo-wrap svg {
-    width: 22px;
-    height: 22px;
-    color: var(--primary-fg);
+.logo-wrap .brand-mark {
+    width: 34px;
+    height: 34px;
 }
 
 .card-title {

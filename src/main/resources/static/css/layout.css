@@ -54,9 +54,15 @@ body {
     background: var(--accent);
 }
 
-.app-header-logo > svg {
-    width: 18px;
-    height: 18px;
+.brand-mark {
+    display: inline-block;
+    background: url('/favicon.svg') center / contain no-repeat;
+    flex-shrink: 0;
+}
+
+.app-header-logo > .brand-mark {
+    width: 22px;
+    height: 22px;
 }
 
 .app-header-title {
