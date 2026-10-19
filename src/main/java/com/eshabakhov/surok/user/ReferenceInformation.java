@@ -1,0 +1,89 @@
+/*
+ * © 2025-2026 Eset Shabakhov. Surok
+ */
+package com.eshabakhov.surok.user;
+
+import com.eshabakhov.surok.User;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jooq.DSLContext;
+
+/**
+ * Reference information for {@link User}.
+ *
+ * @since 0.0.1
+ */
+public interface ReferenceInformation {
+
+    /**
+     * School identifier.
+     *
+     * @return School identifier
+     */
+    @JsonProperty
+    Long school();
+
+    /**
+     * Corporate account marker.
+     *
+     * @return Corporate account marker
+     */
+    @JsonProperty
+    Boolean corporate();
+
+    /**
+     * Account availability marker.
+     *
+     * @return Account availability marker
+     */
+    @JsonProperty
+    Boolean alive();
+
+    /**
+     * Postgres implementation of {@link ReferenceInformation}.
+     *
+     * @since 0.0.1
+     */
+    final class RefInfoPostgres implements ReferenceInformation {
+
+        /** Database context. */
+        private final DSLContext ctx;
+
+        /** User id. */
+        private final Long user;
+
+        /**
+         * New reference information.
+         *
+         * @param ctx Database context
+         * @param user User identifier
+         */
+        public RefInfoPostgres(final DSLContext ctx, final Long user) {
+            this.ctx = ctx;
+            this.user = user;
+        }
+
+        @Override
+        public Long school() {
+            return this.ctx.select(com.eshabakhov.surok.tables.User.USER.SCHOOL_ID)
+                .from(com.eshabakhov.surok.tables.User.USER)
+                .where(com.eshabakhov.surok.tables.User.USER.ID.eq(this.user))
+                .fetchOneInto(Long.class);
+        }
+
+        @Override
+        public Boolean corporate() {
+            return this.ctx.select(com.eshabakhov.surok.tables.User.USER.CORPORATE)
+                .from(com.eshabakhov.surok.tables.User.USER)
+                .where(com.eshabakhov.surok.tables.User.USER.ID.eq(this.user))
+                .fetchOneInto(Boolean.class);
+        }
+
+        @Override
+        public Boolean alive() {
+            return this.ctx.select(com.eshabakhov.surok.tables.User.USER.DELETED)
+                .from(com.eshabakhov.surok.tables.User.USER)
+                .where(com.eshabakhov.surok.tables.User.USER.ID.eq(this.user))
+                .fetchOne() != null;
+        }
+    }
+}

@@ -1,0 +1,112 @@
+/*
+ * © 2025-2026 Eset Shabakhov. Surok
+ */
+package com.eshabakhov.surok.school;
+
+import com.eshabakhov.surok.School;
+import com.eshabakhov.surok.Users;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+/**
+ * Basic implementation of {@link School}.
+ *
+ * @since 0.0.1
+ */
+@ToString(of = {"sid", "sname"})
+@EqualsAndHashCode
+public final class SlBase implements School {
+
+    /** School id. */
+    private final long sid;
+
+    /** School name. */
+    private final String sname;
+
+    /**
+     * New school without an ID.
+     *
+     * @param sname School name
+     * @since 0.0.1
+     */
+    public SlBase(final String sname) {
+        this(Long.MIN_VALUE, sname);
+    }
+
+    /**
+     * New school.
+     *
+     * @param sid School ID
+     * @param sname School name
+     * @since 0.0.1
+     */
+    public SlBase(final long sid, final String sname) {
+        this.sid = sid;
+        this.sname = sname;
+    }
+
+    @Override
+    public Long uid() {
+        return this.sid;
+    }
+
+    @Override
+    public String name() {
+        return this.sname;
+    }
+
+    @Override
+    public School renamed(final String name) {
+        return new SlBase(this.sid, name);
+    }
+
+    @Override
+    public Users users() {
+        return null;
+    }
+
+    @Override
+    public Buildings buildings() {
+        throw new UnsupportedOperationException(
+            "Buildings are infrastructure-dependent"
+        );
+    }
+
+    @Override
+    public Teachers teachers() {
+        throw new UnsupportedOperationException(
+            "Teachers are infrastructure-dependent"
+        );
+    }
+
+    @Override
+    public SchoolClasses schoolClasses() {
+        throw new UnsupportedOperationException(
+            "SchoolClasses are infrastructure-dependent"
+        );
+    }
+
+    @Override
+    public Subjects subjects() {
+        throw new UnsupportedOperationException(
+            "Subjects are infrastructure-dependent"
+        );
+    }
+
+    @Override
+    public Schedules schedules() {
+        throw new UnsupportedOperationException(
+            "Schedules are infrastructure-dependent"
+        );
+    }
+
+    @Override
+    public ObjectNode json() {
+        return JsonNodeFactory.instance.objectNode()
+            .put("id", this.sid)
+            .put("name", this.sname);
+    }
+}
+

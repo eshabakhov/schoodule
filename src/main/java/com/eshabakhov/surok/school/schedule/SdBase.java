@@ -1,0 +1,74 @@
+/*
+ * © 2025-2026 Eset Shabakhov. Surok
+ */
+package com.eshabakhov.surok.school.schedule;
+
+import com.eshabakhov.surok.school.Schedule;
+import com.eshabakhov.surok.school.schedule.load.ClassLoads;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+/**
+ * Base implementation of {@link Schedule}.
+ *
+ * @since 0.0.1
+ */
+public final class SdBase implements Schedule {
+
+    /** Schedule id. */
+    private final long sid;
+
+    /** Schedule name. */
+    private final String sname;
+
+    /**
+     * New schedule without an ID.
+     *
+     * @param sname Schedule name
+     * @since 0.0.1
+     */
+    public SdBase(final String sname) {
+        this(Long.MIN_VALUE, sname);
+    }
+
+    /**
+     * New schedule.
+     *
+     * @param sid Schedule ID
+     * @param sname Schedule name
+     * @since 0.0.1
+     */
+    public SdBase(final long sid, final String sname) {
+        this.sid = sid;
+        this.sname = sname;
+    }
+
+    @Override
+    public Long uid() {
+        return this.sid;
+    }
+
+    @Override
+    public String name() {
+        return this.sname;
+    }
+
+    @Override
+    public Schedule renamed(final String name) {
+        return new SdBase(this.sid, name);
+    }
+
+    @Override
+    public ObjectNode json() {
+        return JsonNodeFactory.instance.objectNode()
+            .put("id", this.sid)
+            .put("name", this.sname);
+    }
+
+    @Override
+    public ClassLoads loads() {
+        throw new UnsupportedOperationException(
+            "ClassLoads are infrastructure-dependent"
+        );
+    }
+}

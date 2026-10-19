@@ -1,0 +1,67 @@
+/*
+ * © 2025-2026 Eset Shabakhov. Surok
+ */
+package com.eshabakhov.surok.federal.curriculum.sort;
+
+import com.eshabakhov.surok.Sort;
+import com.eshabakhov.surok.Sorts;
+import com.eshabakhov.surok.sort.StJooq;
+import com.eshabakhov.surok.sort.StsJooq;
+import com.eshabakhov.surok.tables.FederalCurriculum;
+import java.util.ArrayList;
+import java.util.List;
+import org.jooq.SortField;
+
+/**
+ * Federal curriculum JOOQ sorting parameters.
+ *
+ * @since 0.0.1
+ */
+public final class StsJqCurriculum implements StsJooq {
+
+    /**
+     * JOOQ Table for Curriculum.
+     */
+    private static final FederalCurriculum CURRICULUM =
+        FederalCurriculum.FEDERAL_CURRICULUM;
+
+    /**
+     * Origin sorting parameters.
+     */
+    private final Sorts origin;
+
+    /**
+     * Ctor.
+     *
+     * @param origin Origin sorting parameters
+     * @since 0.0.1
+     */
+    public StsJqCurriculum(final Sorts origin) {
+        this.origin = origin;
+    }
+
+    @Override
+    public List<Sort> sorts() {
+        return this.origin.sorts();
+    }
+
+    @Override
+    public List<SortField<?>> fields() {
+        final List<SortField<?>> fields = new ArrayList<>(this.origin.sorts().size());
+        for (final String name : List.of("title", "level", "week", "year")) {
+            for (final Sort sort : this.origin.sorts()) {
+                if (name.equals(sort.name())) {
+                    final StJooq field = new StJqCurriculum(sort);
+                    if (field.field() != null) {
+                        fields.add(field.field());
+                    }
+                }
+            }
+        }
+        if (fields.isEmpty()) {
+            fields.add(StsJqCurriculum.CURRICULUM.ACADEMIC_YEAR.desc());
+            fields.add(StsJqCurriculum.CURRICULUM.TITLE.asc());
+        }
+        return fields;
+    }
+}
