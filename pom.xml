@@ -9,9 +9,9 @@
 		<relativePath/>
 	</parent>
 	<groupId>com.eshabakhov</groupId>
-	<artifactId>schoodule</artifactId>
+	<artifactId>surok</artifactId>
 	<version>0.0.1</version>
-	<name>schoodule</name>
+	<name>surok</name>
 	<description>Project for managing school schedule</description>
 	<url/>
 	<licenses>
@@ -247,7 +247,7 @@
 									</schemata>
 								</database>
 								<target>
-									<packageName>com.eshabakhov.schoodule</packageName>
+									<packageName>com.eshabakhov.surok</packageName>
 									<directory>target/generated-sources/jooq</directory>
 								</target>
 							</generator>

@@ -96,7 +96,7 @@
                            type="text"
                            placeholder="Поиск плана...">
                         <xsl:attribute name="value">
-                            <xsl:value-of select="/schoodule/curriculums/filters/item[name = 'title']/value"/>
+                            <xsl:value-of select="/surok/curriculums/filters/item[name = 'title']/value"/>
                         </xsl:attribute>
                     </input>
                 </label>
@@ -135,12 +135,12 @@
                 </xsl:call-template>
             </div>
             <div class="card-grid" id="federal-curriculums-container">
-                <xsl:if test="not(/schoodule/curriculums/curriculum)">
+                <xsl:if test="not(/surok/curriculums/curriculum)">
                     <div class="federal-curriculums-empty">
                         <xsl:text>Федеральные учебные планы не найдены.</xsl:text>
                     </div>
                 </xsl:if>
-                <xsl:for-each select="/schoodule/curriculums/curriculum">
+                <xsl:for-each select="/surok/curriculums/curriculum">
                     <div class="card-item federal-curriculum-row federal-curriculum-card">
                         <xsl:attribute name="data-id">
                             <xsl:value-of select="id"/>
@@ -176,7 +176,7 @@
             </div>
             <xsl:call-template name="pagination">
                 <xsl:with-param name="page"
-                                select="/schoodule/curriculums/page"/>
+                                select="/surok/curriculums/page"/>
                 <xsl:with-param name="prefix"
                                 select="'federal-curriculums'"/>
                 <xsl:with-param name="ellipsis" select="'…'"/>
@@ -189,7 +189,7 @@
         <xsl:param name="label"/>
         <xsl:param name="title"/>
         <xsl:variable name="direction"
-                      select="/schoodule/curriculums/sorts/item[name = $field]/direction"/>
+                      select="/surok/curriculums/sorts/item[name = $field]/direction"/>
         <button type="button">
             <xsl:attribute name="class">
                 <xsl:text>federal-curriculums-sort</xsl:text>

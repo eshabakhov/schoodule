@@ -23,7 +23,7 @@
 
     <xsl:template name="page-title">
         <xsl:text>Требования: </xsl:text>
-        <xsl:value-of select="/schoodule/curriculums/curriculum/title"/>
+        <xsl:value-of select="/surok/curriculums/curriculum/title"/>
     </xsl:template>
 
     <xsl:template name="styles">
@@ -42,7 +42,7 @@
 
     <xsl:template name="requirements">
         <xsl:variable name="curriculum"
-                      select="/schoodule/curriculums/curriculum"/>
+                      select="/surok/curriculums/curriculum"/>
         <nav class="breadcrumbs" aria-label="Навигационная цепочка">
             <a class="breadcrumb-link"
                href="/federal/curriculums"
@@ -139,7 +139,7 @@
 
     <xsl:template name="requirements-results">
         <xsl:variable name="curriculum"
-                      select="/schoodule/curriculums/curriculum"/>
+                      select="/surok/curriculums/curriculum"/>
         <xsl:variable name="requirements"
                       select="$curriculum/requirements"/>
         <div id="requirements-results">

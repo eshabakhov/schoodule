@@ -1,9 +1,9 @@
 spring:
   application:
-    name: schoodule
+    name: surok
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DB_URL:${db.url:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}}}
+    url: ${DB_URL:${db.url:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:15432}/${DB_NAME:postgres}}}
     username: ${DB_USERNAME:${db.username:postgres}}
     password: ${DB_PASSWORD:${db.password:postgres}}
   liquibase:
@@ -34,7 +34,7 @@ spring:
             user-info-uri: https://login.yandex.ru/info?format=json
             user-name-attribute: default_email
 server:
-  port: 9500
+  port: 19500
   forward-headers-strategy: native
   servlet:
     session:
@@ -44,20 +44,20 @@ server:
         secure: ${APP_SECURITY_SECURE_COOKIE:true}
 springdoc:
   api-docs:
-    enabled: ${APP_SECURITY_DOCS_ENABLED:false}
+    enabled: ${APP_SECURITY_DOCS_ENABLED:true}
     path: /api-docs
   swagger-ui:
-    enabled: ${APP_SECURITY_DOCS_ENABLED:false}
+    enabled: ${APP_SECURITY_DOCS_ENABLED:true}
     path: /swagger-ui.html
 app:
   bootstrap-admin:
-    enabled: ${BOOTSTRAP_ADMIN_ENABLED:false}
-    username: ${BOOTSTRAP_ADMIN_USERNAME:}
-    email: ${BOOTSTRAP_ADMIN_EMAIL:}
-    password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+    enabled: ${BOOTSTRAP_ADMIN_ENABLED:true}
+    username: ${BOOTSTRAP_ADMIN_USERNAME:admin}
+    email: ${BOOTSTRAP_ADMIN_EMAIL:admin@mail.ru}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:Admiiiin0!}
   security:
     docs:
-      enabled: ${APP_SECURITY_DOCS_ENABLED:false}
+      enabled: ${APP_SECURITY_DOCS_ENABLED:true}
     prometheus:
       enabled: ${APP_SECURITY_PROMETHEUS_ENABLED:false}
     allowed-origins: ${APP_SECURITY_ALLOWED_ORIGINS:}

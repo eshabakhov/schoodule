@@ -4,7 +4,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
-    <changeSet id="schoodule-tables/v1/02-02-2025/3" author="Shabakhov_Eset">
+    <changeSet id="surok-tables/v1/02-02-2025/3" author="Shabakhov_Eset">
         <sql>
             <![CDATA[
             CREATE TYPE role_type AS ENUM (

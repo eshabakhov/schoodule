@@ -1,0 +1,86 @@
+/*
+ * © 2025-2026 Eset Shabakhov. Surok
+ */
+package com.eshabakhov.surok;
+
+import com.eshabakhov.surok.school.Buildings;
+import com.eshabakhov.surok.school.Schedules;
+import com.eshabakhov.surok.school.SchoolClasses;
+import com.eshabakhov.surok.school.Subjects;
+import com.eshabakhov.surok.school.Teachers;
+
+/**
+ * School domain entity interface.
+ *
+ * <p>Represents a school entity with its properties and associated
+ * collections of domain objects like cabinets, teachers, classes,
+ * subjects and schedules.</p>
+ *
+ * @since 0.0.1
+ */
+public interface School extends Jsonable {
+
+    /**
+     * Returns a School unique identifier.
+     *
+     * @return School's ID
+     */
+    Long uid();
+
+    /**
+     * Returns a name of the school.
+     *
+     * @return Name of the school
+     */
+    String name();
+
+    /**
+     * Returns renamed school.
+     *
+     * @param name New name of school
+     * @return School with new name
+     */
+    School renamed(String name);
+
+    /**
+     * Return users.
+     *
+     * @return Users
+     */
+    Users users();
+
+    /**
+     * Returns collection of school's buildings.
+     *
+     * @return Buildings collection
+     */
+    Buildings buildings();
+
+    /**
+     * Returns collection of school's teachers.
+     *
+     * @return Teachers collection
+     */
+    Teachers teachers();
+
+    /**
+     * Returns collection of school's classes.
+     *
+     * @return School classes collection
+     */
+    SchoolClasses schoolClasses();
+
+    /**
+     * Returns collection of school's subjects.
+     *
+     * @return Subjects collection
+     */
+    Subjects subjects();
+
+    /**
+     * Returns collection of school's schedules.
+     *
+     * @return Schedules collection
+     */
+    Schedules schedules();
+}
