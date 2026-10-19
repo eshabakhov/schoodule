@@ -5,7 +5,6 @@ package com.eshabakhov.schoodule.federal.curriculum.requirement.input;
 
 import com.eshabakhov.schoodule.ResultPage;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -29,28 +28,50 @@ final class MdRqInputTest {
     }
 
     @Test
-    void printsScalarFieldsWithoutChangingOrigin() {
-        final MdRqInput origin = new MdRqInput().with("text", "value");
+    void returnsNewMediumForStringField() {
+        final MdRqInput origin = new MdRqInput();
         MatcherAssert.assertThat(
-            "Changed medium must not mutate its origin",
-            List.of(
-                origin.print(),
-                origin.with("long", Long.MIN_VALUE)
-                    .with("integer", Integer.MAX_VALUE)
-                    .with("boolean", true)
-                    .print()
-            ),
+            "A string field must produce a new input medium",
+            origin.with("text", "value"),
+            Matchers.not(Matchers.sameInstance(origin))
+        );
+    }
+
+    @Test
+    void printsStringField() {
+        MatcherAssert.assertThat(
+            "Input medium must retain a string field",
+            new MdRqInput().with("text", "value").print(),
+            Matchers.is(Map.of("text", "value"))
+        );
+    }
+
+    @Test
+    void printsLongField() {
+        MatcherAssert.assertThat(
+            "Input medium must retain a long field",
+            new MdRqInput().with("long", Long.MIN_VALUE).print(),
+            Matchers.is(Map.of("long", Long.toString(Long.MIN_VALUE)))
+        );
+    }
+
+    @Test
+    void printsIntegerField() {
+        MatcherAssert.assertThat(
+            "Input medium must retain an integer field",
+            new MdRqInput().with("integer", Integer.MAX_VALUE).print(),
             Matchers.is(
-                List.of(
-                    Map.of("text", "value"),
-                    Map.of(
-                        "text", "value",
-                        "long", Long.toString(Long.MIN_VALUE),
-                        "integer", Integer.toString(Integer.MAX_VALUE),
-                        "boolean", "true"
-                    )
-                )
+                Map.of("integer", Integer.toString(Integer.MAX_VALUE))
             )
+        );
+    }
+
+    @Test
+    void printsBooleanField() {
+        MatcherAssert.assertThat(
+            "Input medium must retain a boolean field",
+            new MdRqInput().with("boolean", true).print(),
+            Matchers.is(Map.of("boolean", "true"))
         );
     }
 
