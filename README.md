@@ -1,15 +1,15 @@
 # School schedules
 
-<img src="src/main/resources/static/favicon.svg" alt="Schoodule" height="64">
+<img src="src/main/resources/static/favicon.svg" alt="Surok" height="64">
 
-[![Build And Deploy](https://github.com/eshabakhov/schoodule/actions/workflows/deploy.yml/badge.svg)](https://github.com/eshabakhov/schoodule/actions/workflows/deploy.yml)
-[![actionlint](https://github.com/eshabakhov/schoodule/actions/workflows/actionlint.yml/badge.svg)](https://github.com/eshabakhov/schoodule/actions/workflows/actionlint.yml)
-[![yamllint](https://github.com/eshabakhov/schoodule/actions/workflows/yamllint.yml/badge.svg)](https://github.com/eshabakhov/schoodule/actions/workflows/yamllint.yml)
-[![shellcheck](https://github.com/eshabakhov/schoodule/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/eshabakhov/schoodule/actions/workflows/shellcheck.yml)
-[![trufflehog-oss](https://github.com/eshabakhov/schoodule/actions/workflows/trufflehog-oss.yml/badge.svg)](https://github.com/eshabakhov/schoodule/actions/workflows/trufflehog-oss.yml)
-[![Lines-of-Code](https://img.shields.io/tokei/lines/github/eshabakhov/schoodule)](https://github.com/eshabakhov/schoodule)
-[![Hits-of-Code](https://hitsofcode.com/github/eshabakhov/schoodule)](https://hitsofcode.com/view/github/eshabakhov/schoodule)
-[![License](https://img.shields.io/badge/license-Proprietary-red.svg)](https://github.com/eshabakhov/schoodule/blob/main/LICENSE.txt)
+[![Build And Deploy](https://github.com/eshabakhov/surok/actions/workflows/deploy.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/deploy.yml)
+[![actionlint](https://github.com/eshabakhov/surok/actions/workflows/actionlint.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/actionlint.yml)
+[![yamllint](https://github.com/eshabakhov/surok/actions/workflows/yamllint.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/yamllint.yml)
+[![shellcheck](https://github.com/eshabakhov/surok/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/shellcheck.yml)
+[![trufflehog-oss](https://github.com/eshabakhov/surok/actions/workflows/trufflehog-oss.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/trufflehog-oss.yml)
+[![Lines-of-Code](https://img.shields.io/tokei/lines/github/eshabakhov/surok)](https://github.com/eshabakhov/surok)
+[![Hits-of-Code](https://hitsofcode.com/github/eshabakhov/surok)](https://hitsofcode.com/view/github/eshabakhov/surok)
+[![License](https://img.shields.io/badge/license-Proprietary-red.svg)](https://github.com/eshabakhov/surok/blob/main/LICENSE.txt)
 
 ![Java 21](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot 3.5](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
@@ -18,7 +18,7 @@
 ![Docker Required](https://img.shields.io/badge/Docker-Required-2496ED?logo=docker&logoColor=white)
 ![Release 0.0.1](https://img.shields.io/badge/Release-0.0.1-111827)
 
-**Schoodule** is an application for school schedule management. It helps organize schools, classes, teachers, subjects, cabinets, and schedules in one place.
+**Surok** is an application for school schedule management. It helps organize schools, classes, teachers, subjects, cabinets, and schedules in one place.
 
 To try it locally, make sure Java 21, Docker Desktop, and Node.js are installed, then run the full project check:
 
@@ -29,7 +29,7 @@ mvn clean install -Pqulice
 The build starts PostgreSQL in Docker, applies Liquibase migrations, generates jOOQ classes, runs tests, lints frontend assets, and packages the application. After that, start the app with:
 
 ```text
-java -jar target/schoodule-0.0.1.jar
+java -jar target/surok-0.0.1.jar
 ```
 
 To run the packaged application with Docker Compose, build the jar first and then start the stack:

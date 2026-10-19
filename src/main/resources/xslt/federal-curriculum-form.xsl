@@ -4,7 +4,7 @@
     <xsl:template name="curriculum-form">
         <xsl:param name="editing"/>
         <xsl:variable name="curriculum"
-                      select="/schoodule/curriculums/curriculum"/>
+                      select="/surok/curriculums/curriculum"/>
         <div class="page-title-row curriculum-form-heading">
             <div>
                 <h1>

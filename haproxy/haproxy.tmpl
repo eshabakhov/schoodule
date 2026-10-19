@@ -33,10 +33,10 @@ frontend http
 
     use_backend grafana_app if grafana_path
     use_backend prometheus_app if prometheus_path
-    default_backend schoodule_app
+    default_backend surok_app
 
-backend schoodule_app
-    server schoodule schoodule:9500 check
+backend surok_app
+    server surok surok:9500 check
 
 backend grafana_app
     server grafana grafana:3000 check

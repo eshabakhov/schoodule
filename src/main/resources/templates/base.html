@@ -9,8 +9,8 @@
     <meta name="_csrf" th:content="${_csrf.token}" th:if="${_csrf != null}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}" th:if="${_csrf != null}">
     <meta charset="UTF-8">
-    <meta name="description" content="Schoodule - система управления школьными расписаниями">
-    <title th:text="${pageTitle} ?: 'Schoodule'">Schoodule</title>
+    <meta name="description" content="Surok - система управления школьными расписаниями">
+    <title th:text="${pageTitle} ?: 'Surok'">Surok</title>
     <link type="image/png" rel="icon" href="/favicon.svg">
     <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
@@ -31,7 +31,7 @@
                     <line x1="8" x2="8" y1="2" y2="6"/>
                     <line x1="3" x2="21" y1="10" y2="10"/>
                 </svg>
-                Schoodule
+                Surok
                 <span class="app-header-logo-version">v0.0.1</span>
             </a>
             <h1 class="app-header-title" th:text="${pageTitle} ?: ''">
@@ -100,7 +100,7 @@
                     <span class="sidebar-link-label">Федеральные планы</span>
                 </a>
                 <th:block th:if="${school != null && school.uid() != null}"
-                          th:with="schoolSchedules=${school.schedules().schedules(T(org.jooq.impl.DSL).trueCondition(), new com.eshabakhov.schoodule.page.PageRequest(2147483647, 1)).list()}">
+                          th:with="schoolSchedules=${school.schedules().schedules(T(org.jooq.impl.DSL).trueCondition(), new com.eshabakhov.surok.page.PageRequest(2147483647, 1)).list()}">
                     <div class="sidebar-section">
                         <a class="sidebar-school-link"
                            href="#"

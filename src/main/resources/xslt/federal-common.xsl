@@ -3,7 +3,7 @@
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
     <xsl:template name="page-title">
-        <xsl:text>Schoodule</xsl:text>
+        <xsl:text>Surok</xsl:text>
     </xsl:template>
 
     <xsl:template name="styles"/>
@@ -17,21 +17,21 @@
             <head>
                 <meta name="viewport"
                       content="width=device-width, initial-scale=1.0"/>
-                <xsl:if test="/schoodule/csrf/token">
+                <xsl:if test="/surok/csrf/token">
                     <meta name="_csrf">
                         <xsl:attribute name="content">
-                            <xsl:value-of select="/schoodule/csrf/token"/>
+                            <xsl:value-of select="/surok/csrf/token"/>
                         </xsl:attribute>
                     </meta>
                     <meta name="_csrf_header">
                         <xsl:attribute name="content">
-                            <xsl:value-of select="/schoodule/csrf/header"/>
+                            <xsl:value-of select="/surok/csrf/header"/>
                         </xsl:attribute>
                     </meta>
                 </xsl:if>
                 <meta charset="UTF-8"/>
                 <meta name="description"
-                      content="Schoodule - система управления школьными расписаниями"/>
+                      content="Surok - система управления школьными расписаниями"/>
                 <title><xsl:call-template name="page-title"/></title>
                 <link type="image/png" rel="icon" href="/favicon.svg"/>
                 <link rel="stylesheet" href="/css/main.css"/>
@@ -49,7 +49,7 @@
                 </main>
                 <footer class="app-footer">
                     <div class="app-footer-inner">
-                        <span class="app-footer-logo">Schoodule</span>
+                        <span class="app-footer-logo">Surok</span>
                         <span class="app-footer-copy">© 2026</span>
                     </div>
                 </footer>
@@ -67,13 +67,13 @@
                    href="/"
                    title="Перейти на главную страницу">
                     <xsl:call-template name="calendar-icon"/>
-                    <xsl:text>Schoodule</xsl:text>
+                    <xsl:text>Surok</xsl:text>
                     <span class="app-header-logo-version">v0.0.1</span>
                 </a>
                 <h1 class="app-header-title">
                     <xsl:call-template name="page-title"/>
                 </h1>
-                <xsl:if test="/schoodule/user/subscription = 'true'">
+                <xsl:if test="/surok/user/subscription = 'true'">
                     <a class="logout-btn"
                        href="/users/subscription"
                        title="Подписка">
@@ -96,7 +96,7 @@
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
-                    <span><xsl:value-of select="/schoodule/user/username"/></span>
+                    <span><xsl:value-of select="/surok/user/username"/></span>
                 </a>
             </div>
         </header>
@@ -105,11 +105,11 @@
     <xsl:template name="sidebar">
         <aside class="sidebar" id="sidebar">
             <nav class="sidebar-nav">
-                <xsl:if test="/schoodule/user/admin = 'true'">
+                <xsl:if test="/surok/user/admin = 'true'">
                     <div class="sidebar-section">Общее</div>
                     <a class="sidebar-link" title="Школы">
                         <xsl:attribute name="href">
-                            <xsl:value-of select="/schoodule/schools/href"/>
+                            <xsl:value-of select="/surok/schools/href"/>
                         </xsl:attribute>
                         <svg xmlns="http://www.w3.org/2000/svg"
                              fill="none"
@@ -338,13 +338,13 @@
     </xsl:template>
 
     <xsl:template name="csrf-input">
-        <xsl:if test="/schoodule/csrf/token">
+        <xsl:if test="/surok/csrf/token">
             <input type="hidden">
                 <xsl:attribute name="name">
-                    <xsl:value-of select="/schoodule/csrf/parameter"/>
+                    <xsl:value-of select="/surok/csrf/parameter"/>
                 </xsl:attribute>
                 <xsl:attribute name="value">
-                    <xsl:value-of select="/schoodule/csrf/token"/>
+                    <xsl:value-of select="/surok/csrf/token"/>
                 </xsl:attribute>
             </input>
         </xsl:if>

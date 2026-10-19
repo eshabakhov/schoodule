@@ -1,4 +1,5 @@
 {
+  "name": "surok",
   "private": true,
   "scripts": {
     "lint": "npm run lint:js && npm run lint:css && npm run lint:html",

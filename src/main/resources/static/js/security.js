@@ -3,7 +3,7 @@
     const headerMeta = document.querySelector('meta[name="_csrf_header"]');
     const token = tokenMeta ? tokenMeta.content : '';
     const header = headerMeta ? headerMeta.content : '';
-    window.schooduleSecurity = {
+    window.surokSecurity = {
         csrfToken: token,
         csrfHeaderName: header
     };

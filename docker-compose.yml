@@ -3,7 +3,7 @@ services:
     image: haproxy:3.3-alpine
     container_name: haproxy
     depends_on:
-      - schoodule
+      - surok
       - grafana
       - prometheus
     ports:
@@ -18,8 +18,8 @@ services:
     image: postgres:14-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:-schoodule}
-      POSTGRES_USER: ${DB_USERNAME:-schoodule}
+      POSTGRES_DB: ${DB_NAME:-surok}
+      POSTGRES_USER: ${DB_USERNAME:-surok}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -29,13 +29,13 @@ services:
       timeout: 5s
       retries: 5
 
-  schoodule:
-    container_name: schoodule
-    image: ${IMAGE:-ghcr.io/eshabakhov/schoodule:latest}
+  surok:
+    container_name: surok
+    image: ${IMAGE:-ghcr.io/eshabakhov/surok:latest}
     build:
       context: .
       args:
-        JAR_FILE: ${JAR_FILE:-target/schoodule-0.0.1.jar}
+        JAR_FILE: ${JAR_FILE:-target/surok-0.0.1.jar}
     restart: unless-stopped
     depends_on:
       postgres:
@@ -52,7 +52,7 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.retention.time=2h"
       - "--storage.tsdb.min-block-duration=2h"
-      - "--web.external-url=${APP_BASE_URL:-https://schoodule.ru}/prometheus/"
+      - "--web.external-url=${APP_BASE_URL:-https://surok.ru}/prometheus/"
       - "--web.route-prefix=/prometheus/"
 
   grafana:

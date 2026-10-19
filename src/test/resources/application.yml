@@ -1,6 +1,6 @@
 spring:
   application:
-    name: schoodule
+    name: surok
   liquibase:
     enabled: false
     change-log: classpath:changelog/changelog.xml
