@@ -1,4 +1,14 @@
+import { confirmed, removal } from './federal/removal.js';
+
 $(() => {
+    $(document).on('click', '.btn-delete-row', function() {
+        const button = $(this);
+        confirmed(`Удалить «${button.data('name')}»? Это действие нельзя отменить.`, removal(
+            button.data('uri'),
+            () => { window.location.href = button.data('redirect'); },
+            () => alert('Не удалось удалить запись')
+        )).execute();
+    });
     const pathParts = window.location.pathname.split('/').filter(Boolean);
     const schoolId = pathParts[pathParts.indexOf('schools') + 1];
     const buildingId = pathParts[pathParts.indexOf('buildings') + 1];

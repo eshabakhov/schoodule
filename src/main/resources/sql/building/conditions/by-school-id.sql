@@ -1,1 +1,0 @@
-building.school_id = ?

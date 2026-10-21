@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:import href="federal-common.xsl"/>
+    <xsl:variable name="school" select="/surok/school"/>
+    <xsl:variable name="building" select="/surok/building | /surok/buildings/building"/>
+    <xsl:variable name="cabinet" select="/surok/cabinets/cabinet"/>
+    <xsl:variable name="school-path" select="concat('/schools/', $school/id)"/>
+
+    <xsl:template name="school-navigation">
+        <div class="sidebar-section">
+            <a class="sidebar-school-link" href="{$school-path}" title="Перейти к школе">
+                <xsl:value-of select="$school/name"/>
+            </a>
+        </div>
+        <a class="sidebar-link"
+                       href="{$school-path}/schedules"
+                       title="Расписания">
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <rect height="18" rx="2" ry="2" width="18" x="3" y="4"/>
+                            <line x1="16" x2="16" y1="2" y2="6"/>
+                            <line x1="8" x2="8" y1="2" y2="6"/>
+                            <line x1="3" x2="21" y1="10" y2="10"/>
+                        </svg>
+                        <span class="sidebar-link-label">Расписания</span>
+                    </a>
+        <a class="sidebar-link"
+                       href="{$school-path}/teachers"
+                       title="Учителя">
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        <span class="sidebar-link-label">Учителя</span>
+                    </a>
+        <a class="sidebar-link"
+                       href="{$school-path}/classes"
+                       title="Классы">
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                        <span class="sidebar-link-label">Классы</span>
+                    </a>
+        <a class="sidebar-link"
+                       href="{$school-path}/subjects"
+                       title="Предметы">
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                        <span class="sidebar-link-label">Предметы</span>
+                    </a>
+        <a class="sidebar-link"
+                       href="{$school-path}/buildings"
+                       title="Корпусы">
+                        <svg fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             viewBox="0 0 24 24"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <rect height="18" rx="2" width="20" x="2" y="3"/>
+                            <line x1="2" x2="22" y1="9" y2="9"/>
+                            <line x1="9" x2="9" y1="21" y2="9"/>
+                        </svg>
+                        <span class="sidebar-link-label">Корпусы</span>
+                    </a>
+        <xsl:if test="$building/id">
+            <div class="sidebar-subnav">
+                <a class="sidebar-subnav-link active" href="{$school-path}/buildings/{$building/id}"
+                   title="Перейти к корпусу"><xsl:value-of select="$building/name"/></a>
+                <a class="sidebar-link" href="{$school-path}/buildings/{$building/id}/cabinets" title="Кабинеты">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                         stroke-width="2" viewBox="0 0 24 24">
+                        <rect height="18" rx="1" width="12" x="6" y="3"/>
+                        <circle cx="15" cy="12" r="0.8"/>
+                    </svg>
+                    <span class="sidebar-link-label">Кабинеты</span>
+                </a>
+                <xsl:if test="$cabinet/id">
+                    <div class="sidebar-subnav">
+                        <a class="sidebar-subnav-link active" title="Перейти к кабинету"
+                           href="{$school-path}/buildings/{$building/id}/cabinets/{$cabinet/id}">
+                            <xsl:value-of select="$cabinet/name"/>
+                        </a>
+                    </div>
+                </xsl:if>
+            </div>
+        </xsl:if>
+    </xsl:template>
+</xsl:stylesheet>

@@ -3,11 +3,15 @@
  */
 package com.eshabakhov.surok.school.building;
 
+import com.eshabakhov.surok.Filters;
+import com.eshabakhov.surok.Media;
 import com.eshabakhov.surok.Page;
-import com.eshabakhov.surok.PageableList;
-import com.eshabakhov.surok.page.ResponsePageableList;
-import com.eshabakhov.surok.school.Building;
-import com.eshabakhov.surok.school.Buildings;
+import com.eshabakhov.surok.PrItems;
+import com.eshabakhov.surok.Sorts;
+import com.eshabakhov.surok.page.ResponsePage;
+import com.eshabakhov.surok.school.building.filter.FlsCdBuilding;
+import com.eshabakhov.surok.school.building.input.MdBdInput;
+import com.eshabakhov.surok.school.building.sort.StsJqBuilding;
 import com.eshabakhov.surok.sql.ClasspathSql;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
@@ -43,7 +47,8 @@ public final class BdsPostgres implements Buildings {
     }
 
     @Override
-    public Building create(final String name) throws Exception {
+    public Building create(final BuildingInput input) throws Exception {
+        final String name = input.print(new MdBdInput()).print().get("name");
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
@@ -89,64 +94,62 @@ public final class BdsPostgres implements Buildings {
     }
 
     @Override
-    public Building building(final String name) throws Exception {
-        final Record selected = this.ctx.resultQuery(
-            new ClasspathSql("building/find-existing.sql").text(),
-            this.sid,
-            name,
-            false
-        ).fetchOne();
-        if (selected == null) {
-            throw new BuildingNotFoundException(
-                String.format("Building with name=`%s` not found", name)
-            );
-        }
-        return new BdPostgres(this.ctx, selected.get("id", Long.class));
+    public Buildings selection(
+        final Filters filters,
+        final Page page,
+        final Sorts sorts
+    ) throws Exception {
+        final Condition scoped = new FlsCdBuilding(filters).condition().and(
+            DSL.condition(
+                new ClasspathSql("building/conditions/by-school-id-and-is-deleted.sql").text(),
+                this.sid,
+                false
+            )
+        );
+        return new BdsSelected(
+            this,
+            this.ctx.resultQuery(
+                new ClasspathSql("building/list.sql").text(),
+                scoped,
+                DSL.list(new StsJqBuilding(sorts).fields()),
+                DSL.val(page.limit()),
+                DSL.val((page.offset() - 1) * page.limit())
+            ).fetch(selected -> new BdPostgres(this.ctx, selected.get("id", Long.class))),
+            new ResponsePage(
+                page,
+                this.ctx.resultQuery(
+                    new ClasspathSql("building/count.sql").text(), scoped
+                ).fetchSingle(0, Integer.class)
+            )
+        );
     }
 
     @Override
-    public PageableList<Building> buildings(final Condition condition, final Page page)
-        throws Exception {
-        final Condition cnd = condition.and(
-            DSL.condition(
-                new ClasspathSql("building/conditions/by-school-id.sql").text(),
-                this.sid
-            )
-        );
-        return new ResponsePageableList<>(
-            this.ctx.resultQuery(
-                new ClasspathSql("building/list.sql").text(),
-                cnd,
-                DSL.val(page.limit()),
-                DSL.val((page.offset() - 1) * page.limit())
-            ).fetch(
-                selected -> new BdPostgres(this.ctx, selected.get("id", Long.class))
-            ),
-            this.ctx.resultQuery(
-                new ClasspathSql("building/count.sql").text(),
-                cnd
-            ).fetchSingle(0, Integer.class),
-            page
-        );
+    public Iterable<Building> iterate() {
+        return this.ctx.resultQuery(
+            new ClasspathSql("building/list-active.sql").text(), this.sid, false
+        ).fetch(selected -> new BdPostgres(this.ctx, selected.get("id", Long.class)));
+    }
+
+    @Override
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        return media.with(new PrItems("building", this.iterate()));
     }
 
     @Override
     public void remove(final long cid) throws Exception {
-        final Record building = this.ctx.resultQuery(
+        if (this.ctx.resultQuery(
             new ClasspathSql("building/find-by-id-and-school-id.sql").text(),
             cid,
             this.sid,
             false
-        ).fetchOne();
-        if (building == null) {
+        ).fetchOne() == null) {
             throw new BuildingNotFoundException(
                 String.format("Building with id=%d not found", cid)
             );
         }
         this.ctx.resultQuery(
-            new ClasspathSql("building/soft-delete.sql").text(),
-            true,
-            cid
+            new ClasspathSql("building/soft-delete.sql").text(), true, cid
         ).execute();
     }
 }

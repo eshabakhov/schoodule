@@ -188,18 +188,18 @@
                         <span class="sidebar-link-label">Корпусы</span>
                     </a>
                     <div class="sidebar-subnav"
-                         th:if="${building != null && building.uid() != null}">
+                         th:if="${building != null && building.id != null}">
                         <a class="sidebar-subnav-link active"
                            href="#"
                            title="Перейти к корпусу"
-                           th:href="@{/schools/{s}/buildings/{b}(s=${school.uid()},b=${building.uid()})}"
-                           th:title="'Перейти к корпусу' + ${building.name()}">
-                            <span th:text="${building.name()}">Корпус</span>
+                           th:href="@{/schools/{s}/buildings/{b}(s=${school.uid()},b=${building.id})}"
+                           th:title="'Перейти к корпусу' + ${building.name}">
+                            <span th:text="${building.name}">Корпус</span>
                         </a>
                         <a class="sidebar-link"
                            href="#"
                            title="Кабинеты"
-                           th:href="@{/schools/{s}/buildings/{r}/cabinets(s=${school.uid()},r=${building.uid()})}">
+                           th:href="@{/schools/{s}/buildings/{r}/cabinets(s=${school.uid()},r=${building.id})}">
                             <svg fill="none"
                                  stroke="currentColor"
                                  stroke-width="2"
@@ -211,13 +211,13 @@
                             <span class="sidebar-link-label">Кабинеты</span>
                         </a>
                         <div class="sidebar-subnav"
-                             th:if="${cabinet != null && cabinet.uid() != null}">
+                             th:if="${cabinet != null && cabinet.id != null}">
                             <a class="sidebar-subnav-link active"
                                href="#"
                                title="Перейти к кабинету"
-                               th:href="@{/schools/{s}/buildings/{b}/cabinets/{c}(s=${school.uid()},b=${building.uid()},c=${cabinet.uid()})}"
-                               th:title="'Перейти к кабинету' + ${cabinet.name()}">
-                                <span th:text="${cabinet.name()}">Кабинет</span>
+                               th:href="@{/schools/{s}/buildings/{b}/cabinets/{c}(s=${school.uid()},b=${building.id},c=${cabinet.id})}"
+                               th:title="'Перейти к кабинету' + ${cabinet.name}">
+                                <span th:text="${cabinet.name}">Кабинет</span>
                             </a>
                         </div>
                     </div>

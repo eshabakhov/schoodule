@@ -3,9 +3,9 @@
  */
 package com.eshabakhov.surok.school.building;
 
-import com.eshabakhov.surok.school.Building;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.eshabakhov.surok.Media;
+import com.eshabakhov.surok.school.building.cabinet.Cabinets;
+import com.eshabakhov.surok.school.building.input.MdBdInput;
 
 /**
  * Base implementation of {@link Building}.
@@ -48,13 +48,8 @@ public final class BdBase implements Building {
     }
 
     @Override
-    public String name() {
-        return this.bname;
-    }
-
-    @Override
-    public Building renamed(final String name) {
-        return new BdBase(this.bid, name);
+    public Building revise(final BuildingInput input) throws Exception {
+        return new BdBase(this.bid, input.print(new MdBdInput()).print().get("name"));
     }
 
     @Override
@@ -63,9 +58,7 @@ public final class BdBase implements Building {
     }
 
     @Override
-    public ObjectNode json() {
-        return JsonNodeFactory.instance.objectNode()
-            .put("id", this.bid)
-            .put("name", this.bname);
+    public <T> Media<T> print(final Media<T> media) {
+        return media.with("id", this.bid).with("name", this.bname);
     }
 }

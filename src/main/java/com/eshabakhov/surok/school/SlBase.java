@@ -5,6 +5,7 @@ package com.eshabakhov.surok.school;
 
 import com.eshabakhov.surok.School;
 import com.eshabakhov.surok.Users;
+import com.eshabakhov.surok.school.building.Buildings;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.EqualsAndHashCode;

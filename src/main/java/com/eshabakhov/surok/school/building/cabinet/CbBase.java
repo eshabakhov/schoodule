@@ -3,12 +3,11 @@
  */
 package com.eshabakhov.surok.school.building.cabinet;
 
-import com.eshabakhov.surok.school.building.Cabinet;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.eshabakhov.surok.Media;
+import com.eshabakhov.surok.school.building.cabinet.input.MdCbInput;
 
 /**
- * Postgres implementation of {@link Cabinet}.
+ * Base implementation of {@link Cabinet}.
  *
  * @since 0.0.1
  */
@@ -48,19 +47,12 @@ public final class CbBase implements Cabinet {
     }
 
     @Override
-    public String name() {
-        return this.cname;
+    public Cabinet revise(final CabinetInput input) throws Exception {
+        return new CbBase(this.cid, input.print(new MdCbInput()).print().get("name"));
     }
 
     @Override
-    public Cabinet renamed(final String name) {
-        return new CbBase(this.cid, name);
-    }
-
-    @Override
-    public ObjectNode json() {
-        return JsonNodeFactory.instance.objectNode()
-            .put("id", this.cid)
-            .put("name", this.cname);
+    public <T> Media<T> print(final Media<T> media) {
+        return media.with("id", this.cid).with("name", this.cname);
     }
 }
