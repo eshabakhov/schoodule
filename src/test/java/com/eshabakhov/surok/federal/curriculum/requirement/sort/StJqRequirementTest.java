@@ -5,10 +5,10 @@ package com.eshabakhov.surok.federal.curriculum.requirement.sort;
 
 import com.eshabakhov.surok.Sort;
 import com.eshabakhov.surok.sort.SortRequest;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
 import java.util.List;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -59,14 +59,22 @@ final class StJqRequirementTest {
                 ).field()
             ),
             Matchers.contains(
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .GRADE.asc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .SUBJECT_NAME.asc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .WEEKLY_HOURS.asc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .PART_TYPE.asc()
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "grade"),
+                    Integer.class
+                ).asc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "subject_name"),
+                    String.class
+                ).asc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "weekly_hours"),
+                    Integer.class
+                ).asc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "part_type"),
+                    String.class
+                ).asc()
             )
         );
     }
@@ -79,8 +87,10 @@ final class StJqRequirementTest {
                 new SortRequest("grade", Sort.Direction.DESC)
             ).field(),
             Matchers.is(
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .GRADE.desc()
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "grade"),
+                    Integer.class
+                ).desc()
             )
         );
     }

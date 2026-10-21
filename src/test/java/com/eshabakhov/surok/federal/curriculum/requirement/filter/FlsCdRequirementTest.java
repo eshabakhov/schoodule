@@ -4,10 +4,8 @@
 package com.eshabakhov.surok.federal.curriculum.requirement.filter;
 
 import com.eshabakhov.surok.Filter;
-import com.eshabakhov.surok.enums.CurriculumPartType;
 import com.eshabakhov.surok.filter.FilterRequest;
 import com.eshabakhov.surok.filter.FiltersRequest;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -64,14 +62,26 @@ final class FlsCdRequirementTest {
             ).condition(),
             Matchers.is(
                 DSL.trueCondition().and(
-                    FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                        .GRADE.eq(5)
+                    DSL.condition(
+                        """
+                            federal_curriculum_requirement.grade = ?
+                            """,
+                        5
+                    )
                 ).and(
-                    FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                        .SUBJECT_NAME.likeIgnoreCase("%Mathematics%")
+                    DSL.condition(
+                        """
+                            federal_curriculum_requirement.subject_name ILIKE ?
+                            """,
+                        "%Mathematics%"
+                    )
                 ).and(
-                    FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                        .PART_TYPE.eq(CurriculumPartType.MANDATORY)
+                    DSL.condition(
+                        """
+                        federal_curriculum_requirement.part_type = CAST(? AS curriculum_part_type)
+                        """,
+                        "MANDATORY"
+                    )
                 )
             )
         );
@@ -93,11 +103,19 @@ final class FlsCdRequirementTest {
             ).condition(),
             Matchers.is(
                 DSL.trueCondition().and(
-                    FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                        .SUBJECT_NAME.likeIgnoreCase("%History%")
+                    DSL.condition(
+                        """
+                            federal_curriculum_requirement.subject_name ILIKE ?
+                            """,
+                        "%History%"
+                    )
                 ).and(
-                    FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                        .PART_TYPE.eq(CurriculumPartType.OPTIONAL)
+                    DSL.condition(
+                        """
+                        federal_curriculum_requirement.part_type = CAST(? AS curriculum_part_type)
+                        """,
+                        "OPTIONAL"
+                    )
                 )
             )
         );

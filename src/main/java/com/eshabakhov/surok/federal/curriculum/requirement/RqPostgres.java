@@ -4,9 +4,8 @@
 package com.eshabakhov.surok.federal.curriculum.requirement;
 
 import com.eshabakhov.surok.Media;
-import com.eshabakhov.surok.enums.CurriculumPartType;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.MdRqInput;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import java.util.Map;
 import org.jooq.DSLContext;
 
@@ -17,12 +16,6 @@ import org.jooq.DSLContext;
  * @since 0.0.1
  */
 public final class RqPostgres implements Requirement {
-
-    /**
-     * JOOQ table reference.
-     */
-    private static final FederalCurriculumRequirement REQUIREMENT =
-        FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
 
     /**
      * Federal curriculum requirement id.
@@ -52,15 +45,17 @@ public final class RqPostgres implements Requirement {
 
     @Override
     public <T> Media<T> print(final Media<T> media) throws Exception {
-        return this.ctx.selectFrom(RqPostgres.REQUIREMENT)
-            .where(RqPostgres.REQUIREMENT.ID.eq(this.rid)).fetchSingle(
-                record -> media
-                    .with("id", record.getId())
-                    .with("grade", record.getGrade())
-                    .with("subjectName", record.getSubjectName())
-                    .with("weeklyHours", record.getWeeklyHours())
-                    .with("partType", record.getPartType().name())
-            );
+        return this.ctx.resultQuery(
+            new ClasspathSql("curriculum/requirement/find-details.sql").text(),
+            this.rid
+        ).fetchSingle(
+            record -> media
+                .with("id", record.get("id", Long.class))
+                .with("grade", record.get("grade", Integer.class))
+                .with("subjectName", record.get("subject_name", String.class))
+                .with("weeklyHours", record.get("weekly_hours", Integer.class))
+                .with("partType", record.get("part_type", String.class))
+        );
     }
 
     @Override
@@ -70,21 +65,14 @@ public final class RqPostgres implements Requirement {
         ).print();
         return new RqPostgres(
             this.ctx,
-            this.ctx.update(RqPostgres.REQUIREMENT).set(
-                RqPostgres.REQUIREMENT.GRADE,
-                Integer.valueOf(fields.get("grade"))
-            ).set(
-                RqPostgres.REQUIREMENT.SUBJECT_NAME,
-                fields.get("subjectName")
-            ).set(
-                RqPostgres.REQUIREMENT.WEEKLY_HOURS,
-                Integer.valueOf(fields.get("weeklyHours"))
-            ).set(
-                RqPostgres.REQUIREMENT.PART_TYPE,
-                CurriculumPartType.valueOf(fields.get("partType"))
-            ).where(RqPostgres.REQUIREMENT.ID.eq(this.rid))
-                .returningResult(RqPostgres.REQUIREMENT.ID)
-                .fetchOne(RqPostgres.REQUIREMENT.ID)
+            this.ctx.resultQuery(
+                new ClasspathSql("curriculum/requirement/revise.sql").text(),
+                Integer.valueOf(fields.get("grade")),
+                fields.get("subjectName"),
+                Integer.valueOf(fields.get("weeklyHours")),
+                Requirement.PartType.valueOf(fields.get("partType")).name(),
+                this.rid
+            ).fetchOne("id", Long.class)
         );
     }
 }

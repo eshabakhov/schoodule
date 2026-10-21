@@ -8,9 +8,11 @@ import com.eshabakhov.surok.School;
 import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.school.SlsPostgres;
 import com.eshabakhov.surok.school.Teacher;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import java.util.Map;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -29,10 +31,6 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 @RequestMapping("/schools/{school}/teachers")
 public class TeachersHtmlController {
-
-    /** JOOQ Table for Teacher. */
-    private static final com.eshabakhov.surok.tables.Teacher TEACHER =
-        com.eshabakhov.surok.tables.Teacher.TEACHER;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -65,11 +63,15 @@ public class TeachersHtmlController {
         @RequestParam(name = "limit", defaultValue = "15") final int limit,
         @RequestParam(name = "name", required = false) final String name
     ) throws Exception {
-        Condition condition = TeachersHtmlController.TEACHER.IS_DELETED.eq(false)
-            .and(TeachersHtmlController.TEACHER.SCHOOL_ID.eq(school));
+        Condition condition = DSL.condition(
+            new ClasspathSql("teacher/conditions/by-is-deleted-and-school-id.sql").text(),
+            false,
+            school
+        );
         if (name != null && !name.isBlank()) {
             condition = condition.and(
-                TeachersHtmlController.TEACHER.NAME.likeIgnoreCase(
+                DSL.condition(
+                    new ClasspathSql("teacher/conditions/by-name.sql").text(),
                     String.format("%%%s%%", name)
                 )
             );
@@ -111,11 +113,15 @@ public class TeachersHtmlController {
         @RequestParam(name = "offset", defaultValue = "1") final int offset,
         @RequestParam(name = "limit", defaultValue = "15") final int limit
     ) throws Exception {
-        Condition condition = TeachersHtmlController.TEACHER.IS_DELETED.eq(false)
-            .and(TeachersHtmlController.TEACHER.SCHOOL_ID.eq(school));
+        Condition condition = DSL.condition(
+            new ClasspathSql("teacher/conditions/by-is-deleted-and-school-id.sql").text(),
+            false,
+            school
+        );
         if (name != null && !name.isBlank()) {
             condition = condition.and(
-                TeachersHtmlController.TEACHER.NAME.likeIgnoreCase(
+                DSL.condition(
+                    new ClasspathSql("teacher/conditions/by-name.sql").text(),
                     String.format("%%%s%%", name)
                 )
             );

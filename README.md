@@ -2,7 +2,8 @@
 
 <img src="src/main/resources/static/favicon.svg" alt="Surok" height="64">
 
-[![Build And Deploy](https://github.com/eshabakhov/surok/actions/workflows/deploy.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/deploy.yml)
+[![Build](https://github.com/eshabakhov/surok/actions/workflows/build.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/build.yml)
+[![Deploy](https://github.com/eshabakhov/surok/actions/workflows/deploy.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/deploy.yml)
 [![actionlint](https://github.com/eshabakhov/surok/actions/workflows/actionlint.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/actionlint.yml)
 [![yamllint](https://github.com/eshabakhov/surok/actions/workflows/yamllint.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/yamllint.yml)
 [![shellcheck](https://github.com/eshabakhov/surok/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/shellcheck.yml)
@@ -18,60 +19,27 @@
 ![Docker Required](https://img.shields.io/badge/Docker-Required-2496ED?logo=docker&logoColor=white)
 ![Release 0.0.1](https://img.shields.io/badge/Release-0.0.1-111827)
 
-**Surok** is an application for school schedule management. It helps organize schools, classes, teachers, subjects, cabinets, and schedules in one place.
+**Surok** manages school schedules, classes, teachers, subjects, and classrooms.
 
-To try it locally, make sure Java 21, Docker Desktop, and Node.js are installed, then run the full project check:
+## Local development
 
-```text
-mvn clean install -Pqulice
-```
+Install Docker Desktop with Linux containers (or Docker Engine with Compose v2.24+), then run from the repository root:
 
-The build starts PostgreSQL in Docker, applies Liquibase migrations, generates jOOQ classes, runs tests, lints frontend assets, and packages the application. After that, start the app with:
-
-```text
-java -jar target/surok-0.0.1.jar
-```
-
-To run the packaged application with Docker Compose, build the jar first and then start the stack:
-
-```text
-mvn clean install -Pqulice
+```sh
 docker compose up --build
 ```
 
-Docker Compose reads deployment variables from the environment or from a local `.env` file.
+Open [http://localhost:19500/](http://localhost:19500/). Docker builds the application from source and starts it with PostgreSQL. No `.env`, prebuilt JAR, or host Java, Maven, or Node.js installation is needed.
 
-Open `http://localhost:9500/`. If OAuth login is needed, provide `ya-id` and `ya-secret`. If you need to create the first administrator, enable bootstrap admin settings:
+To customize settings, copy `.env.example` to `.env`. After source changes, run the same command again. `docker compose down` stops the services and preserves database data.
 
-```text
-BOOTSTRAP_ADMIN_ENABLED=true
-BOOTSTRAP_ADMIN_USERNAME=admin
-BOOTSTRAP_ADMIN_EMAIL=admin@example.com
-BOOTSTRAP_ADMIN_PASSWORD=StrongPass1!
-```
+## CI build and deploy
 
-## Main Use Cases
+The release process uses two separate GitHub Actions workflows:
 
-Manage the school structure: schools, classes, teachers, subjects, cabinets, and schedules.
+1. **[Build](.github/workflows/build.yml)** runs tests and frontend linters, builds the JAR and Docker image, and publishes images from `main` to GHCR with commit SHA and `latest` tags.
+2. **[Deploy](.github/workflows/deploy.yml)** runs after a successful Build on `main`, pulls the image for that commit, and starts the production stack without rebuilding it. It also supports manual deployment of a previously published commit SHA.
 
-Work with role-based access so administrators and school staff can manage data with different permission levels.
+Pull requests run build checks without publishing or deploying images.
 
-Plan and maintain schedules through the web interface and API.
-
-## How to Contribute
-
-Install Java 21, Docker Desktop, and Node.js.
-
-Run the full verification command before changes:
-
-```text
-mvn clean install -Pqulice
-```
-
-Frontend linting is also available separately:
-
-```text
-npm run lint
-```
-
-If you change the database schema, update the Liquibase changelog first and then run the normal Maven build. Keep changes small and verify role-sensitive behavior before sending them forward.
+See the [development and deployment guide](docs/development-and-deployment.md) for administrator setup, configuration, and server requirements.

@@ -5,14 +5,13 @@ package com.eshabakhov.surok.user;
 
 import com.eshabakhov.surok.User;
 import com.eshabakhov.surok.Users;
-import com.eshabakhov.surok.tables.LoginAttempt;
-import com.eshabakhov.surok.tables.records.LoginAttemptRecord;
-import com.eshabakhov.surok.tables.records.UserRecord;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.Result;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -22,10 +21,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
  * @since 0.0.1
  */
 public final class UrsPostgres implements Users {
-
-    /** JOOQ Table for User. */
-    private static final com.eshabakhov.surok.tables.User USER =
-        com.eshabakhov.surok.tables.User.USER;
 
     /** Database context. */
     private final DSLContext ctx;
@@ -65,18 +60,18 @@ public final class UrsPostgres implements Users {
         return this.ctx.transactionResult(
             conf -> {
                 final DSLContext ttx = conf.dsl();
-                final UserRecord inserted = ttx.insertInto(UrsPostgres.USER)
-                    .set(UrsPostgres.USER.USERNAME, username)
-                    .set(UrsPostgres.USER.PASSWORD, new BCryptPasswordEncoder().encode(password))
-                    .set(UrsPostgres.USER.EMAIL, email)
-                    .set(UrsPostgres.USER.CORPORATE, corporate)
-                    .set(UrsPostgres.USER.SCHOOL_ID, this.sid)
-                    .returning()
-                    .fetchOne();
+                final Record inserted = ttx.resultQuery(
+                    new ClasspathSql("user/create.sql").text(),
+                    username,
+                    new BCryptPasswordEncoder().encode(password),
+                    email,
+                    corporate,
+                    this.sid
+                ).fetchOne();
                 if (inserted == null) {
                     throw new UserCreationException("Failed to create user");
                 }
-                final User user = new UrPostgres(ttx, inserted.getId());
+                final User user = new UrPostgres(ttx, inserted.get("id", Long.class));
                 user.roles().grant(Roles.RoleEnum.STUDENT);
                 user.roles().grant(Roles.RoleEnum.BASIC_MAKER);
                 return user;
@@ -86,43 +81,39 @@ public final class UrsPostgres implements Users {
 
     @Override
     public User identification(final String login) throws Exception {
-        final UserRecord selected = this.ctx.selectFrom(UrsPostgres.USER).where(
-            UrsPostgres.USER.DELETED.isNull().and(
-                UrsPostgres.USER.USERNAME.eq(login)
-                    .or(UrsPostgres.USER.EMAIL.eq(login))
-            )
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("user/find-by-login.sql").text(),
+            login,
+            login
         ).fetchOne();
         if (selected == null) {
             throw new UserNotFoundException(String.format("User with login '%s' not found", login));
         }
-        return new UrPostgres(this.ctx, selected.getId());
+        return new UrPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
     public User identification(final Long uid) throws Exception {
-        final UserRecord selected = this.ctx.selectFrom(UrsPostgres.USER)
-            .where(UrsPostgres.USER.ID.eq(uid).and(UrsPostgres.USER.DELETED.isNull()))
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("user/find-by-id.sql").text(),
+            uid
+        ).fetchOne();
         if (selected == null) {
             throw new UserNotFoundException(String.format("User with id '%s' not found", uid));
         }
-        return new UrPostgres(this.ctx, selected.getId());
+        return new UrPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
     public User authentication(final String login) throws Exception {
         final User user = this.identification(login);
         final OffsetDateTime time = Instant.now().atOffset(ZoneOffset.UTC);
-        final Result<LoginAttemptRecord> selected = this.ctx.selectFrom(
-            LoginAttempt.LOGIN_ATTEMPT
-        ).where(
-            LoginAttempt.LOGIN_ATTEMPT.USER_ID.eq(user.uid()).and(
-                LoginAttempt.LOGIN_ATTEMPT.TIME.greaterOrEqual(
-                    time.minus(Duration.ofMinutes(5))
-                )
-            )
-            .and(LoginAttempt.LOGIN_ATTEMPT.TIME.lessOrEqual(time))
-            .and(LoginAttempt.LOGIN_ATTEMPT.SUCCESS.eq(false))
+        final Result<Record> selected = this.ctx.resultQuery(
+            new ClasspathSql("login-attempt/find-recent-failures.sql").text(),
+            user.uid(),
+            time.minus(Duration.ofMinutes(5)),
+            time,
+            false
         ).fetch();
         if (selected.size() > 5) {
             throw new UserLockedException(String.format("User %s is locked", login));
@@ -132,10 +123,11 @@ public final class UrsPostgres implements Users {
 
     @Override
     public void remove(final Long uid) throws Exception {
-        this.ctx.update(UrsPostgres.USER)
-            .set(UrsPostgres.USER.DELETED, Instant.now().atOffset(ZoneOffset.UTC))
-            .where(UrsPostgres.USER.ID.eq(uid))
-            .execute();
+        this.ctx.resultQuery(
+            new ClasspathSql("user/soft-delete.sql").text(),
+            Instant.now().atOffset(ZoneOffset.UTC),
+            uid
+        ).execute();
     }
 
     private static void validEmail(final String email) throws UserCreationException {

@@ -8,7 +8,6 @@ import com.eshabakhov.surok.school.schedule.SdsPostgres;
 import com.eshabakhov.surok.school.schoolclass.ScsPostgres;
 import com.eshabakhov.surok.school.subject.SbsPostgres;
 import com.eshabakhov.surok.school.teacher.ThsPostgres;
-import com.eshabakhov.surok.tables.School;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -50,16 +49,24 @@ final class SlPostgresTest {
 
     @AfterEach
     void truncateSchool() {
-        this.ctx.truncate(School.SCHOOL).cascade().execute();
+        this.ctx.resultQuery(
+            """
+                TRUNCATE TABLE public.school CASCADE
+                """
+        ).execute();
     }
 
     @Test
     void fetchBuildings() {
-        this.ctx.insertInto(School.SCHOOL)
-            .set(School.SCHOOL.ID, 1L)
-            .set(School.SCHOOL.NAME, "Cab school")
-            .set(School.SCHOOL.IS_DELETED, false)
-            .execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.school (id, name, is_deleted)
+                VALUES (?, ?, ?)
+                """,
+            1L,
+            "Cab school",
+            false
+        ).execute();
         Assertions.assertEquals(
             new BdsPostgres(
                 this.ctx,
@@ -74,11 +81,15 @@ final class SlPostgresTest {
 
     @Test
     void fetchTeachers() {
-        this.ctx.insertInto(School.SCHOOL)
-            .set(School.SCHOOL.ID, 1L)
-            .set(School.SCHOOL.NAME, "Tea school")
-            .set(School.SCHOOL.IS_DELETED, false)
-            .execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.school (id, name, is_deleted)
+                VALUES (?, ?, ?)
+                """,
+            1L,
+            "Tea school",
+            false
+        ).execute();
         Assertions.assertEquals(
             new ThsPostgres(
                 this.ctx,
@@ -93,11 +104,15 @@ final class SlPostgresTest {
 
     @Test
     void fetchSchoolClasses() {
-        this.ctx.insertInto(School.SCHOOL)
-            .set(School.SCHOOL.ID, 1L)
-            .set(School.SCHOOL.NAME, "Cla school")
-            .set(School.SCHOOL.IS_DELETED, false)
-            .execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.school (id, name, is_deleted)
+                VALUES (?, ?, ?)
+                """,
+            1L,
+            "Cla school",
+            false
+        ).execute();
         Assertions.assertEquals(
             new ScsPostgres(
                 this.ctx,
@@ -112,11 +127,15 @@ final class SlPostgresTest {
 
     @Test
     void fetchSubjects() {
-        this.ctx.insertInto(School.SCHOOL)
-            .set(School.SCHOOL.ID, 1L)
-            .set(School.SCHOOL.NAME, "Sub school")
-            .set(School.SCHOOL.IS_DELETED, false)
-            .execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.school (id, name, is_deleted)
+                VALUES (?, ?, ?)
+                """,
+            1L,
+            "Sub school",
+            false
+        ).execute();
         Assertions.assertEquals(
             new SbsPostgres(
                 this.ctx,
@@ -131,11 +150,15 @@ final class SlPostgresTest {
 
     @Test
     void fetchSchedules() {
-        this.ctx.insertInto(School.SCHOOL)
-            .set(School.SCHOOL.ID, 1L)
-            .set(School.SCHOOL.NAME, "Sch school")
-            .set(School.SCHOOL.IS_DELETED, false)
-            .execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.school (id, name, is_deleted)
+                VALUES (?, ?, ?)
+                """,
+            1L,
+            "Sch school",
+            false
+        ).execute();
         Assertions.assertEquals(
             new SdsPostgres(
                 this.ctx,

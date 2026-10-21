@@ -8,6 +8,7 @@ import com.eshabakhov.surok.School;
 import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.school.SchoolClass;
 import com.eshabakhov.surok.school.SlsPostgres;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import java.util.Map;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -30,10 +31,6 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 @RequestMapping("/schools/{school}/classes")
 public class SchoolClassHtmlController {
-
-    /** JOOQ Table for SchoolClass. */
-    private static final com.eshabakhov.surok.tables.SchoolClass SCHOOL_CLASS =
-        com.eshabakhov.surok.tables.SchoolClass.SCHOOL_CLASS;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -66,13 +63,19 @@ public class SchoolClassHtmlController {
         @RequestParam(name = "limit", defaultValue = "15") final int limit,
         @RequestParam(name = "name", required = false) final String name
     ) throws Exception {
-        Condition condition = SchoolClassHtmlController.SCHOOL_CLASS.IS_DELETED.eq(false)
-            .and(SchoolClassHtmlController.SCHOOL_CLASS.SCHOOL_ID.eq(school));
+        Condition condition = DSL.condition(
+            new ClasspathSql("school-class/conditions/by-is-deleted-and-school-id.sql").text(),
+            false,
+            school
+        );
         if (name != null && !name.isBlank()) {
             condition = condition.and(
                 DSL.concat(
-                    SchoolClassHtmlController.SCHOOL_CLASS.GRADE.cast(String.class),
-                    SchoolClassHtmlController.SCHOOL_CLASS.LITERA
+                    DSL.field(
+                        DSL.name("public", "school_class", "grade"),
+                        Integer.class
+                    ).cast(String.class),
+                    DSL.field(DSL.name("public", "school_class", "litera"), String.class)
                 ).likeIgnoreCase(String.format("%%%s%%", name))
             );
         }
@@ -113,13 +116,19 @@ public class SchoolClassHtmlController {
         @RequestParam(name = "offset", defaultValue = "1") final int offset,
         @RequestParam(name = "limit", defaultValue = "15") final int limit
     ) throws Exception {
-        Condition condition = SchoolClassHtmlController.SCHOOL_CLASS.IS_DELETED.eq(false)
-            .and(SchoolClassHtmlController.SCHOOL_CLASS.SCHOOL_ID.eq(school));
+        Condition condition = DSL.condition(
+            new ClasspathSql("school-class/conditions/by-is-deleted-and-school-id.sql").text(),
+            false,
+            school
+        );
         if (name != null && !name.isBlank()) {
             condition = condition.and(
                 DSL.concat(
-                    SchoolClassHtmlController.SCHOOL_CLASS.GRADE.cast(String.class),
-                    SchoolClassHtmlController.SCHOOL_CLASS.LITERA
+                    DSL.field(
+                        DSL.name("public", "school_class", "grade"),
+                        Integer.class
+                    ).cast(String.class),
+                    DSL.field(DSL.name("public", "school_class", "litera"), String.class)
                 ).likeIgnoreCase(String.format("%%%s%%", name))
             );
         }

@@ -4,7 +4,6 @@
 package com.eshabakhov.surok.federal.curriculum.requirement.filter;
 
 import com.eshabakhov.surok.filter.FlCdTrue;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.jooq.impl.DSL;
@@ -29,8 +28,12 @@ final class FlCdRequirementBySubjectTest {
             ).condition(),
             Matchers.is(
                 DSL.trueCondition().and(
-                    FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                        .SUBJECT_NAME.likeIgnoreCase("%Mathematics%")
+                    DSL.condition(
+                        """
+                            federal_curriculum_requirement.subject_name ILIKE ?
+                            """,
+                        "%Mathematics%"
+                    )
                 )
             )
         );
@@ -46,8 +49,12 @@ final class FlCdRequirementBySubjectTest {
             ).condition(),
             Matchers.is(
                 DSL.trueCondition().and(
-                    FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                        .SUBJECT_NAME.likeIgnoreCase("%Я%")
+                    DSL.condition(
+                        """
+                            federal_curriculum_requirement.subject_name ILIKE ?
+                            """,
+                        "%Я%"
+                    )
                 )
             )
         );

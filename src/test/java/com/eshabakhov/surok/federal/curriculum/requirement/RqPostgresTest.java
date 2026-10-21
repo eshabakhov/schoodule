@@ -3,17 +3,12 @@
  */
 package com.eshabakhov.surok.federal.curriculum.requirement;
 
-import com.eshabakhov.surok.enums.CurriculumPartType;
-import com.eshabakhov.surok.enums.EducationLevelType;
-import com.eshabakhov.surok.enums.StudyWeekType;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RqInput;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RqInputGrade;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RqInputHours;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RqInputPart;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RqInputSubject;
 import com.eshabakhov.surok.media.MdJson;
-import com.eshabakhov.surok.tables.FederalCurriculum;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -60,56 +55,43 @@ final class RqPostgresTest {
 
     @BeforeEach
     void insertRequirement() {
-        this.ctx.insertInto(FederalCurriculum.FEDERAL_CURRICULUM)
-            .set(FederalCurriculum.FEDERAL_CURRICULUM.ID, 1L)
-            .set(FederalCurriculum.FEDERAL_CURRICULUM.TITLE, "Plan").set(
-                FederalCurriculum.FEDERAL_CURRICULUM.EDUCATION_LEVEL,
-                EducationLevelType.BASIC
-            ).set(
-                FederalCurriculum.FEDERAL_CURRICULUM.STUDY_WEEK_TYPE,
-                StudyWeekType.FIVE_DAYS
-            )
-            .set(FederalCurriculum.FEDERAL_CURRICULUM.VERSION, "1").set(
-                FederalCurriculum.FEDERAL_CURRICULUM.ACADEMIC_YEAR,
-                "2026/2027"
-            )
-            .set(FederalCurriculum.FEDERAL_CURRICULUM.IS_DELETED, false)
-            .execute();
-        this.ctx.insertInto(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT.ID,
-            7L
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .FEDERAL_CURRICULUM_ID,
-            1L
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT.GRADE,
-            1
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .SUBJECT_NAME,
-            "Mathematics"
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .WEEKLY_HOURS,
-            1
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .PART_TYPE,
-            CurriculumPartType.MANDATORY
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .IS_DELETED,
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.federal_curriculum (id, title, education_level, study_week_type,
+                version, academic_year, is_deleted)
+                VALUES (?, ?, CAST(? AS education_level_type), CAST(? AS study_week_type), ?, ?, ?)
+                """,
+            1L,
+            "Plan",
+            "BASIC",
+            "FIVE_DAYS",
+            "1",
+            "2026/2027",
+            false
+        ).execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.federal_curriculum_requirement (id, federal_curriculum_id, grade,
+                subject_name, weekly_hours, part_type, is_deleted)
+                VALUES (?, ?, ?, ?, ?, CAST(? AS curriculum_part_type), ?)
+                """,
+            7L,
+            1L,
+            1,
+            "Mathematics",
+            1,
+            "MANDATORY",
             false
         ).execute();
     }
 
     @AfterEach
     void truncateCurriculums() {
-        this.ctx.truncate(FederalCurriculum.FEDERAL_CURRICULUM)
-            .restartIdentity().cascade().execute();
+        this.ctx.resultQuery(
+            """
+                TRUNCATE TABLE public.federal_curriculum RESTART IDENTITY CASCADE
+                """
+        ).execute();
     }
 
     @Test

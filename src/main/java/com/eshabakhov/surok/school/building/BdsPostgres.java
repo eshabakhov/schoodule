@@ -8,10 +8,11 @@ import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.page.ResponsePageableList;
 import com.eshabakhov.surok.school.Building;
 import com.eshabakhov.surok.school.Buildings;
-import com.eshabakhov.surok.tables.records.BuildingRecord;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 /**
@@ -22,10 +23,6 @@ import org.jooq.impl.DSL;
  */
 @EqualsAndHashCode
 public final class BdsPostgres implements Buildings {
-
-    /** JOOQ Table for Building. */
-    private static final com.eshabakhov.surok.tables.Building BUILDING =
-        com.eshabakhov.surok.tables.Building.BUILDING;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -50,22 +47,22 @@ public final class BdsPostgres implements Buildings {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                if (ttx.selectFrom(BdsPostgres.BUILDING).where(
-                    BdsPostgres.BUILDING.SCHOOL_ID.eq(this.sid).and(
-                        BdsPostgres.BUILDING.NAME.eq(name)
-                    ).and(BdsPostgres.BUILDING.IS_DELETED.eq(false))
-                    )
-                    .fetchOne() == null) {
-                    final BuildingRecord created = ttx.insertInto(BdsPostgres.BUILDING)
-                        .set(BdsPostgres.BUILDING.SCHOOL_ID, this.sid)
-                        .set(BdsPostgres.BUILDING.NAME, name)
-                        .set(BdsPostgres.BUILDING.IS_DELETED, false)
-                        .returning()
-                        .fetchOne();
+                if (ttx.resultQuery(
+                    new ClasspathSql("building/find-existing.sql").text(),
+                    this.sid,
+                    name,
+                    false
+                ).fetchOne() == null) {
+                    final Record created = ttx.resultQuery(
+                        new ClasspathSql("building/create.sql").text(),
+                        this.sid,
+                        name,
+                        false
+                    ).fetchOne();
                     if (created == null) {
                         throw new BuildingFailedCreateException();
                     }
-                    return new BdPostgres(this.ctx, created.getId());
+                    return new BdPostgres(this.ctx, created.get("id", Long.class));
                 } else {
                     throw new BuildingAlreadyExistsException(
                         String.format("Building `%s` already exists", name)
@@ -77,71 +74,79 @@ public final class BdsPostgres implements Buildings {
 
     @Override
     public Building building(final long cid) throws Exception {
-        final BuildingRecord selected = this.ctx.selectFrom(BdsPostgres.BUILDING).where(
-            BdsPostgres.BUILDING.ID.eq(cid).and(
-                BdsPostgres.BUILDING.SCHOOL_ID.eq(this.sid)
-            ).and(BdsPostgres.BUILDING.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("building/find-by-id-and-school-id.sql").text(),
+            cid,
+            this.sid,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new BuildingNotFoundException(
                 String.format("Building with id=%d not found", cid)
             );
         }
-        return new BdPostgres(this.ctx, selected.getId());
+        return new BdPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
     public Building building(final String name) throws Exception {
-        final BuildingRecord selected = this.ctx.selectFrom(BdsPostgres.BUILDING).where(
-            BdsPostgres.BUILDING.SCHOOL_ID.eq(this.sid).and(
-                BdsPostgres.BUILDING.NAME.eq(name)
-            ).and(BdsPostgres.BUILDING.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("building/find-existing.sql").text(),
+            this.sid,
+            name,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new BuildingNotFoundException(
                 String.format("Building with name=`%s` not found", name)
             );
         }
-        return new BdPostgres(this.ctx, selected.getId());
+        return new BdPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
     public PageableList<Building> buildings(final Condition condition, final Page page)
         throws Exception {
-        final Condition cnd = condition.and(BdsPostgres.BUILDING.SCHOOL_ID.eq(this.sid));
+        final Condition cnd = condition.and(
+            DSL.condition(
+                new ClasspathSql("building/conditions/by-school-id.sql").text(),
+                this.sid
+            )
+        );
         return new ResponsePageableList<>(
-            this.ctx.selectFrom(BdsPostgres.BUILDING)
-                .where(cnd)
-                .orderBy(BdsPostgres.BUILDING.NAME.asc())
-                .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit()).fetch(
-                    selected -> new BdPostgres(this.ctx, selected.getId())
-                ),
-            this.ctx.fetchCount(
-                this.ctx.selectFrom(BdsPostgres.BUILDING).where(cnd)
+            this.ctx.resultQuery(
+                new ClasspathSql("building/list.sql").text(),
+                cnd,
+                DSL.val(page.limit()),
+                DSL.val((page.offset() - 1) * page.limit())
+            ).fetch(
+                selected -> new BdPostgres(this.ctx, selected.get("id", Long.class))
             ),
+            this.ctx.resultQuery(
+                new ClasspathSql("building/count.sql").text(),
+                cnd
+            ).fetchSingle(0, Integer.class),
             page
         );
     }
 
     @Override
     public void remove(final long cid) throws Exception {
-        final BuildingRecord building = this.ctx.selectFrom(BdsPostgres.BUILDING).where(
-            BdsPostgres.BUILDING.ID.eq(cid)
-                .and(BdsPostgres.BUILDING.SCHOOL_ID.eq(this.sid))
-                .and(BdsPostgres.BUILDING.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record building = this.ctx.resultQuery(
+            new ClasspathSql("building/find-by-id-and-school-id.sql").text(),
+            cid,
+            this.sid,
+            false
+        ).fetchOne();
         if (building == null) {
             throw new BuildingNotFoundException(
                 String.format("Building with id=%d not found", cid)
             );
         }
-        this.ctx.update(BdsPostgres.BUILDING)
-            .set(BdsPostgres.BUILDING.IS_DELETED, true)
-            .where(BdsPostgres.BUILDING.ID.eq(cid))
-            .execute();
+        this.ctx.resultQuery(
+            new ClasspathSql("building/soft-delete.sql").text(),
+            true,
+            cid
+        ).execute();
     }
 }

@@ -8,10 +8,11 @@ import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.page.ResponsePageableList;
 import com.eshabakhov.surok.school.SchoolClass;
 import com.eshabakhov.surok.school.SchoolClasses;
-import com.eshabakhov.surok.tables.records.SchoolClassRecord;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 /**
@@ -23,10 +24,6 @@ import org.jooq.impl.DSL;
 @EqualsAndHashCode
 @SuppressWarnings({"PMD.AvoidCatchingGenericException", "PMD.PreserveStackTrace"})
 public final class ScsPostgres implements SchoolClasses {
-
-    /** JOOQ Table for Schedule. */
-    private static final com.eshabakhov.surok.tables.SchoolClass SCHOOL_CLASS =
-        com.eshabakhov.surok.tables.SchoolClass.SCHOOL_CLASS;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -52,25 +49,24 @@ public final class ScsPostgres implements SchoolClasses {
             return this.ctx.transactionResult(
                 config -> {
                     final DSLContext ttx = DSL.using(config);
-                    if (ttx.selectFrom(ScsPostgres.SCHOOL_CLASS).where(
-                        ScsPostgres.SCHOOL_CLASS.SCHOOL_ID.eq(this.sid)
-                            .and(ScsPostgres.SCHOOL_CLASS.GRADE.eq(grade))
-                            .and(ScsPostgres.SCHOOL_CLASS.LITERA.eq(litera))
-                            .and(ScsPostgres.SCHOOL_CLASS.IS_DELETED.eq(false))
-                        )
-                        .fetchOne() == null) {
-                        final SchoolClassRecord created = ttx
-                            .insertInto(ScsPostgres.SCHOOL_CLASS)
-                            .set(ScsPostgres.SCHOOL_CLASS.SCHOOL_ID, this.sid)
-                            .set(ScsPostgres.SCHOOL_CLASS.GRADE, grade)
-                            .set(ScsPostgres.SCHOOL_CLASS.LITERA, litera)
-                            .set(ScsPostgres.SCHOOL_CLASS.IS_DELETED, false)
-                            .returning()
-                            .fetchOne();
+                    if (ttx.resultQuery(
+                        new ClasspathSql("school-class/find-existing.sql").text(),
+                        this.sid,
+                        grade,
+                        litera,
+                        false
+                    ).fetchOne() == null) {
+                        final Record created = ttx.resultQuery(
+                            new ClasspathSql("school-class/create.sql").text(),
+                            this.sid,
+                            grade,
+                            litera,
+                            false
+                        ).fetchOne();
                         if (created == null) {
                             throw new SchoolClassFailedCreateException();
                         }
-                        return new ScPostgres(this.ctx, created.getId());
+                        return new ScPostgres(this.ctx, created.get("id", Long.class));
                     } else {
                         throw new SchoolClassAlreadyExistsException(
                             String.format(
@@ -93,18 +89,18 @@ public final class ScsPostgres implements SchoolClasses {
 
     @Override
     public SchoolClass clazz(final long clazzid) throws Exception {
-        final SchoolClassRecord selected = this.ctx.selectFrom(ScsPostgres.SCHOOL_CLASS).where(
-            ScsPostgres.SCHOOL_CLASS.ID.eq(clazzid).and(
-                ScsPostgres.SCHOOL_CLASS.SCHOOL_ID.eq(this.sid)
-            ).and(ScsPostgres.SCHOOL_CLASS.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("school-class/find-by-id-and-school-id.sql").text(),
+            clazzid,
+            this.sid,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new SchoolClassNotFoundException(
                 String.format("SchoolClass `%s` not found", clazzid)
             );
         }
-        return new ScPostgres(this.ctx, selected.getId());
+        return new ScPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
@@ -113,31 +109,36 @@ public final class ScsPostgres implements SchoolClasses {
         final Page page
     ) throws Exception {
         return new ResponsePageableList<>(
-            this.ctx.selectFrom(ScsPostgres.SCHOOL_CLASS)
-                .where(condition.and(ScsPostgres.SCHOOL_CLASS.SCHOOL_ID.eq(this.sid))).orderBy(
-                    ScsPostgres.SCHOOL_CLASS.GRADE.asc(),
-                    ScsPostgres.SCHOOL_CLASS.LITERA.asc()
-                )
-                .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit()).fetch(
-                    selected ->
-                        new ScPostgres(this.ctx, selected.getId())
+            this.ctx.resultQuery(
+                new ClasspathSql("school-class/list.sql").text(),
+                condition.and(
+                    DSL.condition(
+                        new ClasspathSql("school-class/conditions/by-school-id.sql").text(),
+                        this.sid
+                    )
                 ),
-            this.ctx.fetchCount(
-                this.ctx.selectFrom(ScsPostgres.SCHOOL_CLASS).where(condition)
+                DSL.val(page.limit()),
+                DSL.val((page.offset() - 1) * page.limit())
+            ).fetch(
+                selected ->
+                    new ScPostgres(this.ctx, selected.get("id", Long.class))
             ),
+            this.ctx.resultQuery(
+                new ClasspathSql("school-class/count.sql").text(),
+                condition
+            ).fetchSingle(0, Integer.class),
             page
         );
     }
 
     @Override
     public void remove(final long clazzid) throws Exception {
-        final SchoolClassRecord clazz = this.ctx.selectFrom(ScsPostgres.SCHOOL_CLASS).where(
-            ScsPostgres.SCHOOL_CLASS.ID.eq(clazzid).and(
-                ScsPostgres.SCHOOL_CLASS.SCHOOL_ID.eq(this.sid)
-            ).and(ScsPostgres.SCHOOL_CLASS.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record clazz = this.ctx.resultQuery(
+            new ClasspathSql("school-class/find-by-id-and-school-id.sql").text(),
+            clazzid,
+            this.sid,
+            false
+        ).fetchOne();
         if (clazz == null) {
             throw new SchoolClassNotFoundException(
                 String.format("SchoolClass with id=%d not found", clazzid)
@@ -145,10 +146,11 @@ public final class ScsPostgres implements SchoolClasses {
         }
         this.ctx.transactionResult(
             config ->
-                DSL.using(config).update(ScsPostgres.SCHOOL_CLASS)
-                    .set(ScsPostgres.SCHOOL_CLASS.IS_DELETED, true)
-                    .where(ScsPostgres.SCHOOL_CLASS.ID.eq(clazzid))
-                    .execute()
+                DSL.using(config).resultQuery(
+                    new ClasspathSql("school-class/soft-delete.sql").text(),
+                    true,
+                    clazzid
+                ).execute()
         );
     }
 }

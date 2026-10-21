@@ -7,7 +7,7 @@ import com.eshabakhov.surok.school.SchoolClass;
 import com.eshabakhov.surok.school.Subject;
 import com.eshabakhov.surok.school.schoolclass.ScPostgres;
 import com.eshabakhov.surok.school.subject.SbPostgres;
-import com.eshabakhov.surok.tables.ClassCurriculum;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
@@ -19,10 +19,6 @@ import org.jooq.DSLContext;
  * @checkstyle LambdaBodyLengthCheck (1000 lines)
  */
 public final class ClassLoadPostgres implements ClassLoad {
-
-    /** JOOQ table for class loads. */
-    private static final ClassCurriculum LOAD =
-        ClassCurriculum.CLASS_CURRICULUM;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -51,9 +47,10 @@ public final class ClassLoadPostgres implements ClassLoad {
     public SchoolClass schoolClass() {
         return new ScPostgres(
             this.ctx,
-            this.ctx.selectFrom(ClassLoadPostgres.LOAD)
-                .where(ClassLoadPostgres.LOAD.ID.eq(this.lid))
-                .fetchOne(ClassLoadPostgres.LOAD.SCHOOL_CLASS_ID)
+            this.ctx.resultQuery(
+                new ClasspathSql("class-load/find-by-id.sql").text(),
+                this.lid
+            ).fetchOne("school_class_id", Long.class)
         );
     }
 
@@ -61,79 +58,80 @@ public final class ClassLoadPostgres implements ClassLoad {
     public Subject subject() {
         return new SbPostgres(
             this.ctx,
-            this.ctx.selectFrom(ClassLoadPostgres.LOAD)
-                .where(ClassLoadPostgres.LOAD.ID.eq(this.lid))
-                .fetchOne(ClassLoadPostgres.LOAD.SUBJECT_ID)
+            this.ctx.resultQuery(
+                new ClasspathSql("class-load/find-by-id.sql").text(),
+                this.lid
+            ).fetchOne("subject_id", Long.class)
         );
     }
 
     @Override
     public Integer hoursPerWeek() {
-        return this.ctx.selectFrom(ClassLoadPostgres.LOAD)
-            .where(ClassLoadPostgres.LOAD.ID.eq(this.lid))
-            .fetchOne(ClassLoadPostgres.LOAD.HOURS_PER_WEEK);
+        return this.ctx.resultQuery(
+            new ClasspathSql("class-load/find-by-id.sql").text(),
+            this.lid
+        ).fetchOne("hours_per_week", Integer.class);
     }
 
     @Override
     public ClassLoad teach(final Subject subject) {
-        this.ctx.update(ClassLoadPostgres.LOAD)
-            .set(ClassLoadPostgres.LOAD.SUBJECT_ID, subject.uid())
-            .where(ClassLoadPostgres.LOAD.ID.eq(this.lid))
-            .execute();
+        this.ctx.resultQuery(
+            new ClasspathSql("class-load/teach.sql").text(),
+            subject.uid(),
+            this.lid
+        ).execute();
         return new ClassLoadPostgres(this.ctx, this.lid);
     }
 
     @Override
     public ClassLoad target(final SchoolClass cls) {
-        this.ctx.update(ClassLoadPostgres.LOAD)
-            .set(ClassLoadPostgres.LOAD.SCHOOL_CLASS_ID, cls.uid())
-            .where(ClassLoadPostgres.LOAD.ID.eq(this.lid))
-            .execute();
+        this.ctx.resultQuery(
+            new ClasspathSql("class-load/target.sql").text(),
+            cls.uid(),
+            this.lid
+        ).execute();
         return new ClassLoadPostgres(this.ctx, this.lid);
     }
 
     @Override
     public ClassLoad allocate(final Integer hours) {
-        this.ctx.update(ClassLoadPostgres.LOAD)
-            .set(ClassLoadPostgres.LOAD.HOURS_PER_WEEK, hours)
-            .where(ClassLoadPostgres.LOAD.ID.eq(this.lid))
-            .execute();
+        this.ctx.resultQuery(
+            new ClasspathSql("class-load/allocate.sql").text(),
+            hours,
+            this.lid
+        ).execute();
         return new ClassLoadPostgres(this.ctx, this.lid);
     }
 
     @Override
     public ObjectNode json() {
-        return this.ctx.select(
-            ClassLoadPostgres.LOAD.ID,
-            ClassLoadPostgres.LOAD.SCHOOL_CLASS_ID,
-            ClassLoadPostgres.LOAD.SUBJECT_ID,
-            ClassLoadPostgres.LOAD.HOURS_PER_WEEK
-            )
-            .from(ClassLoadPostgres.LOAD)
-            .where(ClassLoadPostgres.LOAD.ID.eq(this.lid)).fetchOne(
-                r -> {
-                    final ObjectNode json = JsonNodeFactory.instance.objectNode();
-                    json.put("id", r.get(ClassLoadPostgres.LOAD.ID));
-                    json.set(
-                        "schoolClass",
-                        new ScPostgres(
-                            this.ctx,
-                            r.get(ClassLoadPostgres.LOAD.SCHOOL_CLASS_ID)
-                        ).json()
-                    );
-                    json.set(
-                        "subject",
-                        new SbPostgres(
-                            this.ctx,
-                            r.get(ClassLoadPostgres.LOAD.SUBJECT_ID)
-                        ).json()
-                    );
-                    json.put(
-                        "hoursPerWeek",
-                        r.get(ClassLoadPostgres.LOAD.HOURS_PER_WEEK)
-                    );
-                    return json;
-                }
-            );
+        return this.ctx.resultQuery(
+            new ClasspathSql("class-load/find-details.sql").text(),
+            this.lid
+        ).fetchOne(
+            r -> {
+                final ObjectNode json = JsonNodeFactory.instance.objectNode();
+                json.put("id", r.get("id", Long.class));
+                json.set(
+                    "schoolClass",
+                    new ScPostgres(
+                        this.ctx,
+                        r.get("school_class_id", Long.class)
+                    ).json()
+                );
+                json.set(
+                    "subject",
+                    new SbPostgres(
+                        this.ctx,
+                        r.get("subject_id", Long.class)
+                    ).json()
+                );
+                json.put(
+                    "hoursPerWeek",
+                    r.get("hours_per_week", Integer.class)
+                );
+                return json;
+            }
+        );
     }
 }

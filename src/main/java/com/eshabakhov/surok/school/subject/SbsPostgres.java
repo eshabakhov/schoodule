@@ -8,10 +8,11 @@ import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.page.ResponsePageableList;
 import com.eshabakhov.surok.school.Subject;
 import com.eshabakhov.surok.school.Subjects;
-import com.eshabakhov.surok.tables.records.SubjectRecord;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 /**
@@ -22,10 +23,6 @@ import org.jooq.impl.DSL;
  */
 @EqualsAndHashCode
 public final class SbsPostgres implements Subjects {
-
-    /** JOOQ Table for Cabinet. */
-    private static final com.eshabakhov.surok.tables.Subject SUBJECT =
-        com.eshabakhov.surok.tables.Subject.SUBJECT;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -50,22 +47,22 @@ public final class SbsPostgres implements Subjects {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                if (ttx.selectFrom(SbsPostgres.SUBJECT).where(
-                    SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid).and(
-                        SbsPostgres.SUBJECT.NAME.eq(name)
-                    ).and(SbsPostgres.SUBJECT.IS_DELETED.eq(false))
-                    )
-                    .fetchOne() == null) {
-                    final SubjectRecord created = ttx.insertInto(SbsPostgres.SUBJECT)
-                        .set(SbsPostgres.SUBJECT.SCHOOL_ID, this.sid)
-                        .set(SbsPostgres.SUBJECT.NAME, name)
-                        .set(SbsPostgres.SUBJECT.IS_DELETED, false)
-                        .returning()
-                        .fetchOne();
+                if (ttx.resultQuery(
+                    new ClasspathSql("subject/find-existing.sql").text(),
+                    this.sid,
+                    name,
+                    false
+                ).fetchOne() == null) {
+                    final Record created = ttx.resultQuery(
+                        new ClasspathSql("subject/create.sql").text(),
+                        this.sid,
+                        name,
+                        false
+                    ).fetchOne();
                     if (created == null) {
                         throw new SubjectFailedCreateException();
                     }
-                    return new SbPostgres(this.ctx, created.getId());
+                    return new SbPostgres(this.ctx, created.get("id", Long.class));
                 } else {
                     throw new SubjectAlreadyExistsException(
                         String.format("Subject `%s` already exists", name)
@@ -77,61 +74,67 @@ public final class SbsPostgres implements Subjects {
 
     @Override
     public Subject subject(final long subid) throws Exception {
-        final SubjectRecord selected = this.ctx.selectFrom(SbsPostgres.SUBJECT).where(
-            SbsPostgres.SUBJECT.ID.eq(subid).and(
-                SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid)
-            ).and(SbsPostgres.SUBJECT.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("subject/find-by-id-and-school-id.sql").text(),
+            subid,
+            this.sid,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new SubjectNotFoundException(
                 String.format("Subject `%s` not found", subid)
             );
         }
-        return new SbPostgres(this.ctx, selected.getId());
+        return new SbPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
     public Subject subject(final String name) throws Exception {
-        final SubjectRecord selected = this.ctx.selectFrom(SbsPostgres.SUBJECT).where(
-            SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid).and(
-                SbsPostgres.SUBJECT.NAME.eq(name)
-            ).and(SbsPostgres.SUBJECT.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("subject/find-existing.sql").text(),
+            this.sid,
+            name,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new SubjectNotFoundException(
                 String.format("Subject `%s` not found", name)
             );
         }
-        return new SbPostgres(this.ctx, selected.getId());
+        return new SbPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
     public PageableList<Subject> subjects(final Condition condition, final Page page)
         throws Exception {
         return new ResponsePageableList<>(
-            this.ctx.selectFrom(SbsPostgres.SUBJECT)
-                .where(condition.and(SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid)))
-                .orderBy(SbsPostgres.SUBJECT.NAME.asc())
-                .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit())
-                .fetch(selected -> new SbPostgres(this.ctx, selected.getId())),
-            this.ctx.fetchCount(
-                this.ctx.selectFrom(SbsPostgres.SUBJECT).where(condition)
-            ),
+            this.ctx.resultQuery(
+                new ClasspathSql("subject/list.sql").text(),
+                condition.and(
+                    DSL.condition(
+                        new ClasspathSql("subject/conditions/by-school-id.sql").text(),
+                        this.sid
+                    )
+                ),
+                DSL.val(page.limit()),
+                DSL.val((page.offset() - 1) * page.limit())
+            ).fetch(selected -> new SbPostgres(this.ctx, selected.get("id", Long.class))),
+            this.ctx.resultQuery(
+                new ClasspathSql("subject/count.sql").text(),
+                condition
+            ).fetchSingle(0, Integer.class),
             page
         );
     }
 
     @Override
     public void remove(final long subid) throws Exception {
-        final SubjectRecord subject = this.ctx.selectFrom(SbsPostgres.SUBJECT).where(
-            SbsPostgres.SUBJECT.ID.eq(subid).and(
-                SbsPostgres.SUBJECT.SCHOOL_ID.eq(this.sid)
-            ).and(SbsPostgres.SUBJECT.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record subject = this.ctx.resultQuery(
+            new ClasspathSql("subject/find-by-id-and-school-id.sql").text(),
+            subid,
+            this.sid,
+            false
+        ).fetchOne();
         if (subject == null) {
             throw new SubjectNotFoundException(
                 String.format("Subject with id=%d not found", subid)
@@ -139,10 +142,11 @@ public final class SbsPostgres implements Subjects {
         }
         this.ctx.transactionResult(
             config ->
-                DSL.using(config).update(SbsPostgres.SUBJECT)
-                    .set(SbsPostgres.SUBJECT.IS_DELETED, true)
-                    .where(SbsPostgres.SUBJECT.ID.eq(subid))
-                    .execute()
+                DSL.using(config).resultQuery(
+                    new ClasspathSql("subject/soft-delete.sql").text(),
+                    true,
+                    subid
+                ).execute()
         );
     }
 }

@@ -3,14 +3,12 @@
  */
 package com.eshabakhov.surok.user;
 
-import com.eshabakhov.surok.enums.RoleType;
-import com.eshabakhov.surok.tables.UserRole;
-import com.eshabakhov.surok.tables.records.RoleRecord;
-import com.eshabakhov.surok.tables.records.UserRoleRecord;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 
 /**
  * User roles collection abstraction.
@@ -88,11 +86,6 @@ public interface Roles {
      */
     final class RlsPostgres implements Roles {
 
-        /** JOOQ table for role. */
-        // @checkstyle FullyQualifiedTypeCheck (2 lines)
-        private static final com.eshabakhov.surok.tables.Role ROLE =
-            com.eshabakhov.surok.tables.Role.ROLE;
-
         /** Database context. */
         private final DSLContext ctx;
 
@@ -112,47 +105,43 @@ public interface Roles {
 
         @Override
         public Role grant(final RoleEnum role) throws Exception {
-            final RoleRecord selected = this.ctx.selectFrom(Roles.RlsPostgres.ROLE)
-                .where(Roles.RlsPostgres.ROLE.NAME.eq(RoleType.valueOf(role.name())))
-                .fetchOne();
+            final Record selected = this.ctx.resultQuery(
+                new ClasspathSql("role/find-by-name-grant.sql").text(),
+                role.name()
+            ).fetchOne();
             if (selected == null) {
                 throw new RoleNotFoundException(
                     String.format("Role %s not found", role.name())
                 );
             }
-            final UserRoleRecord created = this.ctx.insertInto(UserRole.USER_ROLE)
-                .set(UserRole.USER_ROLE.USER_ID, this.user)
-                .set(UserRole.USER_ROLE.ROLE_ID, selected.getId())
-                .returning()
-                .fetchOne();
+            final Record created = this.ctx.resultQuery(
+                new ClasspathSql("user/role/create.sql").text(),
+                this.user,
+                selected.get("id", Long.class)
+            ).fetchOne();
             if (created == null) {
                 throw new RoleGrantException("Failed to grant role");
             }
-            return new Role.RlPostgres(this.ctx, created.getId());
+            return new Role.RlPostgres(this.ctx, created.get("id", Long.class));
         }
 
         @Override
         public List<Role> list() {
-            return this.ctx.select(
-                UserRole.USER_ROLE.ID,
-                UserRole.USER_ROLE.USER_ID,
-                Roles.RlsPostgres.ROLE.NAME
-                )
-                .from(UserRole.USER_ROLE)
-                .join(Roles.RlsPostgres.ROLE)
-                .on(UserRole.USER_ROLE.ROLE_ID.eq(Roles.RlsPostgres.ROLE.ID))
-                .where(UserRole.USER_ROLE.USER_ID.eq(this.user))
-                .fetch()
+            return this.ctx.resultQuery(
+                new ClasspathSql("user/role/find-by-user-id.sql").text(),
+                this.user
+            ).fetch()
                 .stream()
-                .map(role -> new Role.RlPostgres(this.ctx, role.get(UserRole.USER_ROLE.ID)))
+                .map(role -> new Role.RlPostgres(this.ctx, role.get("id", Long.class)))
                 .collect(Collectors.toList());
         }
 
         @Override
         public void revoke(final long identity) {
-            this.ctx.deleteFrom(UserRole.USER_ROLE)
-                .where(UserRole.USER_ROLE.ID.eq(identity))
-                .execute();
+            this.ctx.resultQuery(
+                new ClasspathSql("user/role/delete.sql").text(),
+                identity
+            ).execute();
         }
     }
 }

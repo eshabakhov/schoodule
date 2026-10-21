@@ -4,6 +4,7 @@
 package com.eshabakhov.surok.school.subject;
 
 import com.eshabakhov.surok.school.Subject;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
@@ -14,10 +15,6 @@ import org.jooq.DSLContext;
  * @since 0.0.1
  */
 public final class SbPostgres implements Subject {
-
-    /** JOOQ Table for Cabinet. */
-    private static final com.eshabakhov.surok.tables.Subject SUBJECT =
-        com.eshabakhov.surok.tables.Subject.SUBJECT;
 
     /** Subject id. */
     private final Long sid;
@@ -44,35 +41,34 @@ public final class SbPostgres implements Subject {
 
     @Override
     public String name() {
-        return this.ctx
-            .select(SbPostgres.SUBJECT.NAME)
-            .from(SbPostgres.SUBJECT)
-            .where(SbPostgres.SUBJECT.ID.eq(this.sid))
-            .fetchOneInto(String.class);
+        return this.ctx.resultQuery(
+            new ClasspathSql("subject/find-name.sql").text(),
+            this.sid
+        ).fetchOneInto(String.class);
     }
 
     @Override
     public Subject renamed(final String name) {
         return new SbPostgres(
             this.ctx,
-            this.ctx.update(SbPostgres.SUBJECT)
-                .set(SbPostgres.SUBJECT.NAME, name)
-                .where(SbPostgres.SUBJECT.ID.eq(this.sid))
-                .returningResult(SbPostgres.SUBJECT.ID)
-                .fetchOne(SbPostgres.SUBJECT.ID)
+            this.ctx.resultQuery(
+                new ClasspathSql("subject/rename.sql").text(),
+                name,
+                this.sid
+            ).fetchOne("id", Long.class)
         );
     }
 
     @Override
     public ObjectNode json() {
-        return this.ctx
-            .select(SbPostgres.SUBJECT.ID, SbPostgres.SUBJECT.NAME)
-            .from(SbPostgres.SUBJECT)
-            .where(SbPostgres.SUBJECT.ID.eq(this.sid)).fetchOne(
-                clazz ->
-                    JsonNodeFactory.instance.objectNode()
-                        .put("id", clazz.get(SbPostgres.SUBJECT.ID))
-                        .put("name", clazz.get(SbPostgres.SUBJECT.NAME))
-            );
+        return this.ctx.resultQuery(
+            new ClasspathSql("subject/find-details.sql").text(),
+            this.sid
+        ).fetchOne(
+            clazz ->
+                JsonNodeFactory.instance.objectNode()
+                    .put("id", clazz.get("id", Long.class))
+                    .put("name", clazz.get("name", String.class))
+        );
     }
 }

@@ -6,10 +6,10 @@ package com.eshabakhov.surok.federal.curriculum.requirement.sort;
 import com.eshabakhov.surok.Sort;
 import com.eshabakhov.surok.sort.SortRequest;
 import com.eshabakhov.surok.sort.SortsRequest;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
 import java.util.List;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -47,14 +47,22 @@ final class StsJqRequirementTest {
                 )
             ).fields(),
             Matchers.contains(
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .GRADE.asc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .SUBJECT_NAME.desc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .WEEKLY_HOURS.asc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .PART_TYPE.desc()
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "grade"),
+                    Integer.class
+                ).asc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "subject_name"),
+                    String.class
+                ).desc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "weekly_hours"),
+                    Integer.class
+                ).asc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "part_type"),
+                    String.class
+                ).desc()
             )
         );
     }
@@ -72,10 +80,14 @@ final class StsJqRequirementTest {
                 )
             ).fields(),
             Matchers.contains(
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .GRADE.desc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .GRADE.asc()
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "grade"),
+                    Integer.class
+                ).desc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "grade"),
+                    Integer.class
+                ).asc()
             )
         );
     }
@@ -88,14 +100,22 @@ final class StsJqRequirementTest {
                 new SortsRequest(List.of())
             ).fields(),
             Matchers.contains(
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .GRADE.asc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .SUBJECT_NAME.asc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .WEEKLY_HOURS.asc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .PART_TYPE.asc()
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "grade"),
+                    Integer.class
+                ).asc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "subject_name"),
+                    String.class
+                ).asc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "weekly_hours"),
+                    Integer.class
+                ).asc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "part_type"),
+                    String.class
+                ).asc()
             )
         );
     }
@@ -116,14 +136,22 @@ final class StsJqRequirementTest {
                 )
             ).fields(),
             Matchers.contains(
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .GRADE.asc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .SUBJECT_NAME.asc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .WEEKLY_HOURS.asc(),
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .PART_TYPE.asc()
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "grade"),
+                    Integer.class
+                ).asc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "subject_name"),
+                    String.class
+                ).asc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "weekly_hours"),
+                    Integer.class
+                ).asc(),
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "part_type"),
+                    String.class
+                ).asc()
             )
         );
     }

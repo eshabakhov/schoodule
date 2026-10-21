@@ -9,9 +9,11 @@ import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.school.Building;
 import com.eshabakhov.surok.school.SlsPostgres;
 import com.eshabakhov.surok.school.building.Cabinet;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import java.util.Map;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -31,10 +33,6 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 @RequestMapping("/schools/{school}/buildings/{building}/cabinets")
 public class CabinetsHtmlController {
-
-    /** JOOQ Table for Cabinet. */
-    private static final com.eshabakhov.surok.tables.Cabinet CABINET =
-        com.eshabakhov.surok.tables.Cabinet.CABINET;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -68,11 +66,17 @@ public class CabinetsHtmlController {
         @RequestParam(name = "limit", defaultValue = "15") final int limit,
         @RequestParam(name = "name", required = false) final String name
     ) throws Exception {
-        Condition condition = CabinetsHtmlController.CABINET.IS_DELETED.eq(false)
-            .and(CabinetsHtmlController.CABINET.BUILDING_ID.eq(building));
+        Condition condition = DSL.condition(
+            new ClasspathSql("cabinet/conditions/by-is-deleted-and-building-id.sql").text(),
+            false,
+            building
+        );
         if (name != null && !name.isBlank()) {
             condition = condition.and(
-                CabinetsHtmlController.CABINET.NAME.likeIgnoreCase(String.format("%%%s%%", name))
+                DSL.condition(
+                    new ClasspathSql("cabinet/conditions/by-name.sql").text(),
+                    String.format("%%%s%%", name)
+                )
             );
         }
         final School sch = new SlsPostgres(this.ctx).school(school);
@@ -115,11 +119,17 @@ public class CabinetsHtmlController {
         @RequestParam(name = "offset", defaultValue = "1") final int offset,
         @RequestParam(name = "limit", defaultValue = "15") final int limit
     ) throws Exception {
-        Condition condition = CabinetsHtmlController.CABINET.IS_DELETED.eq(false)
-            .and(CabinetsHtmlController.CABINET.BUILDING_ID.eq(building));
+        Condition condition = DSL.condition(
+            new ClasspathSql("cabinet/conditions/by-is-deleted-and-building-id.sql").text(),
+            false,
+            building
+        );
         if (name != null && !name.isBlank()) {
             condition = condition.and(
-                CabinetsHtmlController.CABINET.NAME.likeIgnoreCase(String.format("%%%s%%", name))
+                DSL.condition(
+                    new ClasspathSql("cabinet/conditions/by-name.sql").text(),
+                    String.format("%%%s%%", name)
+                )
             );
         }
         final School sch = new SlsPostgres(this.ctx).school(school);

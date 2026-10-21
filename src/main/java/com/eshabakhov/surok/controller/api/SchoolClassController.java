@@ -10,6 +10,7 @@ import com.eshabakhov.surok.school.SchoolClass;
 import com.eshabakhov.surok.school.SlsPostgres;
 import com.eshabakhov.surok.school.schoolclass.ScBase;
 import com.eshabakhov.surok.school.schoolclass.SchoolClassNotFoundException;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -47,10 +48,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/schools/{school}/classes")
 @Tag(name = "School classes")
 public class SchoolClassController {
-
-    /** JOOQ Table for Schedule. */
-    private static final com.eshabakhov.surok.tables.SchoolClass SCHOOL_CLASS =
-        com.eshabakhov.surok.tables.SchoolClass.SCHOOL_CLASS;
 
     /** Simple type for version header. */
     private static final MediaType SIMPLE_TYPE = MediaType.valueOf(
@@ -244,13 +241,19 @@ public class SchoolClassController {
             required = false
         ) final String namect
     ) throws Exception {
-        Condition condition = SchoolClassController.SCHOOL_CLASS.SCHOOL_ID.eq(school)
-            .and(SchoolClassController.SCHOOL_CLASS.IS_DELETED.eq(false));
+        Condition condition = DSL.condition(
+            new ClasspathSql("school-class/conditions/by-school-id-and-is-deleted.sql").text(),
+            school,
+            false
+        );
         if (namect != null && !namect.isBlank()) {
             condition = condition.and(
                 DSL.concat(
-                    SchoolClassController.SCHOOL_CLASS.GRADE.cast(String.class),
-                    SchoolClassController.SCHOOL_CLASS.LITERA
+                    DSL.field(
+                        DSL.name("public", "school_class", "grade"),
+                        Integer.class
+                    ).cast(String.class),
+                    DSL.field(DSL.name("public", "school_class", "litera"), String.class)
                 ).likeIgnoreCase(
                     String.format("%%%s%%", namect)
                 )

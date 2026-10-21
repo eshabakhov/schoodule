@@ -3,10 +3,7 @@
  */
 package com.eshabakhov.surok.user.subscription;
 
-import com.eshabakhov.surok.enums.RoleType;
-import com.eshabakhov.surok.tables.Role;
-import com.eshabakhov.surok.tables.SubscriptionPlanRoles;
-import com.eshabakhov.surok.tables.UserRole;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.eshabakhov.surok.user.AuthUser;
 import com.eshabakhov.surok.user.Subscription;
 import com.eshabakhov.surok.user.Subscriptions;
@@ -15,8 +12,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import org.jooq.DSLContext;
-import org.jooq.Record1;
-import org.jooq.Record2;
+import org.jooq.Record;
 
 /**
  * PostgreSQL-backed implementation of {@link Subscriptions}.
@@ -34,14 +30,6 @@ import org.jooq.Record2;
  * @since 0.0.1
  */
 public final class PgSubscriptions implements Subscriptions {
-
-    /** JOOQ table reference for subscription. */
-    private static final com.eshabakhov.surok.tables.Subscription SUB =
-        com.eshabakhov.surok.tables.Subscription.SUBSCRIPTION;
-
-    /** JOOQ table reference for subscription_plan_roles. */
-    private static final SubscriptionPlanRoles SPR =
-        SubscriptionPlanRoles.SUBSCRIPTION_PLAN_ROLES;
 
     /** JOOQ DSL context for all database operations. */
     private final DSLContext ctx;
@@ -65,20 +53,16 @@ public final class PgSubscriptions implements Subscriptions {
         if (this.user.info().corporate() || this.user.isAdmin()) {
             throw new PersonalOnlyException(this.user.uid());
         }
-        final Record2<String, OffsetDateTime> selected = this.ctx.select(
-            PgSubscriptions.SUB.PLAN, PgSubscriptions.SUB.EXPIRES_AT
-            )
-            .from(PgSubscriptions.SUB)
-            .where(PgSubscriptions.SUB.USER_ID.eq(this.user.uid()))
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("subscription/find-by-user-id.sql").text(),
+            this.user.uid()
+        ).fetchOne();
         if (selected == null) {
-            this.ctx.insertInto(PgSubscriptions.SUB)
-                .set(PgSubscriptions.SUB.USER_ID, this.user.uid())
-                .set(PgSubscriptions.SUB.PLAN, "BASIC")
-                .setNull(PgSubscriptions.SUB.EXPIRES_AT)
-                .onConflict(PgSubscriptions.SUB.USER_ID)
-                .doNothing()
-                .execute();
+            this.ctx.resultQuery(
+                new ClasspathSql("subscription/create-if-absent.sql").text(),
+                this.user.uid(),
+                "BASIC"
+            ).execute();
         }
         return new PgSubscription(this.ctx, this.user.uid());
     }
@@ -98,61 +82,50 @@ public final class PgSubscriptions implements Subscriptions {
             conf -> {
                 final DSLContext ttx = conf.dsl();
                 this.swap(ttx, PgSubscriptions.roles(ttx, plan));
-                ttx.insertInto(PgSubscriptions.SUB)
-                    .set(PgSubscriptions.SUB.USER_ID, this.user.uid())
-                    .set(PgSubscriptions.SUB.PLAN, plan.name())
-                    .set(PgSubscriptions.SUB.EXPIRES_AT, expires)
-                    .set(PgSubscriptions.SUB.UPDATED_AT, Instant.now().atOffset(ZoneOffset.UTC))
-                    .onConflict(PgSubscriptions.SUB.USER_ID)
-                    .doUpdate()
-                    .set(PgSubscriptions.SUB.PLAN, plan.name())
-                    .set(PgSubscriptions.SUB.EXPIRES_AT, expires)
-                    .set(PgSubscriptions.SUB.UPDATED_AT, Instant.now().atOffset(ZoneOffset.UTC))
-                    .execute();
+                ttx.resultQuery(
+                    new ClasspathSql("subscription/upsert.sql").text(),
+                    this.user.uid(),
+                    plan.name(),
+                    expires,
+                    Instant.now().atOffset(ZoneOffset.UTC),
+                    plan.name(),
+                    expires,
+                    Instant.now().atOffset(ZoneOffset.UTC)
+                ).execute();
             }
         );
     }
 
-    private static List<RoleType> roles(final DSLContext dsl, final Subscription.Plan plan) {
-        return dsl.select(PgSubscriptions.SPR.ROLE_NAME)
-            .from(PgSubscriptions.SPR)
-            .where(PgSubscriptions.SPR.PLAN.eq(plan.name()))
-            .fetch()
+    private static List<String> roles(final DSLContext dsl, final Subscription.Plan plan) {
+        return dsl.resultQuery(
+            new ClasspathSql("subscription/role/find-by-plan.sql").text(),
+            plan.name()
+        ).fetch()
             .stream()
-            .map(r -> r.get(PgSubscriptions.SPR.ROLE_NAME))
+            .map(r -> r.get("role_name", String.class))
             .toList();
     }
 
-    private void swap(final DSLContext dsl, final List<RoleType> grants) {
-        dsl.deleteFrom(UserRole.USER_ROLE).where(
-            UserRole.USER_ROLE.USER_ID.eq(this.user.uid()).and(
-                UserRole.USER_ROLE.ROLE_ID.in(
-                    dsl.select(Role.ROLE.ID).from(Role.ROLE).where(
-                        Role.ROLE.NAME.in(
-                            List.of(
-                                "BASIC_MAKER", "ADVANCED_MAKER", "PRO_MAKER", "VIEWER"
-                            )
-                        )
-                    )
-                )
-            )
-        ).execute();
-        for (final RoleType role : grants) {
-            final Record1<Long> rid = dsl.select(Role.ROLE.ID)
-                .from(Role.ROLE)
-                .where(Role.ROLE.NAME.eq(role))
-                .fetchOne();
+    private void swap(final DSLContext dsl, final List<String> grants) {
+        dsl.execute(
+            new ClasspathSql("user/role/delete-subscription-roles.sql").text(),
+            this.user.uid()
+        );
+        for (final String role : grants) {
+            final Record rid = dsl.resultQuery(
+                new ClasspathSql("role/find-by-name.sql").text(),
+                role
+            ).fetchOne();
             if (rid == null) {
                 throw new IllegalStateException(
-                    String.format("Role not found in database (name=%s)", role.getLiteral())
+                    String.format("Role not found in database (name=%s)", role)
                 );
             }
-            dsl.insertInto(UserRole.USER_ROLE)
-                .set(UserRole.USER_ROLE.USER_ID, this.user.uid())
-                .set(UserRole.USER_ROLE.ROLE_ID, rid.get(Role.ROLE.ID))
-                .onConflict(UserRole.USER_ROLE.USER_ID, UserRole.USER_ROLE.ROLE_ID)
-                .doNothing()
-                .execute();
+            dsl.resultQuery(
+                new ClasspathSql("user/role/create-if-absent.sql").text(),
+                this.user.uid(),
+                rid.get("id", Long.class)
+            ).execute();
         }
     }
 }

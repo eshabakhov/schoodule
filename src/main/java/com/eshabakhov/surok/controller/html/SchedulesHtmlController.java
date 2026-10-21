@@ -8,7 +8,7 @@ import com.eshabakhov.surok.School;
 import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.school.Schedule;
 import com.eshabakhov.surok.school.SlsPostgres;
-import com.eshabakhov.surok.tables.ClassCurriculum;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import java.util.Map;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -31,10 +31,6 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 @RequestMapping("/schools/{school}/schedules")
 public class SchedulesHtmlController {
-
-    /** JOOQ Table for Schedule. */
-    private static final com.eshabakhov.surok.tables.Schedule SCHEDULE =
-        com.eshabakhov.surok.tables.Schedule.SCHEDULE;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -67,11 +63,17 @@ public class SchedulesHtmlController {
         @RequestParam(name = "limit", defaultValue = "15") final int limit,
         @RequestParam(name = "name", required = false) final String name
     ) throws Exception {
-        Condition condition = SchedulesHtmlController.SCHEDULE.IS_DELETED.eq(false)
-            .and(SchedulesHtmlController.SCHEDULE.SCHOOL_ID.eq(school));
+        Condition condition = DSL.condition(
+            new ClasspathSql("schedule/conditions/by-is-deleted-and-school-id.sql").text(),
+            false,
+            school
+        );
         if (name != null && !name.isBlank()) {
             condition = condition.and(
-                SchedulesHtmlController.SCHEDULE.NAME.likeIgnoreCase(String.format("%%%s%%", name))
+                DSL.condition(
+                    new ClasspathSql("schedule/conditions/by-name.sql").text(),
+                    String.format("%%%s%%", name)
+                )
             );
         }
         final School sch = new SlsPostgres(this.ctx).school(school);
@@ -111,11 +113,17 @@ public class SchedulesHtmlController {
         @RequestParam(name = "offset", defaultValue = "1") final int offset,
         @RequestParam(name = "limit", defaultValue = "15") final int limit
     ) throws Exception {
-        Condition condition = SchedulesHtmlController.SCHEDULE.IS_DELETED.eq(false)
-            .and(SchedulesHtmlController.SCHEDULE.SCHOOL_ID.eq(school));
+        Condition condition = DSL.condition(
+            new ClasspathSql("schedule/conditions/by-is-deleted-and-school-id.sql").text(),
+            false,
+            school
+        );
         if (name != null && !name.isBlank()) {
             condition = condition.and(
-                SchedulesHtmlController.SCHEDULE.NAME.likeIgnoreCase(String.format("%%%s%%", name))
+                DSL.condition(
+                    new ClasspathSql("schedule/conditions/by-name.sql").text(),
+                    String.format("%%%s%%", name)
+                )
             );
         }
         final School sch = new SlsPostgres(this.ctx).school(school);
@@ -257,11 +265,16 @@ public class SchedulesHtmlController {
                 "classCount", sch.schoolClasses()
                     .classes(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
                     .total(),
-                "subjectCount", this.ctx
-                    .select(DSL.countDistinct(ClassCurriculum.CLASS_CURRICULUM.SUBJECT_ID))
-                    .from(ClassCurriculum.CLASS_CURRICULUM)
-                    .where(ClassCurriculum.CLASS_CURRICULUM.SCHEDULE_ID.eq(schedule))
-                    .fetchOne(0, Integer.class),
+                "subjectCount", this.ctx.resultQuery(
+                    new ClasspathSql("class-load/count-subjects.sql").text(),
+                    DSL.countDistinct(
+                        DSL.field(
+                            DSL.name("public", "class_curriculum", "subject_id"),
+                            Long.class
+                        )
+                    ),
+                    DSL.val(schedule)
+                ).fetchOne(0, Integer.class),
                 "pageTitle", sched.name()
             )
         );

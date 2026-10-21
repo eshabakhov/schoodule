@@ -4,6 +4,7 @@
 package com.eshabakhov.surok.school.teacher;
 
 import com.eshabakhov.surok.school.Teacher;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
@@ -14,10 +15,6 @@ import org.jooq.DSLContext;
  * @since 0.0.1
  */
 public final class ThPostgres implements Teacher {
-
-    /** JOOQ Table for Teacher. */
-    private static final com.eshabakhov.surok.tables.Teacher TEACHER =
-        com.eshabakhov.surok.tables.Teacher.TEACHER;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -44,35 +41,34 @@ public final class ThPostgres implements Teacher {
 
     @Override
     public String name() {
-        return this.ctx
-            .select(ThPostgres.TEACHER.NAME)
-            .from(ThPostgres.TEACHER)
-            .where(ThPostgres.TEACHER.ID.eq(this.tid))
-            .fetchOneInto(String.class);
+        return this.ctx.resultQuery(
+            new ClasspathSql("teacher/find-name.sql").text(),
+            this.tid
+        ).fetchOneInto(String.class);
     }
 
     @Override
     public Teacher renamed(final String name) {
         return new ThPostgres(
             this.ctx,
-            this.ctx.update(ThPostgres.TEACHER)
-                .set(ThPostgres.TEACHER.NAME, name)
-                .where(ThPostgres.TEACHER.ID.eq(this.tid))
-                .returningResult(ThPostgres.TEACHER.ID)
-                .fetchOne(ThPostgres.TEACHER.ID)
+            this.ctx.resultQuery(
+                new ClasspathSql("teacher/rename.sql").text(),
+                name,
+                this.tid
+            ).fetchOne("id", Long.class)
         );
     }
 
     @Override
     public ObjectNode json() {
-        return this.ctx
-            .select(ThPostgres.TEACHER.ID, ThPostgres.TEACHER.NAME)
-            .from(ThPostgres.TEACHER)
-            .where(ThPostgres.TEACHER.ID.eq(this.tid)).fetchOne(
-                clazz ->
-                    JsonNodeFactory.instance.objectNode()
-                        .put("id", clazz.get(ThPostgres.TEACHER.ID))
-                        .put("name", clazz.get(ThPostgres.TEACHER.NAME))
-            );
+        return this.ctx.resultQuery(
+            new ClasspathSql("teacher/find-details.sql").text(),
+            this.tid
+        ).fetchOne(
+            clazz ->
+                JsonNodeFactory.instance.objectNode()
+                    .put("id", clazz.get("id", Long.class))
+                    .put("name", clazz.get("name", String.class))
+        );
     }
 }

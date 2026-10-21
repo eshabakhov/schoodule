@@ -7,10 +7,10 @@ import com.eshabakhov.surok.Sort;
 import com.eshabakhov.surok.Sorts;
 import com.eshabakhov.surok.sort.StJooq;
 import com.eshabakhov.surok.sort.StsJooq;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
 import java.util.ArrayList;
 import java.util.List;
 import org.jooq.SortField;
+import org.jooq.impl.DSL;
 
 /**
  * Federal curriculum requirement JOOQ sorting parameters.
@@ -18,12 +18,6 @@ import org.jooq.SortField;
  * @since 0.0.1
  */
 public final class StsJqRequirement implements StsJooq {
-
-    /**
-     * JOOQ Table for Requirement.
-     */
-    private static final FederalCurriculumRequirement REQUIREMENT =
-        FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
 
     /**
      * Origin sorting parameters.
@@ -59,10 +53,30 @@ public final class StsJqRequirement implements StsJooq {
             }
         }
         if (fields.isEmpty()) {
-            fields.add(StsJqRequirement.REQUIREMENT.GRADE.asc());
-            fields.add(StsJqRequirement.REQUIREMENT.SUBJECT_NAME.asc());
-            fields.add(StsJqRequirement.REQUIREMENT.WEEKLY_HOURS.asc());
-            fields.add(StsJqRequirement.REQUIREMENT.PART_TYPE.asc());
+            fields.add(
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "grade"),
+                    Integer.class
+                ).asc()
+            );
+            fields.add(
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "subject_name"),
+                    String.class
+                ).asc()
+            );
+            fields.add(
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "weekly_hours"),
+                    Integer.class
+                ).asc()
+            );
+            fields.add(
+                DSL.field(
+                    DSL.name("public", "federal_curriculum_requirement", "part_type"),
+                    String.class
+                ).asc()
+            );
         }
         return fields;
     }
