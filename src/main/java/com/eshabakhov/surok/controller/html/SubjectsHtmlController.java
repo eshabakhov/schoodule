@@ -5,7 +5,9 @@ package com.eshabakhov.surok.controller.html;
 
 import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.School;
+import com.eshabakhov.surok.media.MdThymeleaf;
 import com.eshabakhov.surok.page.PageRequest;
+import com.eshabakhov.surok.school.SlWeb;
 import com.eshabakhov.surok.school.SlsPostgres;
 import com.eshabakhov.surok.school.Subject;
 import com.eshabakhov.surok.sql.ClasspathSql;
@@ -82,8 +84,11 @@ public class SubjectsHtmlController {
             .subjects(condition, new PageRequest(limit, offset));
         return new ModelAndView("subjects/list").addAllObjects(
             Map.of(
-                "school", sch,
-                "pageTitle", String.format("%s - предметы", sch.name()),
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
+                "pageTitle", String.format(
+                    "%s - предметы", sch.print(new MdThymeleaf("", ""))
+                    .print().getModel().get("name")
+                ),
                 "subjects", subjects.list(),
                 "page", offset,
                 "limit", limit,
@@ -132,7 +137,7 @@ public class SubjectsHtmlController {
             .subjects(condition, new PageRequest(limit, offset));
         return new ModelAndView("subjects/list :: subjects-grid").addAllObjects(
             Map.of(
-                "school", sch,
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "subjects", subjects.list(),
                 "page", offset,
                 "limit", limit,
@@ -161,7 +166,7 @@ public class SubjectsHtmlController {
         final Subject sub = sch.subjects().subject(subject);
         return new ModelAndView("subjects/details").addAllObjects(
             Map.of(
-                "school", sch,
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "subject", sub,
                 "pageTitle", sub.name()
             )
@@ -180,7 +185,8 @@ public class SubjectsHtmlController {
     public ModelAndView createForm(@PathVariable final long school) throws Exception {
         return new ModelAndView("subjects/create").addAllObjects(
             Map.of(
-                "school", new SlsPostgres(this.ctx).school(school),
+                "school", new SlWeb(new SlsPostgres(this.ctx).school(school))
+                .print(new MdThymeleaf("", "")).print().getModel(),
                 "pageTitle", "Новый предмет"
             )
         );
@@ -228,7 +234,7 @@ public class SubjectsHtmlController {
         final School sch = new SlsPostgres(this.ctx).school(school);
         return new ModelAndView("subjects/edit").addAllObjects(
             Map.of(
-                "school", sch,
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "subject", sch.subjects().subject(subject),
                 "pageTitle", "Редактировать предмет"
             )

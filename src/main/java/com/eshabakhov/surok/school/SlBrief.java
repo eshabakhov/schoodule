@@ -32,7 +32,7 @@ public final class SlBrief implements Printable {
 
     @Override
     public <T> Media<T> print(final Media<T> media) throws Exception {
-        return media.with("id", this.origin.uid()).with("name", this.origin.name()).with(
+        return this.origin.print(media).with(
             "schedules",
             new PrItems(
                 "schedule",

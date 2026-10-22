@@ -3,52 +3,71 @@
  */
 package com.eshabakhov.surok;
 
-import org.jooq.Condition;
+import com.eshabakhov.surok.school.SchoolInput;
 
 /**
- * Interface representing a collection of schools.
+ * Interface for managing {@link School} entities.
  *
  * @since 0.0.1
  */
 public interface Schools extends Printable {
 
     /**
-     * Creates a new school in the collection.
+     * Creates a new school.
      *
-     * @param name Name of school
-     * @return The newly created school
+     * @param input School input
+     * @return The created {@link School}
+     * @throws Exception if creation fails
      */
-    School create(String name) throws Exception;
+    School create(SchoolInput input) throws Exception;
 
     /**
-     * Retrieves a school from the collection by its ID.
+     * Finds a school by its unique identifier.
      *
-     * @param id Unique identifier of the school
-     * @return School with the specified ID
+     * @param id The school ID
+     * @return The found {@link School}
+     * @throws Exception if not found
      */
     School school(long id) throws Exception;
 
     /**
-     * Retrieves a school from the collection by its exact name.
+     * Revises a school.
      *
-     * @param name Exact name of the school
-     * @return School with the specified name
+     * @param id The school ID
+     * @param input School input
+     * @return Revised school
+     * @throws Exception if revision fails
      */
-    School school(String name) throws Exception;
+    default School revise(
+        final long id,
+        final SchoolInput input
+    ) throws Exception {
+        return this.school(id).revise(input);
+    }
 
     /**
-     * Retrieves schools from the collection.
+     * Returns a paginated list of schools.
      *
-     * @param condition Jooq condition for filtering
+     * @param filters Filters for selecting schools
      * @param page Pagination (contains limit and offset)
-     * @return Collection of schools
+     * @param sorts Sorting parameters
+     * @return List of {@link School} instances
+     * @throws Exception if listing fails
      */
-    PageableList<School> schools(Condition condition, Page page) throws Exception;
+    Schools selection(Filters filters, Page page, Sorts sorts) throws Exception;
 
     /**
-     * Removes a school from the collection.
+     * Iterates over schools represented by this collection.
      *
-     * @param school ID of the school to remove
+     * @return Schools
      */
-    void remove(long school) throws Exception;
+    Iterable<School> iterate();
+
+    /**
+     * Removes a school by its ID.
+     *
+     * @param id The school ID
+     * @throws Exception if removal fails
+     */
+    void remove(long id) throws Exception;
 }

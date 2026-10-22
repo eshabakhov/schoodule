@@ -5,8 +5,10 @@ package com.eshabakhov.surok.controller.html;
 
 import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.School;
+import com.eshabakhov.surok.media.MdThymeleaf;
 import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.school.Schedule;
+import com.eshabakhov.surok.school.SlWeb;
 import com.eshabakhov.surok.school.SlsPostgres;
 import com.eshabakhov.surok.school.schedule.load.ClassLoad;
 import com.eshabakhov.surok.school.schoolclass.ScPostgres;
@@ -35,9 +37,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @SuppressWarnings("PMD.AvoidCatchingGenericException")
 public class ClassLoadHtmlController {
 
-    /**
-     * Database context.
-     */
+    /** Database context. */
     private final DSLContext ctx;
 
     /**
@@ -70,7 +70,9 @@ public class ClassLoadHtmlController {
         final PageableList<ClassLoad> loads = sched
             .loads()
             .list(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1));
-        model.addAttribute("school", sch);
+        model.addAttribute(
+            "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel()
+        );
         model.addAttribute("schedule", sched);
         model.addAttribute("loads", loads);
         model.addAttribute(

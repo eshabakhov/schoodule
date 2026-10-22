@@ -5,8 +5,10 @@ package com.eshabakhov.surok.controller.html;
 
 import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.School;
+import com.eshabakhov.surok.media.MdThymeleaf;
 import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.school.Schedule;
+import com.eshabakhov.surok.school.SlWeb;
 import com.eshabakhov.surok.school.SlsPostgres;
 import com.eshabakhov.surok.sql.ClasspathSql;
 import java.util.Map;
@@ -77,13 +79,15 @@ public class SchedulesHtmlController {
             );
         }
         final School sch = new SlsPostgres(this.ctx).school(school);
+        final Map<String, Object> printed = new SlWeb(sch)
+            .print(new MdThymeleaf("", "")).print().getModel();
         final PageableList<Schedule> schedules = sch
             .schedules()
             .schedules(condition, new PageRequest(limit, offset));
         return new ModelAndView("schedules/list").addAllObjects(
             Map.of(
-                "school", sch,
-                "pageTitle", String.format("%s - расписания", sch.name()),
+                "school", printed,
+                "pageTitle", String.format("%s - расписания", printed.get("name")),
                 "schedules", schedules.list(),
                 "page", offset,
                 "limit", limit,
@@ -132,7 +136,7 @@ public class SchedulesHtmlController {
             .schedules(condition, new PageRequest(limit, offset));
         return new ModelAndView("schedules/list :: schedules-grid").addAllObjects(
             Map.of(
-                "school", sch,
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "schedules", schedules.list(),
                 "page", offset,
                 "limit", limit,
@@ -155,7 +159,8 @@ public class SchedulesHtmlController {
     public ModelAndView createForm(@PathVariable final long school) throws Exception {
         return new ModelAndView("schedules/create").addAllObjects(
             Map.of(
-                "school", new SlsPostgres(this.ctx).school(school),
+                "school", new SlWeb(new SlsPostgres(this.ctx).school(school))
+                .print(new MdThymeleaf("", "")).print().getModel(),
                 "pageTitle", "Новое расписание"
             )
         );
@@ -203,7 +208,7 @@ public class SchedulesHtmlController {
         final School sch = new SlsPostgres(this.ctx).school(school);
         return new ModelAndView("schedules/edit").addAllObjects(
             Map.of(
-                "school", sch,
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "schedule", sch.schedules().schedule(schedule),
                 "pageTitle", "Редактировать расписание"
             )
@@ -260,7 +265,7 @@ public class SchedulesHtmlController {
         final Schedule sched = sch.schedules().schedule(schedule);
         return new ModelAndView("schedules/details").addAllObjects(
             Map.of(
-                "school", sch,
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "schedule", sched,
                 "classCount", sch.schoolClasses()
                     .classes(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))

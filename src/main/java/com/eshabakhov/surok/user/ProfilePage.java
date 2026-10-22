@@ -3,6 +3,8 @@
  */
 package com.eshabakhov.surok.user;
 
+import com.eshabakhov.surok.media.MdThymeleaf;
+import com.eshabakhov.surok.school.SlWeb;
 import com.eshabakhov.surok.school.SlsPostgres;
 import org.jooq.DSLContext;
 import org.springframework.http.MediaType;
@@ -44,7 +46,10 @@ public final class ProfilePage {
         model.addAttribute("pageTitle", "Профиль");
         model.addAttribute("user", user);
         if (user.info().school() != null) {
-            model.addAttribute("school", new SlsPostgres(this.ctx).school(user.info().school()));
+            model.addAttribute(
+                "school", new SlWeb(new SlsPostgres(this.ctx).school(user.info().school()))
+                    .print(new MdThymeleaf("", "")).print().getModel()
+            );
         } else {
             model.addAttribute("school", null);
         }

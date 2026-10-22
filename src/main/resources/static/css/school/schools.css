@@ -1,0 +1,103 @@
+.schools-add {
+    text-decoration: none;
+}
+
+.schools-add svg {
+    width: 15px;
+    height: 15px;
+}
+
+.schools-content {
+    display: grid;
+    grid-template-columns: minmax(240px, 360px) minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+}
+
+.schools-search {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+.schools-results {
+    display: contents;
+}
+
+.schools-sort-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: .5rem;
+}
+
+.schools-sort {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .375rem;
+    min-height: 34px;
+    padding: .375rem .75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--muted-fg);
+    font-size: .8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--ease), color var(--ease), border-color var(--ease);
+}
+
+.schools-sort:hover {
+    background: var(--accent);
+    color: var(--fg);
+}
+
+.schools-sort.active {
+    border-color: var(--primary);
+    color: var(--fg);
+}
+
+.schools-sort-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1em;
+    line-height: 1;
+}
+
+.schools-empty {
+    grid-column: 1 / -1;
+    padding: 3rem;
+    color: var(--muted-fg);
+    text-align: center;
+}
+
+.school-card {
+    cursor: pointer;
+}
+
+/* List and pagination occupy the full width below the toolbar. */
+.schools-content .card-grid,
+.schools-content .pagination-wrap {
+    grid-column: 1 / -1;
+}
+
+@media (width <= 900px) {
+    .schools-content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .schools-sort-controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        justify-content: stretch;
+    }
+
+    .schools-sort {
+        width: 100%;
+    }
+}

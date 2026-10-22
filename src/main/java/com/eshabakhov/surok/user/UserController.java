@@ -5,6 +5,8 @@ package com.eshabakhov.surok.user;
 
 import com.eshabakhov.surok.User;
 import com.eshabakhov.surok.school.SlsPostgres;
+import com.eshabakhov.surok.school.input.SlInput;
+import com.eshabakhov.surok.school.input.SlInputName;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,9 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Users")
 public class UserController {
 
-    /**
-     * Database context.
-     */
+    /** Database context. */
     private final DSLContext ctx;
 
     UserController(final DSLContext ctx) {
@@ -142,7 +142,8 @@ public class UserController {
         final JsonNode school = request.get("school");
         if (school == null) {
             created = new UrsPostgres(
-                this.ctx, new SlsPostgres(this.ctx).create("My school").uid()
+                this.ctx,
+                new SlsPostgres(this.ctx).create(new SlInputName(new SlInput(), "My school")).uid()
             ).register(
                 username.asText(),
                 password.asText(),

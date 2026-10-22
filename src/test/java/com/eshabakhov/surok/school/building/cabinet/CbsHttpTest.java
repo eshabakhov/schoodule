@@ -5,11 +5,10 @@ package com.eshabakhov.surok.school.building.cabinet;
 
 import com.eshabakhov.surok.User;
 import com.eshabakhov.surok.user.AuthUser;
-import com.eshabakhov.surok.user.CdFake;
-import com.eshabakhov.surok.user.RiFake;
-import com.eshabakhov.surok.user.RlsFake;
 import com.eshabakhov.surok.user.Roles;
+import com.eshabakhov.surok.user.UrPostgres;
 import java.util.List;
+import java.util.UUID;
 import org.hamcrest.Matchers;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterEach;
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -758,12 +756,19 @@ final class CbsHttpTest {
 
     private MockHttpSession session(final Roles.RoleEnum role, final Long school)
         throws Exception {
-        final User user = Mockito.mock(User.class);
-        final Roles roles = new RlsFake();
-        roles.grant(role);
-        Mockito.when(user.roles()).thenReturn(roles);
-        Mockito.when(user.info()).thenReturn(new RiFake(school, false, true));
-        Mockito.when(user.credentials()).thenReturn(new CdFake("director", "password"));
+        final User user = new UrPostgres(
+            this.ctx,
+            this.ctx.resultQuery(
+                """
+                INSERT INTO public."user" (username, password, email, corporate, school_id)
+                VALUES (?, 'secret', ?, true, ?) RETURNING id
+                """,
+                UUID.randomUUID().toString(),
+                String.format("%s@example.org", UUID.randomUUID()),
+                school
+            ).fetchSingle("id", Long.class)
+        );
+        user.roles().grant(role);
         final AuthUser principal = new AuthUser(user);
         final MockHttpSession session = new MockHttpSession();
         session.setAttribute(

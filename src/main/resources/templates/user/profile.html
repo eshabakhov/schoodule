@@ -49,14 +49,14 @@
                 </div>
                 <div class="info-row"
                      style="border-bottom:1px solid var(--border);padding-bottom:.875rem;"
-                     th:if="${school!= null && school.name() != null}">
+                     th:if="${school!= null && school.name != null}">
                     <span class="info-label">Школа</span>
                     <a class="info-value"
                        href="#"
                        title="Перейти к школе"
                        style="color:var(--fg);text-decoration:underline;text-underline-offset:2px;"
                        th:href="@{/schools/{id}(id=${user.info().school()})}"
-                       th:text="${school.name()}">Школа</a>
+                       th:text="${school.name}">Школа</a>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Роли</span>

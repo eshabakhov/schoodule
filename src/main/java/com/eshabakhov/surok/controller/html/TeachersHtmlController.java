@@ -5,7 +5,9 @@ package com.eshabakhov.surok.controller.html;
 
 import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.School;
+import com.eshabakhov.surok.media.MdThymeleaf;
 import com.eshabakhov.surok.page.PageRequest;
+import com.eshabakhov.surok.school.SlWeb;
 import com.eshabakhov.surok.school.SlsPostgres;
 import com.eshabakhov.surok.school.Teacher;
 import com.eshabakhov.surok.sql.ClasspathSql;
@@ -82,8 +84,11 @@ public class TeachersHtmlController {
             .teachers(condition, new PageRequest(limit, offset));
         return new ModelAndView("teachers/list").addAllObjects(
             Map.of(
-                "school", sch,
-                "pageTitle", String.format("%s - учителя", sch.name()),
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
+                "pageTitle", String.format(
+                    "%s - учителя", sch.print(new MdThymeleaf("", ""))
+                    .print().getModel().get("name")
+                ),
                 "teachers", teachers.list(),
                 "page", offset,
                 "limit", limit,
@@ -132,7 +137,7 @@ public class TeachersHtmlController {
             .teachers(condition, new PageRequest(limit, offset));
         return new ModelAndView("teachers/list :: teachers-grid").addAllObjects(
             Map.of(
-                "school", sch,
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "teachers", teachers.list(),
                 "page", offset,
                 "limit", limit,
@@ -160,7 +165,7 @@ public class TeachersHtmlController {
         final School sch = new SlsPostgres(this.ctx).school(school);
         return new ModelAndView("teachers/details").addAllObjects(
             Map.of(
-                "school", sch,
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "teacher", sch.teachers().teacher(teacher),
                 "pageTitle", sch.teachers().teacher(teacher).name()
             )
@@ -179,7 +184,8 @@ public class TeachersHtmlController {
     public ModelAndView createForm(@PathVariable final long school) throws Exception {
         return new ModelAndView("teachers/create").addAllObjects(
             Map.of(
-                "school", new SlsPostgres(this.ctx).school(school),
+                "school", new SlWeb(new SlsPostgres(this.ctx).school(school))
+                .print(new MdThymeleaf("", "")).print().getModel(),
                 "pageTitle", "Новый учитель"
             )
         );
@@ -227,7 +233,7 @@ public class TeachersHtmlController {
         final School sch = new SlsPostgres(this.ctx).school(school);
         return new ModelAndView("teachers/edit").addAllObjects(
             Map.of(
-                "school", sch,
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "teacher", sch.teachers().teacher(teacher),
                 "pageTitle", "Редактировать учителя"
             )

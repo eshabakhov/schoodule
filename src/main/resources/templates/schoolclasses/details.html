@@ -20,7 +20,7 @@
                    href="#"
                    title="Редактировать"
                    aria-label="Редактировать"
-                   th:href="@{/schools/{s}/classes/{c}/edit(s=${school.uid()},c=${clazz.uid()})}">
+                   th:href="@{/schools/{s}/classes/{c}/edit(s=${school.id},c=${clazz.uid()})}">
                     <svg fill="none"
                          height="15"
                          stroke="currentColor"
@@ -62,7 +62,7 @@
 </div>
 <th:block layout:fragment="page-scripts">
     <script th:inline="javascript">
-        const schoolId = /*[[${school.uid()}]]*/ 0;
+        const schoolId = /*[[${school.id}]]*/ 0;
     </script>
     <script>
         $(() => {

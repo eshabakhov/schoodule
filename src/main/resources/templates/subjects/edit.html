@@ -25,7 +25,7 @@
     <div style="max-width:480px; margin: 0 auto;">
         <form method="post"
               style="display:flex;flex-direction:column;gap:1rem;"
-              th:action="@{/schools/{s}/subjects/{sub}/edit(s=${school.uid()},sub=${subject.uid()})}">
+              th:action="@{/schools/{s}/subjects/{sub}/edit(s=${school.id},sub=${subject.uid()})}">
             <label for="subject-name"
                    style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
                 Название предмета
@@ -40,7 +40,7 @@
                 <a class="btn-outline-action"
                    href="#"
                    title="Отменить редактирование предмета"
-                   th:href="@{/schools/{s}/subjects/{t}(s=${school.uid()},sub=${subject.uid()})}">
+                   th:href="@{/schools/{s}/subjects/{t}(s=${school.id},sub=${subject.uid()})}">
                     Отмена
                 </a>
                 <button class="btn-primary" type="submit">Сохранить</button>

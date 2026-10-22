@@ -5,6 +5,7 @@ package com.eshabakhov.surok;
 
 import com.eshabakhov.surok.school.Schedules;
 import com.eshabakhov.surok.school.SchoolClasses;
+import com.eshabakhov.surok.school.SchoolInput;
 import com.eshabakhov.surok.school.Subjects;
 import com.eshabakhov.surok.school.Teachers;
 import com.eshabakhov.surok.school.building.Buildings;
@@ -18,7 +19,7 @@ import com.eshabakhov.surok.school.building.Buildings;
  *
  * @since 0.0.1
  */
-public interface School extends Jsonable {
+public interface School extends Printable {
 
     /**
      * Returns a School unique identifier.
@@ -28,19 +29,13 @@ public interface School extends Jsonable {
     Long uid();
 
     /**
-     * Returns a name of the school.
+     * Revises this school, for example with a validated name input.
      *
-     * @return Name of the school
+     * @param input School input
+     * @return Revised school
+     * @throws Exception If revision fails
      */
-    String name();
-
-    /**
-     * Returns renamed school.
-     *
-     * @param name New name of school
-     * @return School with new name
-     */
-    School renamed(String name);
+    School revise(SchoolInput input) throws Exception;
 
     /**
      * Return users.

@@ -57,7 +57,7 @@
 
     <xsl:template name="scripts">
         <xsl:if test="$view = 'list'">
-            <script type="module" src="/js/federal-curriculums.js"></script>
+            <script type="module" src="/js/federal/curriculums.js"></script>
         </xsl:if>
     </xsl:template>
 

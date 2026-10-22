@@ -193,5 +193,5 @@
         </div>
     </xsl:template>
 
-    <xsl:template name="scripts"><script type="module" src="/js/cabinets.js"></script></xsl:template>
+    <xsl:template name="scripts"><script type="module" src="/js/school/cabinets.js"></script></xsl:template>
 </xsl:stylesheet>
