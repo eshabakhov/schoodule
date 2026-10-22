@@ -68,7 +68,6 @@ final class XsClasspathTest {
         );
     }
 
-
     @ParameterizedTest
     @ValueSource(strings = {"building", "cabinet"})
     void escapesNamesWithoutIncludingPageChrome(final String entity) {
