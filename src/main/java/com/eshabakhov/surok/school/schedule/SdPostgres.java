@@ -6,6 +6,7 @@ package com.eshabakhov.surok.school.schedule;
 import com.eshabakhov.surok.school.Schedule;
 import com.eshabakhov.surok.school.schedule.load.ClassLoads;
 import com.eshabakhov.surok.school.schedule.load.ClassLoadsPostgres;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
@@ -16,10 +17,6 @@ import org.jooq.DSLContext;
  * @since 0.0.1
  */
 public final class SdPostgres implements Schedule {
-
-    /** JOOQ Table for Schedule. */
-    private static final com.eshabakhov.surok.tables.Schedule SCHEDULE =
-        com.eshabakhov.surok.tables.Schedule.SCHEDULE;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -46,36 +43,35 @@ public final class SdPostgres implements Schedule {
 
     @Override
     public String name() {
-        return this.ctx
-            .select(SdPostgres.SCHEDULE.NAME)
-            .from(SdPostgres.SCHEDULE)
-            .where(SdPostgres.SCHEDULE.ID.eq(this.sid))
-            .fetchOneInto(String.class);
+        return this.ctx.resultQuery(
+            new ClasspathSql("schedule/find-name.sql").text(),
+            this.sid
+        ).fetchOneInto(String.class);
     }
 
     @Override
     public Schedule renamed(final String name) {
         return new SdPostgres(
             this.ctx,
-            this.ctx.update(SdPostgres.SCHEDULE)
-                .set(SdPostgres.SCHEDULE.NAME, name)
-                .where(SdPostgres.SCHEDULE.ID.eq(this.sid))
-                .returningResult(SdPostgres.SCHEDULE.ID)
-                .fetchOne(SdPostgres.SCHEDULE.ID)
+            this.ctx.resultQuery(
+                new ClasspathSql("schedule/rename.sql").text(),
+                name,
+                this.sid
+            ).fetchOne("id", Long.class)
         );
     }
 
     @Override
     public ObjectNode json() {
-        return this.ctx
-            .select(SdPostgres.SCHEDULE.ID, SdPostgres.SCHEDULE.NAME)
-            .from(SdPostgres.SCHEDULE)
-            .where(SdPostgres.SCHEDULE.ID.eq(this.sid)).fetchOne(
-                clazz ->
-                    JsonNodeFactory.instance.objectNode()
-                        .put("id", clazz.get(SdPostgres.SCHEDULE.ID))
-                        .put("name", clazz.get(SdPostgres.SCHEDULE.NAME))
-            );
+        return this.ctx.resultQuery(
+            new ClasspathSql("schedule/find-details.sql").text(),
+            this.sid
+        ).fetchOne(
+            clazz ->
+                JsonNodeFactory.instance.objectNode()
+                    .put("id", clazz.get("id", Long.class))
+                    .put("name", clazz.get("name", String.class))
+        );
     }
 
     @Override

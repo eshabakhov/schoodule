@@ -4,6 +4,7 @@
 package com.eshabakhov.surok.user;
 
 import com.eshabakhov.surok.User;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jooq.DSLContext;
 
@@ -64,26 +65,26 @@ public interface ReferenceInformation {
 
         @Override
         public Long school() {
-            return this.ctx.select(com.eshabakhov.surok.tables.User.USER.SCHOOL_ID)
-                .from(com.eshabakhov.surok.tables.User.USER)
-                .where(com.eshabakhov.surok.tables.User.USER.ID.eq(this.user))
-                .fetchOneInto(Long.class);
+            return this.ctx.resultQuery(
+                new ClasspathSql("user/find-school.sql").text(),
+                this.user
+            ).fetchOneInto(Long.class);
         }
 
         @Override
         public Boolean corporate() {
-            return this.ctx.select(com.eshabakhov.surok.tables.User.USER.CORPORATE)
-                .from(com.eshabakhov.surok.tables.User.USER)
-                .where(com.eshabakhov.surok.tables.User.USER.ID.eq(this.user))
-                .fetchOneInto(Boolean.class);
+            return this.ctx.resultQuery(
+                new ClasspathSql("user/find-corporate.sql").text(),
+                this.user
+            ).fetchOneInto(Boolean.class);
         }
 
         @Override
         public Boolean alive() {
-            return this.ctx.select(com.eshabakhov.surok.tables.User.USER.DELETED)
-                .from(com.eshabakhov.surok.tables.User.USER)
-                .where(com.eshabakhov.surok.tables.User.USER.ID.eq(this.user))
-                .fetchOne() != null;
+            return this.ctx.resultQuery(
+                new ClasspathSql("user/find-alive.sql").text(),
+                this.user
+            ).fetchOne() != null;
         }
     }
 }

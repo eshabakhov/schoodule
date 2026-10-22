@@ -8,10 +8,11 @@ import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.page.ResponsePageableList;
 import com.eshabakhov.surok.school.building.Cabinet;
 import com.eshabakhov.surok.school.building.Cabinets;
-import com.eshabakhov.surok.tables.records.CabinetRecord;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 /**
@@ -22,10 +23,6 @@ import org.jooq.impl.DSL;
  */
 @EqualsAndHashCode
 public final class CbsPostgres implements Cabinets {
-
-    /** JOOQ Table for Cabinet. */
-    private static final com.eshabakhov.surok.tables.Cabinet CABINET =
-        com.eshabakhov.surok.tables.Cabinet.CABINET;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -50,22 +47,22 @@ public final class CbsPostgres implements Cabinets {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                if (ttx.selectFrom(CbsPostgres.CABINET).where(
-                    CbsPostgres.CABINET.BUILDING_ID.eq(this.bid).and(
-                        CbsPostgres.CABINET.NAME.eq(name)
-                    ).and(CbsPostgres.CABINET.IS_DELETED.eq(false))
-                    )
-                    .fetchOne() == null) {
-                    final CabinetRecord created = ttx.insertInto(CbsPostgres.CABINET)
-                        .set(CbsPostgres.CABINET.BUILDING_ID, this.bid)
-                        .set(CbsPostgres.CABINET.NAME, name)
-                        .set(CbsPostgres.CABINET.IS_DELETED, false)
-                        .returning()
-                        .fetchOne();
+                if (ttx.resultQuery(
+                    new ClasspathSql("cabinet/find-existing.sql").text(),
+                    this.bid,
+                    name,
+                    false
+                ).fetchOne() == null) {
+                    final Record created = ttx.resultQuery(
+                        new ClasspathSql("cabinet/create.sql").text(),
+                        this.bid,
+                        name,
+                        false
+                    ).fetchOne();
                     if (created == null) {
                         throw new CabinetFailedCreateException();
                     }
-                    return new CbPostgres(this.ctx, created.getId());
+                    return new CbPostgres(this.ctx, created.get("id", Long.class));
                 } else {
                     throw new CabinetAlreadyExistsException(
                         String.format("Cabinet `%s` already exists", name)
@@ -77,69 +74,77 @@ public final class CbsPostgres implements Cabinets {
 
     @Override
     public Cabinet cabinet(final long cid) throws Exception {
-        final CabinetRecord selected = this.ctx.selectFrom(CbsPostgres.CABINET).where(
-            CbsPostgres.CABINET.ID.eq(cid).and(
-                CbsPostgres.CABINET.BUILDING_ID.eq(this.bid)
-            ).and(CbsPostgres.CABINET.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("cabinet/find-by-id-and-building-id.sql").text(),
+            cid,
+            this.bid,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new CabinetNotFoundException(
                 String.format("Cabinet with id=%d not found", cid)
             );
         }
-        return new CbPostgres(this.ctx, selected.getId());
+        return new CbPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
     public Cabinet cabinet(final String name) throws Exception {
-        final CabinetRecord selected = this.ctx.selectFrom(CbsPostgres.CABINET).where(
-            CbsPostgres.CABINET.BUILDING_ID.eq(this.bid).and(
-                CbsPostgres.CABINET.NAME.eq(name)
-            ).and(CbsPostgres.CABINET.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("cabinet/find-existing.sql").text(),
+            this.bid,
+            name,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new CabinetNotFoundException(
                 String.format("Cabinet with name=`%s` not found", name)
             );
         }
-        return new CbPostgres(this.ctx, selected.getId());
+        return new CbPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
     public PageableList<Cabinet> cabinets(final Condition condition, final Page page)
         throws Exception {
-        final Condition cnd = condition.and(CbsPostgres.CABINET.BUILDING_ID.eq(this.bid));
+        final Condition cnd = condition.and(
+            DSL.condition(
+                new ClasspathSql("cabinet/conditions/by-building-id.sql").text(),
+                this.bid
+            )
+        );
         return new ResponsePageableList<>(
-            this.ctx.selectFrom(CbsPostgres.CABINET)
-                .where(cnd)
-                .orderBy(CbsPostgres.CABINET.NAME.asc())
-                .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit()).fetch(
-                    selected -> new CbPostgres(this.ctx, selected.getId())
-                ),
-            this.ctx.fetchCount(
-                this.ctx.selectFrom(CbsPostgres.CABINET).where(cnd)
+            this.ctx.resultQuery(
+                new ClasspathSql("cabinet/list.sql").text(),
+                cnd,
+                DSL.val(page.limit()),
+                DSL.val((page.offset() - 1) * page.limit())
+            ).fetch(
+                selected -> new CbPostgres(this.ctx, selected.get("id", Long.class))
             ),
+            this.ctx.resultQuery(
+                new ClasspathSql("cabinet/count.sql").text(),
+                cnd
+            ).fetchSingle(0, Integer.class),
             page
         );
     }
 
     @Override
     public void remove(final long cid) throws Exception {
-        final CabinetRecord cabinet = this.ctx.selectFrom(CbsPostgres.CABINET).where(
-            CbsPostgres.CABINET.ID.eq(cid)
-                .and(CbsPostgres.CABINET.BUILDING_ID.eq(this.bid))
-                .and(CbsPostgres.CABINET.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record cabinet = this.ctx.resultQuery(
+            new ClasspathSql("cabinet/find-by-id-and-building-id.sql").text(),
+            cid,
+            this.bid,
+            false
+        ).fetchOne();
         if (cabinet == null) {
             throw new CabinetNotFoundException(String.format("Cabinet with id=%d not found", cid));
         }
-        this.ctx.update(CbsPostgres.CABINET)
-            .set(CbsPostgres.CABINET.IS_DELETED, true)
-            .where(CbsPostgres.CABINET.ID.eq(cid))
-            .execute();
+        this.ctx.resultQuery(
+            new ClasspathSql("cabinet/soft-delete.sql").text(),
+            true,
+            cid
+        ).execute();
     }
 }

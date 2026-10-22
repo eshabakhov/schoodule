@@ -4,8 +4,9 @@
 package com.eshabakhov.surok.federal.curriculum.filter;
 
 import com.eshabakhov.surok.filter.FlConditional;
-import com.eshabakhov.surok.tables.FederalCurriculum;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import org.jooq.Condition;
+import org.jooq.impl.DSL;
 
 /**
  * Federal curriculum title filter.
@@ -40,7 +41,8 @@ public final class FlCdCurriculumByTitle implements FlConditional {
         Condition condition = this.origin.condition();
         if (this.title != null && !this.title.isBlank()) {
             condition = condition.and(
-                FederalCurriculum.FEDERAL_CURRICULUM.TITLE.likeIgnoreCase(
+                DSL.condition(
+                    new ClasspathSql("curriculum/conditions/by-title.sql").text(),
                     String.format("%%%s%%", this.title.trim())
                 )
             );

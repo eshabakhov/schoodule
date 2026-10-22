@@ -7,9 +7,11 @@ import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.School;
 import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.school.SlsPostgres;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.eshabakhov.surok.user.AuthUser;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,10 +31,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 @RequestMapping("/schools")
 public final class SchoolsHtmlController {
-
-    /** JOOQ Table for School. */
-    private static final com.eshabakhov.surok.tables.School SCHOOL =
-        com.eshabakhov.surok.tables.School.SCHOOL;
 
     /** Admin required. */
     private static final String ADMIN_REQUIRED = "Admin required";
@@ -72,10 +70,16 @@ public final class SchoolsHtmlController {
         if (!user.isAdmin()) {
             throw new AccessDeniedException(SchoolsHtmlController.ADMIN_REQUIRED);
         }
-        Condition condition = SchoolsHtmlController.SCHOOL.IS_DELETED.eq(false);
+        Condition condition = DSL.condition(
+            new ClasspathSql("school/conditions/by-is-deleted.sql").text(),
+            false
+        );
         if (name != null && !name.isBlank()) {
             condition = condition.and(
-                SchoolsHtmlController.SCHOOL.NAME.likeIgnoreCase(String.format("%%%s%%", name))
+                DSL.condition(
+                    new ClasspathSql("school/conditions/by-name.sql").text(),
+                    String.format("%%%s%%", name)
+                )
             );
         }
         final PageableList<School> schools = new SlsPostgres(this.ctx)
@@ -113,10 +117,14 @@ public final class SchoolsHtmlController {
         if (!user.isAdmin()) {
             throw new AccessDeniedException(SchoolsHtmlController.ADMIN_REQUIRED);
         }
-        Condition condition = SchoolsHtmlController.SCHOOL.IS_DELETED.eq(false);
+        Condition condition = DSL.condition(
+            new ClasspathSql("school/conditions/by-is-deleted.sql").text(),
+            false
+        );
         if (name != null && !name.isBlank()) {
             condition = condition.and(
-                SchoolsHtmlController.SCHOOL.NAME.likeIgnoreCase(
+                DSL.condition(
+                    new ClasspathSql("school/conditions/by-name.sql").text(),
                     String.format("%%%s%%", name)
                 )
             );

@@ -4,9 +4,6 @@
 package com.eshabakhov.surok.federal.curriculum.requirement;
 
 import com.eshabakhov.surok.Sort;
-import com.eshabakhov.surok.enums.CurriculumPartType;
-import com.eshabakhov.surok.enums.EducationLevelType;
-import com.eshabakhov.surok.enums.StudyWeekType;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RqInput;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RqInputGrade;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RqInputHours;
@@ -19,8 +16,6 @@ import com.eshabakhov.surok.media.MdXml;
 import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.sort.SortRequest;
 import com.eshabakhov.surok.sort.SortsRequest;
-import com.eshabakhov.surok.tables.FederalCurriculum;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.LinkedHashSet;
@@ -76,30 +71,30 @@ final class RqsPostgresTest {
     @BeforeEach
     void insertCurriculums() {
         for (long id = 1L; id <= 2L; ++id) {
-            this.ctx.insertInto(FederalCurriculum.FEDERAL_CURRICULUM)
-                .set(FederalCurriculum.FEDERAL_CURRICULUM.ID, id).set(
-                    FederalCurriculum.FEDERAL_CURRICULUM.TITLE,
-                    String.format("Plan %d", id)
-                ).set(
-                    FederalCurriculum.FEDERAL_CURRICULUM.EDUCATION_LEVEL,
-                    EducationLevelType.BASIC
-                ).set(
-                    FederalCurriculum.FEDERAL_CURRICULUM.STUDY_WEEK_TYPE,
-                    StudyWeekType.FIVE_DAYS
-                )
-                .set(FederalCurriculum.FEDERAL_CURRICULUM.VERSION, "1").set(
-                    FederalCurriculum.FEDERAL_CURRICULUM.ACADEMIC_YEAR,
-                    "2026/2027"
-                )
-                .set(FederalCurriculum.FEDERAL_CURRICULUM.IS_DELETED, false)
-                .execute();
+            this.ctx.resultQuery(
+                """
+                INSERT INTO public.federal_curriculum (id, title, education_level, study_week_type,
+                version, academic_year, is_deleted)
+                VALUES (?, ?, CAST(? AS education_level_type), CAST(? AS study_week_type), ?, ?, ?)
+                """,
+                id,
+                String.format("Plan %d", id),
+                "BASIC",
+                "FIVE_DAYS",
+                "1",
+                "2026/2027",
+                false
+            ).execute();
         }
     }
 
     @AfterEach
     void truncateCurriculums() {
-        this.ctx.truncate(FederalCurriculum.FEDERAL_CURRICULUM)
-            .restartIdentity().cascade().execute();
+        this.ctx.resultQuery(
+            """
+                TRUNCATE TABLE public.federal_curriculum RESTART IDENTITY CASCADE
+                """
+        ).execute();
     }
 
     @Test
@@ -219,33 +214,18 @@ final class RqsPostgresTest {
 
     @Test
     void findsRequirement() throws Exception {
-        this.ctx.insertInto(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT.ID,
-            17L
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .FEDERAL_CURRICULUM_ID,
-            1L
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT.GRADE,
-            6
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .SUBJECT_NAME,
-            "History"
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .WEEKLY_HOURS,
-            2
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .PART_TYPE,
-            CurriculumPartType.MANDATORY
-        ).set(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .IS_DELETED,
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.federal_curriculum_requirement (id, federal_curriculum_id, grade,
+                subject_name, weekly_hours, part_type, is_deleted)
+                VALUES (?, ?, ?, ?, ?, CAST(? AS curriculum_part_type), ?)
+                """,
+            17L,
+            1L,
+            6,
+            "History",
+            2,
+            "MANDATORY",
             false
         ).execute();
         MatcherAssert.assertThat(
@@ -286,26 +266,34 @@ final class RqsPostgresTest {
 
     @Test
     void selectsFilteredSortedItems() throws Exception {
-        this.ctx.insertInto(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT.ID,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .FEDERAL_CURRICULUM_ID,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT.GRADE,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .SUBJECT_NAME,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .WEEKLY_HOURS,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .PART_TYPE,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .IS_DELETED
-        ).values(
-            31L, 1L, 7, "Algebra", 3, CurriculumPartType.MANDATORY, false
-        ).values(
-            32L, 1L, 7, "Geometry", 2, CurriculumPartType.MANDATORY, false
-        ).values(
-            33L, 1L, 8, "Geometry", 2, CurriculumPartType.MANDATORY, false
+        this.ctx.resultQuery(
+            """
+            INSERT INTO public.federal_curriculum_requirement (id, federal_curriculum_id, grade,
+            subject_name, weekly_hours, part_type, is_deleted)
+            VALUES (?, ?, ?, ?, ?, CAST(? AS curriculum_part_type), ?), (?, ?, ?, ?, ?, CAST(? AS
+            curriculum_part_type), ?), (?, ?, ?, ?, ?, CAST(? AS curriculum_part_type), ?)
+            """,
+            31L,
+            1L,
+            7,
+            "Algebra",
+            3,
+            "MANDATORY",
+            false,
+            32L,
+            1L,
+            7,
+            "Geometry",
+            2,
+            "MANDATORY",
+            false,
+            33L,
+            1L,
+            8,
+            "Geometry",
+            2,
+            "MANDATORY",
+            false
         ).execute();
         MatcherAssert.assertThat(
             "Selection must apply filter, sorting and first-page limit",
@@ -333,26 +321,34 @@ final class RqsPostgresTest {
 
     @Test
     void reportsSelectedPage() throws Exception {
-        this.ctx.insertInto(
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT.ID,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .FEDERAL_CURRICULUM_ID,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT.GRADE,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .SUBJECT_NAME,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .WEEKLY_HOURS,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .PART_TYPE,
-            FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                .IS_DELETED
-        ).values(
-            31L, 1L, 7, "Algebra", 3, CurriculumPartType.MANDATORY, false
-        ).values(
-            32L, 1L, 7, "Geometry", 2, CurriculumPartType.MANDATORY, false
-        ).values(
-            33L, 1L, 8, "Geometry", 2, CurriculumPartType.MANDATORY, false
+        this.ctx.resultQuery(
+            """
+            INSERT INTO public.federal_curriculum_requirement (id, federal_curriculum_id, grade,
+            subject_name, weekly_hours, part_type, is_deleted)
+            VALUES (?, ?, ?, ?, ?, CAST(? AS curriculum_part_type), ?), (?, ?, ?, ?, ?, CAST(? AS
+            curriculum_part_type), ?), (?, ?, ?, ?, ?, CAST(? AS curriculum_part_type), ?)
+            """,
+            31L,
+            1L,
+            7,
+            "Algebra",
+            3,
+            "MANDATORY",
+            false,
+            32L,
+            1L,
+            7,
+            "Geometry",
+            2,
+            "MANDATORY",
+            false,
+            33L,
+            1L,
+            8,
+            "Geometry",
+            2,
+            "MANDATORY",
+            false
         ).execute();
         MatcherAssert.assertThat(
             "Selection must report pagination for all matching rows",
@@ -482,14 +478,13 @@ final class RqsPostgresTest {
         new RqsPostgres(this.ctx, 1L).remove(created.uid());
         MatcherAssert.assertThat(
             "Removal must mark the requirement as deleted",
-            this.ctx.select(
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .IS_DELETED
-            ).from(
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-            ).where(
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT.ID
-                    .eq(created.uid())
+            this.ctx.resultQuery(
+                """
+                    SELECT federal_curriculum_requirement.is_deleted
+                    FROM public.federal_curriculum_requirement
+                    WHERE federal_curriculum_requirement.id = ?
+                    """,
+                created.uid()
             ).fetchOneInto(Boolean.class),
             Matchers.is(true)
         );

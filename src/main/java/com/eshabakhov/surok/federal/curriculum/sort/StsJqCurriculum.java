@@ -7,10 +7,10 @@ import com.eshabakhov.surok.Sort;
 import com.eshabakhov.surok.Sorts;
 import com.eshabakhov.surok.sort.StJooq;
 import com.eshabakhov.surok.sort.StsJooq;
-import com.eshabakhov.surok.tables.FederalCurriculum;
 import java.util.ArrayList;
 import java.util.List;
 import org.jooq.SortField;
+import org.jooq.impl.DSL;
 
 /**
  * Federal curriculum JOOQ sorting parameters.
@@ -18,12 +18,6 @@ import org.jooq.SortField;
  * @since 0.0.1
  */
 public final class StsJqCurriculum implements StsJooq {
-
-    /**
-     * JOOQ Table for Curriculum.
-     */
-    private static final FederalCurriculum CURRICULUM =
-        FederalCurriculum.FEDERAL_CURRICULUM;
 
     /**
      * Origin sorting parameters.
@@ -59,8 +53,18 @@ public final class StsJqCurriculum implements StsJooq {
             }
         }
         if (fields.isEmpty()) {
-            fields.add(StsJqCurriculum.CURRICULUM.ACADEMIC_YEAR.desc());
-            fields.add(StsJqCurriculum.CURRICULUM.TITLE.asc());
+            fields.add(
+                DSL.field(
+                    DSL.name("public", "federal_curriculum", "academic_year"),
+                    String.class
+                ).desc()
+            );
+            fields.add(
+                DSL.field(
+                    DSL.name("public", "federal_curriculum", "title"),
+                    String.class
+                ).asc()
+            );
         }
         return fields;
     }

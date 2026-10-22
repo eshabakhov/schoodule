@@ -10,6 +10,7 @@ import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.school.SchoolNotFoundException;
 import com.eshabakhov.surok.school.SlBase;
 import com.eshabakhov.surok.school.SlsPostgres;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,10 +48,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/schools")
 @Tag(name = "Schools")
 public class SchoolController {
-
-    /** JOOQ Table for School. */
-    private static final com.eshabakhov.surok.tables.School SCHOOL =
-        com.eshabakhov.surok.tables.School.SCHOOL;
 
     /** Simple type for version header. */
     private static final MediaType SIMPLE_TYPE =
@@ -206,10 +204,16 @@ public class SchoolController {
             required = false
         ) final String namect
     ) throws Exception {
-        Condition condition = SchoolController.SCHOOL.IS_DELETED.eq(false);
+        Condition condition = DSL.condition(
+            new ClasspathSql("school/conditions/by-is-deleted.sql").text(),
+            false
+        );
         if (namect != null && !namect.isBlank()) {
             condition = condition.and(
-                SchoolController.SCHOOL.NAME.likeIgnoreCase(String.format("%%%s%%", namect))
+                DSL.condition(
+                    new ClasspathSql("school/conditions/by-name.sql").text(),
+                    String.format("%%%s%%", namect)
+                )
             );
         }
         return ResponseEntity.ok().body(

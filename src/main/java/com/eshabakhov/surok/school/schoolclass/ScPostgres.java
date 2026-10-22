@@ -4,6 +4,7 @@
 package com.eshabakhov.surok.school.schoolclass;
 
 import com.eshabakhov.surok.school.SchoolClass;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
@@ -15,10 +16,6 @@ import org.jooq.impl.DSL;
  * @since 0.0.1
  */
 public final class ScPostgres implements SchoolClass {
-
-    /** JOOQ Table for Schedule. */
-    private static final com.eshabakhov.surok.tables.SchoolClass SCHOOL_CLASS =
-        com.eshabakhov.surok.tables.SchoolClass.SCHOOL_CLASS;
 
     /** Database context. */
     private final DSLContext ctx;
@@ -45,43 +42,44 @@ public final class ScPostgres implements SchoolClass {
 
     @Override
     public String name() {
-        return this.ctx.select(
+        return this.ctx.resultQuery(
+            new ClasspathSql("school-class/find-name.sql").text(),
             DSL.concat(
-                ScPostgres.SCHOOL_CLASS.GRADE.cast(String.class),
-                ScPostgres.SCHOOL_CLASS.LITERA
-            )
-        ).from(ScPostgres.SCHOOL_CLASS)
-            .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
-            .fetchOne(0, String.class);
+                DSL.field(
+                    DSL.name("public", "school_class", "grade"),
+                    Integer.class
+                ).cast(String.class),
+                DSL.field(DSL.name("public", "school_class", "litera"), String.class)
+            ),
+            DSL.val(this.clazzid)
+        ).fetchOne(0, String.class);
     }
 
     @Override
     public Integer grade() {
-        return this.ctx
-            .select(ScPostgres.SCHOOL_CLASS.GRADE)
-            .from(ScPostgres.SCHOOL_CLASS)
-            .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
-            .fetchOneInto(Integer.class);
+        return this.ctx.resultQuery(
+            new ClasspathSql("school-class/find-grade.sql").text(),
+            this.clazzid
+        ).fetchOneInto(Integer.class);
     }
 
     @Override
     public String litera() {
-        return this.ctx
-            .select(ScPostgres.SCHOOL_CLASS.LITERA)
-            .from(ScPostgres.SCHOOL_CLASS)
-            .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
-            .fetchOneInto(String.class);
+        return this.ctx.resultQuery(
+            new ClasspathSql("school-class/find-litera.sql").text(),
+            this.clazzid
+        ).fetchOneInto(String.class);
     }
 
     @Override
     public SchoolClass regraded(final Integer grade) {
         return new ScPostgres(
             this.ctx,
-            this.ctx.update(ScPostgres.SCHOOL_CLASS)
-                .set(ScPostgres.SCHOOL_CLASS.GRADE, grade)
-                .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
-                .returningResult(ScPostgres.SCHOOL_CLASS.ID)
-                .fetchOne(ScPostgres.SCHOOL_CLASS.ID)
+            this.ctx.resultQuery(
+                new ClasspathSql("school-class/update-grade.sql").text(),
+                grade,
+                this.clazzid
+            ).fetchOne("id", Long.class)
         );
     }
 
@@ -89,28 +87,25 @@ public final class ScPostgres implements SchoolClass {
     public SchoolClass reliterated(final String litera) {
         return new ScPostgres(
             this.ctx,
-            this.ctx.update(ScPostgres.SCHOOL_CLASS)
-                .set(ScPostgres.SCHOOL_CLASS.LITERA, litera)
-                .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid))
-                .returningResult(ScPostgres.SCHOOL_CLASS.ID)
-                .fetchOne(ScPostgres.SCHOOL_CLASS.ID)
+            this.ctx.resultQuery(
+                new ClasspathSql("school-class/update-litera.sql").text(),
+                litera,
+                this.clazzid
+            ).fetchOne("id", Long.class)
         );
     }
 
     @Override
     public ObjectNode json() {
-        return this.ctx.select(
-            ScPostgres.SCHOOL_CLASS.ID,
-            ScPostgres.SCHOOL_CLASS.LITERA,
-            ScPostgres.SCHOOL_CLASS.GRADE
-            )
-            .from(ScPostgres.SCHOOL_CLASS)
-            .where(ScPostgres.SCHOOL_CLASS.ID.eq(this.clazzid)).fetchOne(
-                clazz ->
-                    JsonNodeFactory.instance.objectNode()
-                        .put("id", clazz.get(ScPostgres.SCHOOL_CLASS.ID))
-                        .put("grade", clazz.get(ScPostgres.SCHOOL_CLASS.GRADE))
-                        .put("litera", clazz.get(ScPostgres.SCHOOL_CLASS.LITERA))
-            );
+        return this.ctx.resultQuery(
+            new ClasspathSql("school-class/find-details.sql").text(),
+            this.clazzid
+        ).fetchOne(
+            clazz ->
+                JsonNodeFactory.instance.objectNode()
+                    .put("id", clazz.get("id", Long.class))
+                    .put("grade", clazz.get("grade", Integer.class))
+                    .put("litera", clazz.get("litera", String.class))
+        );
     }
 }

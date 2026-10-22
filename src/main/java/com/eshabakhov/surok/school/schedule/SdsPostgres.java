@@ -8,10 +8,11 @@ import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.page.ResponsePageableList;
 import com.eshabakhov.surok.school.Schedule;
 import com.eshabakhov.surok.school.Schedules;
-import com.eshabakhov.surok.tables.records.ScheduleRecord;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 /**
@@ -22,10 +23,6 @@ import org.jooq.impl.DSL;
  */
 @EqualsAndHashCode
 public final class SdsPostgres implements Schedules {
-
-    /** JOOQ Table for Schedule. */
-    private static final com.eshabakhov.surok.tables.Schedule SCHEDULE =
-        com.eshabakhov.surok.tables.Schedule.SCHEDULE;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -50,22 +47,22 @@ public final class SdsPostgres implements Schedules {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                if (ttx.selectFrom(SdsPostgres.SCHEDULE).where(
-                    SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid).and(
-                        SdsPostgres.SCHEDULE.NAME.eq(name)
-                    ).and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
-                    )
-                    .fetchOne() == null) {
-                    final ScheduleRecord created = ttx.insertInto(SdsPostgres.SCHEDULE)
-                        .set(SdsPostgres.SCHEDULE.SCHOOL_ID, this.sid)
-                        .set(SdsPostgres.SCHEDULE.NAME, name)
-                        .set(SdsPostgres.SCHEDULE.IS_DELETED, false)
-                        .returning()
-                        .fetchOne();
+                if (ttx.resultQuery(
+                    new ClasspathSql("schedule/find-existing.sql").text(),
+                    this.sid,
+                    name,
+                    false
+                ).fetchOne() == null) {
+                    final Record created = ttx.resultQuery(
+                        new ClasspathSql("schedule/create.sql").text(),
+                        this.sid,
+                        name,
+                        false
+                    ).fetchOne();
                     if (created == null) {
                         throw new ScheduleFailedCreateException();
                     }
-                    return new SdPostgres(this.ctx, created.getId());
+                    return new SdPostgres(this.ctx, created.get("id", Long.class));
                 } else {
                     throw new ScheduleAlreadyExistsException(
                         String.format("Schedule `%s` already exists", name)
@@ -77,34 +74,34 @@ public final class SdsPostgres implements Schedules {
 
     @Override
     public Schedule schedule(final long scheduleid) throws Exception {
-        final ScheduleRecord selected = this.ctx.selectFrom(SdsPostgres.SCHEDULE).where(
-            SdsPostgres.SCHEDULE.ID.eq(scheduleid).and(
-                SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid)
-            ).and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("schedule/find-by-id-and-school-id.sql").text(),
+            scheduleid,
+            this.sid,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new ScheduleNotFoundException(
                 String.format("Schedule with id=%d not found", scheduleid)
             );
         }
-        return new SdPostgres(this.ctx, selected.getId());
+        return new SdPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
     public Schedule schedule(final String name) throws Exception {
-        final ScheduleRecord selected = this.ctx.selectFrom(SdsPostgres.SCHEDULE).where(
-            SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid).and(
-                SdsPostgres.SCHEDULE.NAME.eq(name)
-            ).and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("schedule/find-existing.sql").text(),
+            this.sid,
+            name,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new ScheduleNotFoundException(
                 String.format("Schedule with name='%s' not found", name)
             );
         }
-        return new SdPostgres(this.ctx, selected.getId());
+        return new SdPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
@@ -113,31 +110,38 @@ public final class SdsPostgres implements Schedules {
         final Page page
     ) throws Exception {
         return new ResponsePageableList<>(
-            this.ctx.selectFrom(SdsPostgres.SCHEDULE)
-                .where(condition.and(SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid)))
-                .orderBy(SdsPostgres.SCHEDULE.NAME.asc())
-                .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit()).fetch(
-                    selected -> new SdPostgres(
-                        this.ctx,
-                        selected.getId()
+            this.ctx.resultQuery(
+                new ClasspathSql("schedule/list.sql").text(),
+                condition.and(
+                    DSL.condition(
+                        new ClasspathSql("schedule/conditions/by-school-id.sql").text(),
+                        this.sid
                     )
                 ),
-            this.ctx.fetchCount(
-                this.ctx.selectFrom(SdsPostgres.SCHEDULE).where(condition)
+                DSL.val(page.limit()),
+                DSL.val((page.offset() - 1) * page.limit())
+            ).fetch(
+                selected -> new SdPostgres(
+                    this.ctx,
+                    selected.get("id", Long.class)
+                )
             ),
+            this.ctx.resultQuery(
+                new ClasspathSql("schedule/count.sql").text(),
+                condition
+            ).fetchSingle(0, Integer.class),
             page
         );
     }
 
     @Override
     public void remove(final long scheduleid) throws Exception {
-        final ScheduleRecord selected = this.ctx.selectFrom(SdsPostgres.SCHEDULE).where(
-            SdsPostgres.SCHEDULE.ID.eq(scheduleid).and(
-                SdsPostgres.SCHEDULE.SCHOOL_ID.eq(this.sid)
-            ).and(SdsPostgres.SCHEDULE.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("schedule/find-by-id-and-school-id.sql").text(),
+            scheduleid,
+            this.sid,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new ScheduleNotFoundException(
                 String.format("Schedule with id=%d not found", scheduleid)
@@ -145,10 +149,11 @@ public final class SdsPostgres implements Schedules {
         }
         this.ctx.transactionResult(
             config ->
-                DSL.using(config).update(SdsPostgres.SCHEDULE)
-                    .set(SdsPostgres.SCHEDULE.IS_DELETED, true)
-                    .where(SdsPostgres.SCHEDULE.ID.eq(scheduleid))
-                    .execute()
+                DSL.using(config).resultQuery(
+                    new ClasspathSql("schedule/soft-delete.sql").text(),
+                    true,
+                    scheduleid
+                ).execute()
         );
     }
 }

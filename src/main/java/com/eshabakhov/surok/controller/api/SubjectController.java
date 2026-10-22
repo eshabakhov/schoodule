@@ -10,6 +10,7 @@ import com.eshabakhov.surok.school.SlsPostgres;
 import com.eshabakhov.surok.school.Subject;
 import com.eshabakhov.surok.school.subject.SbBase;
 import com.eshabakhov.surok.school.subject.SubjectNotFoundException;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,10 +48,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/schools/{school}/subjects")
 @Tag(name = "Subjects")
 public class SubjectController {
-
-    /** JOOQ Table for Cabinet. */
-    private static final com.eshabakhov.surok.tables.Subject SUBJECT =
-        com.eshabakhov.surok.tables.Subject.SUBJECT;
 
     /** Simple type for version header. */
     private static final MediaType SIMPLE_TYPE = MediaType.valueOf(
@@ -225,11 +223,17 @@ public class SubjectController {
             required = false
         ) final String namect
     ) throws Exception {
-        Condition condition = SubjectController.SUBJECT.SCHOOL_ID.eq(school)
-            .and(SubjectController.SUBJECT.IS_DELETED.eq(false));
+        Condition condition = DSL.condition(
+            new ClasspathSql("subject/conditions/by-school-id-and-is-deleted.sql").text(),
+            school,
+            false
+        );
         if (namect != null && !namect.isBlank()) {
             condition = condition.and(
-                SubjectController.SUBJECT.NAME.likeIgnoreCase(String.format("%%%s%%", namect))
+                DSL.condition(
+                    new ClasspathSql("subject/conditions/by-name.sql").text(),
+                    String.format("%%%s%%", namect)
+                )
             );
         }
         return ResponseEntity.ok().body(

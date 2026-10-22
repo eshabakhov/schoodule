@@ -8,18 +8,16 @@ import com.eshabakhov.surok.Media;
 import com.eshabakhov.surok.Page;
 import com.eshabakhov.surok.PrItems;
 import com.eshabakhov.surok.Sorts;
-import com.eshabakhov.surok.enums.EducationLevelType;
-import com.eshabakhov.surok.enums.StudyWeekType;
 import com.eshabakhov.surok.federal.curriculum.filter.FlsCdCurriculum;
 import com.eshabakhov.surok.federal.curriculum.input.MdCrInput;
 import com.eshabakhov.surok.federal.curriculum.sort.StsJqCurriculum;
 import com.eshabakhov.surok.page.ResponsePage;
-import com.eshabakhov.surok.tables.FederalCurriculum;
-import com.eshabakhov.surok.tables.records.FederalCurriculumRecord;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import java.util.Map;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 /**
@@ -30,11 +28,6 @@ import org.jooq.impl.DSL;
  */
 @EqualsAndHashCode
 public final class CrsPostgres implements Curriculums {
-
-    /**
-     * JOOQ Table for Curriculum.
-     */
-    private static final FederalCurriculum CURRICULUM = FederalCurriculum.FEDERAL_CURRICULUM;
 
     /**
      * JOOQ DSL context for executing database queries.
@@ -56,31 +49,22 @@ public final class CrsPostgres implements Curriculums {
         final Map<String, String> fields = input.print(
             new MdCrInput()
         ).print();
-        final EducationLevelType level = EducationLevelType.valueOf(
+        final String level = Curriculum.Level.valueOf(
             fields.get("level")
-        );
-        final StudyWeekType week = StudyWeekType.valueOf(
+        ).name();
+        final String week = Curriculum.Week.valueOf(
             fields.get("week")
-        );
+        ).name();
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                if (ttx.selectFrom(CrsPostgres.CURRICULUM).where(
-                    CrsPostgres.CURRICULUM.EDUCATION_LEVEL.eq(
-                        level
-                    ).and(
-                        CrsPostgres.CURRICULUM.STUDY_WEEK_TYPE.eq(
-                            week
-                        )
-                    ).and(
-                        CrsPostgres.CURRICULUM.VERSION.eq(
-                            fields.get("version")
-                        )
-                    ).and(
-                        CrsPostgres.CURRICULUM.ACADEMIC_YEAR.eq(
-                            fields.get("year")
-                        )
-                    ).and(CrsPostgres.CURRICULUM.IS_DELETED.eq(false))
+                if (ttx.resultQuery(
+                    new ClasspathSql("curriculum/find-existing.sql").text(),
+                    level,
+                    week,
+                    fields.get("version"),
+                    fields.get("year"),
+                    false
                 ).fetchOne() != null) {
                     throw new CurriculumAlreadyExistsException(
                         String.format(
@@ -89,51 +73,37 @@ public final class CrsPostgres implements Curriculums {
                         )
                     );
                 }
-                final FederalCurriculumRecord created = ttx
-                    .insertInto(CrsPostgres.CURRICULUM).set(
-                        CrsPostgres.CURRICULUM.TITLE,
-                        fields.get("title")
-                    ).set(
-                        CrsPostgres.CURRICULUM.EDUCATION_LEVEL,
-                        level
-                    ).set(
-                        CrsPostgres.CURRICULUM.STUDY_WEEK_TYPE,
-                        week
-                    ).set(
-                        CrsPostgres.CURRICULUM.VERSION,
-                        fields.get("version")
-                    ).set(
-                        CrsPostgres.CURRICULUM.ACADEMIC_YEAR,
-                        fields.get("year")
-                    ).set(
-                        CrsPostgres.CURRICULUM.DESCRIPTION,
-                        fields.get("description")
-                    )
-                    .set(CrsPostgres.CURRICULUM.IS_DELETED, false)
-                    .returning()
-                    .fetchOne();
+                final Record created = ttx.resultQuery(
+                    new ClasspathSql("curriculum/create.sql").text(),
+                    fields.get("title"),
+                    level,
+                    week,
+                    fields.get("version"),
+                    fields.get("year"),
+                    fields.get("description"),
+                    false
+                ).fetchOne();
                 if (created == null) {
                     throw new CurriculumFailedCreateException();
                 }
-                return new CrPostgres(this.ctx, created.getId());
+                return new CrPostgres(this.ctx, created.get("id", Long.class));
             }
         );
     }
 
     @Override
     public Curriculum curriculum(final long id) throws Exception {
-        final FederalCurriculumRecord selected = this.ctx
-            .selectFrom(CrsPostgres.CURRICULUM).where(
-                CrsPostgres.CURRICULUM.ID.eq(id)
-                    .and(CrsPostgres.CURRICULUM.IS_DELETED.eq(false))
-            )
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("curriculum/find-by-id.sql").text(),
+            id,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new CurriculumNotFoundException(
                 String.format("Curriculum with id=%d not found", id)
             );
         }
-        return new CrPostgres(this.ctx, selected.getId());
+        return new CrPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
@@ -143,38 +113,41 @@ public final class CrsPostgres implements Curriculums {
         final Sorts sorts
     ) throws Exception {
         final Condition scoped = new FlsCdCurriculum(filters).condition().and(
-            CrsPostgres.CURRICULUM.IS_DELETED.eq(false)
+            DSL.condition(
+                new ClasspathSql("curriculum/conditions/by-is-deleted.sql").text(),
+                false
+            )
         );
         return new CrsSelected(
             this,
-            this.ctx
-                .selectFrom(CrsPostgres.CURRICULUM)
-                .where(scoped)
-                .orderBy(new StsJqCurriculum(sorts).fields())
-                .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit()).fetch(
-                    selected -> new CrPostgres(
-                        this.ctx,
-                        selected.getId()
-                    )
-                ),
+            this.ctx.resultQuery(
+                new ClasspathSql("curriculum/list.sql").text(),
+                scoped,
+                DSL.list(new StsJqCurriculum(sorts).fields()),
+                DSL.val(page.limit()),
+                DSL.val((page.offset() - 1) * page.limit())
+            ).fetch(
+                selected -> new CrPostgres(
+                    this.ctx,
+                    selected.get("id", Long.class)
+                )
+            ),
             new ResponsePage(
                 page,
-                this.ctx.fetchCount(
-                    this.ctx
-                        .selectFrom(CrsPostgres.CURRICULUM)
-                        .where(scoped)
-                )
+                this.ctx.resultQuery(
+                    new ClasspathSql("curriculum/count.sql").text(),
+                    scoped
+                ).fetchSingle(0, Integer.class)
             )
         );
     }
 
     @Override
     public Iterable<Curriculum> iterate() {
-        return this.ctx
-            .selectFrom(CrsPostgres.CURRICULUM)
-            .where(CrsPostgres.CURRICULUM.IS_DELETED.eq(false))
-            .fetch(selected -> new CrPostgres(this.ctx, selected.getId()));
+        return this.ctx.resultQuery(
+            new ClasspathSql("curriculum/list-active.sql").text(),
+            false
+        ).fetch(selected -> new CrPostgres(this.ctx, selected.get("id", Long.class)));
     }
 
     @Override
@@ -184,26 +157,22 @@ public final class CrsPostgres implements Curriculums {
 
     @Override
     public void remove(final long id) throws Exception {
-        if (this.ctx
-            .selectFrom(CrsPostgres.CURRICULUM).where(
-                CrsPostgres.CURRICULUM.ID.eq(id)
-                    .and(CrsPostgres.CURRICULUM.IS_DELETED.eq(false))
-            )
-            .fetchOne() == null) {
+        if (this.ctx.resultQuery(
+            new ClasspathSql("curriculum/find-by-id.sql").text(),
+            id,
+            false
+        ).fetchOne() == null) {
             throw new CurriculumNotFoundException(
                 String.format("Curriculum with id=%d not found", id)
             );
         }
         this.ctx.transactionResult(
             config ->
-                DSL.using(config)
-                    .update(CrsPostgres.CURRICULUM)
-                    .set(CrsPostgres.CURRICULUM.IS_DELETED, true).set(
-                        CrsPostgres.CURRICULUM.UPDATED_AT,
-                        DSL.currentOffsetDateTime()
-                    )
-                    .where(CrsPostgres.CURRICULUM.ID.eq(id))
-                    .execute()
+                DSL.using(config).resultQuery(
+                    new ClasspathSql("curriculum/soft-delete.sql").text(),
+                    true,
+                    id
+                ).execute()
         );
     }
 }

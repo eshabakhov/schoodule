@@ -4,12 +4,10 @@
 package com.eshabakhov.surok.federal.curriculum;
 
 import com.eshabakhov.surok.Media;
-import com.eshabakhov.surok.enums.EducationLevelType;
-import com.eshabakhov.surok.enums.StudyWeekType;
 import com.eshabakhov.surok.federal.curriculum.input.MdCrInput;
 import com.eshabakhov.surok.federal.curriculum.requirement.Requirements;
 import com.eshabakhov.surok.federal.curriculum.requirement.RqsPostgres;
-import com.eshabakhov.surok.tables.FederalCurriculum;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import java.util.Map;
 import org.jooq.DSLContext;
 
@@ -20,11 +18,6 @@ import org.jooq.DSLContext;
  * @since 0.0.1
  */
 public final class CrPostgres implements Curriculum {
-
-    /**
-     * JOOQ table reference.
-     */
-    private static final FederalCurriculum CURRICULUM = FederalCurriculum.FEDERAL_CURRICULUM;
 
     /**
      * Federal curriculum id.
@@ -54,17 +47,19 @@ public final class CrPostgres implements Curriculum {
 
     @Override
     public <T> Media<T> print(final Media<T> media) throws Exception {
-        return this.ctx.selectFrom(CrPostgres.CURRICULUM)
-            .where(CrPostgres.CURRICULUM.ID.eq(this.fid)).fetchSingle(
-                record -> media
-                    .with("id", record.getId())
-                    .with("title", record.getTitle())
-                    .with("level", record.getEducationLevel().name())
-                    .with("week", record.getStudyWeekType().name())
-                    .with("version", record.getVersion())
-                    .with("year", record.getAcademicYear())
-                    .with("description", record.getDescription())
-            );
+        return this.ctx.resultQuery(
+            new ClasspathSql("curriculum/find-details.sql").text(),
+            this.fid
+        ).fetchSingle(
+            record -> media
+                .with("id", record.get("id", Long.class))
+                .with("title", record.get("title", String.class))
+                .with("level", record.get("education_level", String.class))
+                .with("week", record.get("study_week_type", String.class))
+                .with("version", record.get("version", String.class))
+                .with("year", record.get("academic_year", String.class))
+                .with("description", record.get("description", String.class))
+        );
     }
 
     @Override
@@ -74,24 +69,16 @@ public final class CrPostgres implements Curriculum {
         ).print();
         return new CrPostgres(
             this.ctx,
-            this.ctx.update(CrPostgres.CURRICULUM)
-                .set(CrPostgres.CURRICULUM.TITLE, fields.get("title")).set(
-                    CrPostgres.CURRICULUM.EDUCATION_LEVEL,
-                    EducationLevelType.valueOf(fields.get("level"))
-                ).set(
-                    CrPostgres.CURRICULUM.STUDY_WEEK_TYPE,
-                    StudyWeekType.valueOf(fields.get("week"))
-                )
-                .set(CrPostgres.CURRICULUM.VERSION, fields.get("version")).set(
-                    CrPostgres.CURRICULUM.ACADEMIC_YEAR,
-                    fields.get("year")
-                ).set(
-                    CrPostgres.CURRICULUM.DESCRIPTION,
-                    fields.get("description")
-                )
-                .where(CrPostgres.CURRICULUM.ID.eq(this.fid))
-                .returningResult(CrPostgres.CURRICULUM.ID)
-                .fetchOne(CrPostgres.CURRICULUM.ID)
+            this.ctx.resultQuery(
+                new ClasspathSql("curriculum/revise.sql").text(),
+                fields.get("title"),
+                Curriculum.Level.valueOf(fields.get("level")).name(),
+                Curriculum.Week.valueOf(fields.get("week")).name(),
+                fields.get("version"),
+                fields.get("year"),
+                fields.get("description"),
+                this.fid
+            ).fetchOne("id", Long.class)
         );
     }
 

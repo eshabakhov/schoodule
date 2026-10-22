@@ -3,9 +3,8 @@
  */
 package com.eshabakhov.surok.federal.curriculum.requirement.filter;
 
-import com.eshabakhov.surok.enums.CurriculumPartType;
+import com.eshabakhov.surok.federal.curriculum.requirement.Requirement;
 import com.eshabakhov.surok.filter.FlCdTrue;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.jooq.impl.DSL;
@@ -32,8 +31,12 @@ final class FlCdRequirementByPartTest {
             ).condition(),
             Matchers.is(
                 DSL.trueCondition().and(
-                    FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                        .PART_TYPE.eq(CurriculumPartType.valueOf(part))
+                    DSL.condition(
+                        """
+                        federal_curriculum_requirement.part_type = CAST(? AS curriculum_part_type)
+                        """,
+                        Requirement.PartType.valueOf(part).name()
+                    )
                 )
             )
         );

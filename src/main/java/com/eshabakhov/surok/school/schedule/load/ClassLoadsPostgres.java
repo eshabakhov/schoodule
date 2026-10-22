@@ -8,11 +8,11 @@ import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.page.ResponsePageableList;
 import com.eshabakhov.surok.school.SchoolClass;
 import com.eshabakhov.surok.school.Subject;
-import com.eshabakhov.surok.tables.ClassCurriculum;
-import com.eshabakhov.surok.tables.records.ClassCurriculumRecord;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 /**
@@ -23,18 +23,6 @@ import org.jooq.impl.DSL;
  */
 @EqualsAndHashCode
 public final class ClassLoadsPostgres implements ClassLoads {
-
-    /** JOOQ table for class loads. */
-    private static final ClassCurriculum LOAD =
-        ClassCurriculum.CLASS_CURRICULUM;
-
-    /** JOOQ School class table. */
-    private static final com.eshabakhov.surok.tables.SchoolClass CLASS =
-        com.eshabakhov.surok.tables.SchoolClass.SCHOOL_CLASS;
-
-    /** JOOQ Subject table. */
-    private static final com.eshabakhov.surok.tables.Subject SUBJECT =
-        com.eshabakhov.surok.tables.Subject.SUBJECT;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -63,24 +51,23 @@ public final class ClassLoadsPostgres implements ClassLoads {
         return this.ctx.transactionResult(
             config -> {
                 final DSLContext ttx = DSL.using(config);
-                if (ttx.selectFrom(ClassLoadsPostgres.LOAD).where(
-                    ClassLoadsPostgres.LOAD.SCHEDULE_ID.eq(this.sid)
-                        .and(ClassLoadsPostgres.LOAD.SCHOOL_CLASS_ID.eq(clazz.uid()))
-                        .and(ClassLoadsPostgres.LOAD.SUBJECT_ID.eq(subject.uid()))
-                    )
-                    .fetchOne() == null) {
-                    final ClassCurriculumRecord created = ttx
-                        .insertInto(ClassLoadsPostgres.LOAD)
-                        .set(ClassLoadsPostgres.LOAD.SCHEDULE_ID, this.sid)
-                        .set(ClassLoadsPostgres.LOAD.SCHOOL_CLASS_ID, clazz.uid())
-                        .set(ClassLoadsPostgres.LOAD.SUBJECT_ID, subject.uid())
-                        .set(ClassLoadsPostgres.LOAD.HOURS_PER_WEEK, hours)
-                        .returning()
-                        .fetchOne();
+                if (ttx.resultQuery(
+                    new ClasspathSql("class-load/find-existing.sql").text(),
+                    this.sid,
+                    clazz.uid(),
+                    subject.uid()
+                ).fetchOne() == null) {
+                    final Record created = ttx.resultQuery(
+                        new ClasspathSql("class-load/create.sql").text(),
+                        this.sid,
+                        clazz.uid(),
+                        subject.uid(),
+                        hours
+                    ).fetchOne();
                     if (created == null) {
                         throw new LoadFailedCreateException();
                     }
-                    return new ClassLoadPostgres(this.ctx, created.getId());
+                    return new ClassLoadPostgres(this.ctx, created.get("id", Long.class));
                 } else {
                     throw new LoadAlreadyExistsException();
                 }
@@ -90,19 +77,17 @@ public final class ClassLoadsPostgres implements ClassLoads {
 
     @Override
     public ClassLoad load(final long lid) throws Exception {
-        final ClassCurriculumRecord selected = this.ctx.selectFrom(
-            ClassLoadsPostgres.LOAD
-        ).where(
-            ClassLoadsPostgres.LOAD.ID.eq(lid)
-                .and(ClassLoadsPostgres.LOAD.SCHEDULE_ID.eq(this.sid))
-            )
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("class-load/find-by-id-and-schedule-id.sql").text(),
+            lid,
+            this.sid
+        ).fetchOne();
         if (selected == null) {
             throw new LoadNotFoundException(
                 String.format("Class load with id=%d not found", lid)
             );
         }
-        return new ClassLoadPostgres(this.ctx, selected.getId());
+        return new ClassLoadPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
@@ -111,47 +96,31 @@ public final class ClassLoadsPostgres implements ClassLoads {
         final Page page
     ) throws Exception {
         return new ResponsePageableList<>(
-            this.ctx.select(
-                ClassLoadsPostgres.LOAD.ID,
-                ClassLoadsPostgres.CLASS.ID,
-                ClassLoadsPostgres.SUBJECT.ID,
-                ClassLoadsPostgres.LOAD.HOURS_PER_WEEK
-                )
-                .from(ClassLoadsPostgres.LOAD)
-                .join(ClassLoadsPostgres.CLASS).on(
-                    ClassLoadsPostgres.LOAD.SCHOOL_CLASS_ID.eq(
-                        ClassLoadsPostgres.CLASS.ID
+            this.ctx.resultQuery(
+                new ClasspathSql("class-load/find-by-schedule-id.sql").text(),
+                this.sid
+            ).fetch(
+                selected ->
+                    new ClassLoadPostgres(
+                        this.ctx,
+                        selected.get("id", Long.class)
                     )
-                )
-                .join(ClassLoadsPostgres.SUBJECT).on(
-                    ClassLoadsPostgres.LOAD.SUBJECT_ID.eq(
-                        ClassLoadsPostgres.SUBJECT.ID
-                    )
-                )
-                .where(ClassLoadsPostgres.LOAD.SCHEDULE_ID.eq(this.sid)).fetch(
-                    selected ->
-                        new ClassLoadPostgres(
-                            this.ctx,
-                            selected.get(ClassLoadsPostgres.LOAD.ID)
-                        )
-                ),
-            this.ctx.fetchCount(
-                this.ctx.selectFrom(ClassLoadsPostgres.LOAD)
-                    .where(ClassLoadsPostgres.LOAD.SCHEDULE_ID.eq(this.sid))
             ),
+            this.ctx.resultQuery(
+                new ClasspathSql("class-load/count.sql").text(),
+                this.sid
+            ).fetchSingle(0, Integer.class),
             page
         );
     }
 
     @Override
     public void remove(final long lid) throws Exception {
-        final ClassCurriculumRecord load = this.ctx.selectFrom(
-            ClassLoadsPostgres.LOAD
-        ).where(
-            ClassLoadsPostgres.LOAD.ID.eq(lid)
-                .and(ClassLoadsPostgres.LOAD.SCHEDULE_ID.eq(this.sid))
-            )
-            .fetchOne();
+        final Record load = this.ctx.resultQuery(
+            new ClasspathSql("class-load/find-by-id-and-schedule-id.sql").text(),
+            lid,
+            this.sid
+        ).fetchOne();
         if (load == null) {
             throw new LoadNotFoundException(
                 String.format("Class load with id=%d not found", lid)
@@ -159,9 +128,10 @@ public final class ClassLoadsPostgres implements ClassLoads {
         }
         this.ctx.transactionResult(
             config ->
-                DSL.using(config).deleteFrom(ClassLoadsPostgres.LOAD)
-                    .where(ClassLoadsPostgres.LOAD.ID.eq(lid))
-                    .execute()
+                DSL.using(config).resultQuery(
+                    new ClasspathSql("class-load/delete.sql").text(),
+                    lid
+                ).execute()
         );
     }
 }

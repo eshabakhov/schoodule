@@ -6,3 +6,5 @@ node_modules
 src/test
 target/*
 !target/*.jar
+
+.env

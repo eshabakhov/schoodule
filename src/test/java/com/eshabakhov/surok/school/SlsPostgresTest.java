@@ -5,7 +5,6 @@ package com.eshabakhov.surok.school;
 
 import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.page.ResponsePageableList;
-import com.eshabakhov.surok.tables.School;
 import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
@@ -49,7 +48,11 @@ final class SlsPostgresTest {
 
     @AfterEach
     void truncateSchool() {
-        this.ctx.truncate(School.SCHOOL).cascade().execute();
+        this.ctx.resultQuery(
+            """
+                TRUNCATE TABLE public.school CASCADE
+                """
+        ).execute();
     }
 
     @Test
@@ -58,23 +61,56 @@ final class SlsPostgresTest {
             new SlsPostgres(this.ctx).create("Awesome school"),
             new SlPostgres(
                 this.ctx,
-                this.ctx.selectFrom(School.SCHOOL).where(
-                    School.SCHOOL.NAME.eq("Awesome school")
-                        .and(School.SCHOOL.IS_DELETED.eq(false))
-                    )
-                    .fetchOne()
-                    .getId()
+                this.ctx.resultQuery(
+                    """
+                        SELECT * FROM public.school
+                        WHERE (school.name = ?) AND (school.is_deleted = ?)
+                        """,
+                    "Awesome school",
+                    false
+                ).fetchOne()
+                    .get("id", Long.class)
             )
+        );
+    }
+
+    /** Verifies that SQL-like Unicode names remain literal data. */
+    @Test
+    void preservesQuotedUnicodeSchoolNames() throws Exception {
+        final String name = String.format(
+            "Школа O'Brien '%s'; DROP TABLE public.school; --", java.util.UUID.randomUUID()
+        );
+        Assertions.assertEquals(
+            name,
+            new SlsPostgres(this.ctx).create(name).name(),
+            "School creation did not preserve the SQL-like name"
+        );
+    }
+
+    /** Verifies that name lookup binds quoted values. */
+    @Test
+    void findsSchoolsUsingBoundNames() throws Exception {
+        final String name = String.format(
+            "Лицей '%s' OR '1'='1", java.util.UUID.randomUUID()
+        );
+        Assertions.assertEquals(
+            new SlsPostgres(this.ctx).create(name).uid(),
+            new SlsPostgres(this.ctx).school(name).uid(),
+            "School lookup did not bind the supplied name"
         );
     }
 
     @Test
     void findsSchoolById() throws Exception {
-        this.ctx.insertInto(School.SCHOOL)
-            .set(School.SCHOOL.ID, 1L)
-            .set(School.SCHOOL.NAME, "Boring school")
-            .set(School.SCHOOL.IS_DELETED, false)
-            .execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.school (id, name, is_deleted)
+                VALUES (?, ?, ?)
+                """,
+            1L,
+            "Boring school",
+            false
+        ).execute();
         Assertions.assertEquals(
             new SlPostgres(
                 this.ctx,
@@ -86,11 +122,15 @@ final class SlsPostgresTest {
 
     @Test
     void findsSchoolByName() throws Exception {
-        this.ctx.insertInto(School.SCHOOL)
-            .set(School.SCHOOL.ID, 1L)
-            .set(School.SCHOOL.NAME, "Cool school")
-            .set(School.SCHOOL.IS_DELETED, false)
-            .execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.school (id, name, is_deleted)
+                VALUES (?, ?, ?)
+                """,
+            1L,
+            "Cool school",
+            false
+        ).execute();
         Assertions.assertEquals(
             new SlPostgres(
                 this.ctx,
@@ -102,16 +142,24 @@ final class SlsPostgresTest {
 
     @Test
     void findsSchools() throws Exception {
-        this.ctx.insertInto(School.SCHOOL)
-            .set(School.SCHOOL.ID, 1L)
-            .set(School.SCHOOL.NAME, "Big school")
-            .set(School.SCHOOL.IS_DELETED, false)
-            .execute();
-        this.ctx.insertInto(School.SCHOOL)
-            .set(School.SCHOOL.ID, 2L)
-            .set(School.SCHOOL.NAME, "Small school")
-            .set(School.SCHOOL.IS_DELETED, false)
-            .execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.school (id, name, is_deleted)
+                VALUES (?, ?, ?)
+                """,
+            1L,
+            "Big school",
+            false
+        ).execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.school (id, name, is_deleted)
+                VALUES (?, ?, ?)
+                """,
+            2L,
+            "Small school",
+            false
+        ).execute();
         Assertions.assertEquals(
             new ResponsePageableList<>(
                 List.of(
@@ -136,11 +184,15 @@ final class SlsPostgresTest {
 
     @Test
     void updatesSchool() throws Exception {
-        this.ctx.insertInto(School.SCHOOL)
-            .set(School.SCHOOL.ID, 1L)
-            .set(School.SCHOOL.NAME, "Math school")
-            .set(School.SCHOOL.IS_DELETED, false)
-            .execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.school (id, name, is_deleted)
+                VALUES (?, ?, ?)
+                """,
+            1L,
+            "Math school",
+            false
+        ).execute();
         Assertions.assertEquals(
             "Simple school",
             new SlsPostgres(this.ctx)
@@ -152,16 +204,24 @@ final class SlsPostgresTest {
 
     @Test
     void removesSchool() throws Exception {
-        this.ctx.insertInto(School.SCHOOL)
-            .set(School.SCHOOL.ID, 1L)
-            .set(School.SCHOOL.NAME, "Bad school")
-            .set(School.SCHOOL.IS_DELETED, false)
-            .execute();
-        this.ctx.insertInto(School.SCHOOL)
-            .set(School.SCHOOL.ID, 2L)
-            .set(School.SCHOOL.NAME, "Good school")
-            .set(School.SCHOOL.IS_DELETED, false)
-            .execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.school (id, name, is_deleted)
+                VALUES (?, ?, ?)
+                """,
+            1L,
+            "Bad school",
+            false
+        ).execute();
+        this.ctx.resultQuery(
+            """
+                INSERT INTO public.school (id, name, is_deleted)
+                VALUES (?, ?, ?)
+                """,
+            2L,
+            "Good school",
+            false
+        ).execute();
         new SlsPostgres(this.ctx).remove(1L);
         Assertions.assertEquals(
             new ResponsePageableList<>(
@@ -175,7 +235,12 @@ final class SlsPostgresTest {
                 new PageRequest(10, 1)
             ),
             new SlsPostgres(this.ctx).schools(
-                School.SCHOOL.IS_DELETED.eq(false),
+                DSL.condition(
+                    """
+                        school.is_deleted = ?
+                        """,
+                    false
+                ),
                 new PageRequest(10, 1)
             )
         );

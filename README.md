@@ -1,77 +1,88 @@
-# School schedules
-
 <img src="src/main/resources/static/favicon.svg" alt="Surok" height="64">
 
-[![Build And Deploy](https://github.com/eshabakhov/surok/actions/workflows/deploy.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/deploy.yml)
+[![Build](https://github.com/eshabakhov/surok/actions/workflows/build.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/build.yml)
+[![Deploy](https://github.com/eshabakhov/surok/actions/workflows/deploy.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/deploy.yml)
+[![trufflehog-oss](https://github.com/eshabakhov/surok/actions/workflows/trufflehog-oss.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/trufflehog-oss.yml)
+
 [![actionlint](https://github.com/eshabakhov/surok/actions/workflows/actionlint.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/actionlint.yml)
 [![yamllint](https://github.com/eshabakhov/surok/actions/workflows/yamllint.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/yamllint.yml)
 [![shellcheck](https://github.com/eshabakhov/surok/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/shellcheck.yml)
-[![trufflehog-oss](https://github.com/eshabakhov/surok/actions/workflows/trufflehog-oss.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/trufflehog-oss.yml)
-[![Lines-of-Code](https://img.shields.io/tokei/lines/github/eshabakhov/surok)](https://github.com/eshabakhov/surok)
-[![Hits-of-Code](https://hitsofcode.com/github/eshabakhov/surok)](https://hitsofcode.com/view/github/eshabakhov/surok)
-[![License](https://img.shields.io/badge/license-Proprietary-red.svg)](https://github.com/eshabakhov/surok/blob/main/LICENSE.txt)
 
-![Java 21](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
-![Spring Boot 3.5](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
-![Maven](https://img.shields.io/badge/Maven-Build-C71A36?logo=apachemaven&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)
-![Docker Required](https://img.shields.io/badge/Docker-Required-2496ED?logo=docker&logoColor=white)
-![Release 0.0.1](https://img.shields.io/badge/Release-0.0.1-111827)
+[![Version](https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2Feshabakhov%2Fsurok%2Fmain%2Fpom.xml&query=%2F%2A%5Blocal-name%28%29%3D%27project%27%5D%2F%2A%5Blocal-name%28%29%3D%27version%27%5D&label=Version&color=111827)](pom.xml)
+[![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE.txt)
 
-**Surok** is an application for school schedule management. It helps organize schools, classes, teachers, subjects, cabinets, and schedules in one place.
+**Surok** is a Java web application for planning school schedules. It manages
+school buildings, classrooms, classes, subjects, teachers, and class workloads,
+and includes a catalog of federal curricula.
 
-To try it locally, make sure Java 21, Docker Desktop, and Node.js are installed, then run the full project check:
+Install [Git] and [Docker Desktop] with Linux containers, or Docker Engine with
+Compose v2.24+. Start Docker, then run:
 
-```text
-mvn clean install -Pqulice
-```
-
-The build starts PostgreSQL in Docker, applies Liquibase migrations, generates jOOQ classes, runs tests, lints frontend assets, and packages the application. After that, start the app with:
-
-```text
-java -jar target/surok-0.0.1.jar
-```
-
-To run the packaged application with Docker Compose, build the jar first and then start the stack:
-
-```text
-mvn clean install -Pqulice
+```sh
+git clone https://github.com/eshabakhov/surok.git
+cd surok
 docker compose up --build
 ```
 
-Docker Compose reads deployment variables from the environment or from a local `.env` file.
+Open [Surok](http://localhost:19500/) and [create an account] for your school.
+Docker builds the application and starts PostgreSQL with local defaults.
 
-Open `http://localhost:9500/`. If OAuth login is needed, provide `ya-id` and `ya-secret`. If you need to create the first administrator, enable bootstrap admin settings:
+## Configuration
 
-```text
-BOOTSTRAP_ADMIN_ENABLED=true
-BOOTSTRAP_ADMIN_USERNAME=admin
-BOOTSTRAP_ADMIN_EMAIL=admin@example.com
-BOOTSTRAP_ADMIN_PASSWORD=StrongPass1!
+To customize the local setup, copy [.env.example](.env.example) to `.env` and
+edit the settings you need, such as `APP_PORT` or the database credentials.
+The same file lists OAuth, administrator, and monitoring settings.
+
+To create the first administrator, set `BOOTSTRAP_ADMIN_ENABLED=true` and fill
+in `BOOTSTRAP_ADMIN_USERNAME`, `BOOTSTRAP_ADMIN_EMAIL`, and
+`BOOTSTRAP_ADMIN_PASSWORD` in `.env`. Run `docker compose up --build`, sign in
+with those credentials, then set `BOOTSTRAP_ADMIN_ENABLED=false` for subsequent
+starts. Administrators can manage schools and the federal curriculum catalog.
+
+Run `docker compose down` to stop the local stack. Database data is preserved
+in a Docker volume.
+
+## Deployment
+
+The [Build workflow](.github/workflows/build.yml) checks pull requests and
+publishes images from `main` to GHCR with commit SHA and `latest` tags.
+The [Deploy workflow](.github/workflows/deploy.yml) deploys the image for a
+successful build on `main`. To redeploy an existing image, run Deploy manually
+with its full commit SHA in `revision`.
+
+Production services are defined by the `production` profile in
+[docker-compose.yml](docker-compose.yml). Deployment configuration and required
+GitHub secrets are listed in the Deploy workflow.
+
+## How to contribute
+
+Start with an [issue] describing the problem or proposed change. Work in a
+separate branch and submit a pull request to `main` with a description of the
+change and how you verified it.
+
+For local checks, install [JDK 21], set `JAVA_HOME` to that installation, and
+keep Docker running for the PostgreSQL tests. From the repository root, run:
+
+```sh
+./mvnw -ntp --batch-mode clean verify -Pqulice
 ```
 
-## Main Use Cases
+Maven Wrapper downloads Maven; the build installs Node.js and npm, runs tests,
+checks Java with Qulice, and lints JavaScript, CSS, and HTML. On Windows, use
+`mvnw.cmd` instead of `./mvnw`.
 
-Manage the school structure: schools, classes, teachers, subjects, cabinets, and schedules.
+To run a single test class:
 
-Work with role-based access so administrators and school staff can manage data with different permission levels.
-
-Plan and maintain schedules through the web interface and API.
-
-## How to Contribute
-
-Install Java 21, Docker Desktop, and Node.js.
-
-Run the full verification command before changes:
-
-```text
-mvn clean install -Pqulice
+```sh
+./mvnw -Dtest=ClasspathSqlTest test
 ```
 
-Frontend linting is also available separately:
+After editing the application, run `docker compose up --build` again to see
+the changes. If a command fails, include the command and its log in the issue.
+Pull requests run CI checks before review.
 
-```text
-npm run lint
-```
-
-If you change the database schema, update the Liquibase changelog first and then run the normal Maven build. Keep changes small and verify role-sensitive behavior before sending them forward.
+[Git]: https://git-scm.com/downloads/
+[Docker Desktop]: https://docs.docker.com/desktop/
+[JDK 21]: https://adoptium.net/temurin/releases/?version=21
+[create an account]: http://localhost:19500/users/register
+[issue]: https://github.com/eshabakhov/surok/issues

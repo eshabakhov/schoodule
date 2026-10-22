@@ -4,9 +4,10 @@
 package com.eshabakhov.surok.federal.curriculum.requirement.filter;
 
 import com.eshabakhov.surok.filter.FlConditional;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import java.util.Optional;
 import org.jooq.Condition;
+import org.jooq.impl.DSL;
 
 /**
  * Federal curriculum requirement grade filter.
@@ -48,7 +49,8 @@ public final class FlCdRequirementByGrade implements FlConditional {
         Condition condition = this.origin.condition();
         if (this.grade.isPresent()) {
             condition = condition.and(
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT.GRADE.eq(
+                DSL.condition(
+                    new ClasspathSql("curriculum/requirement/conditions/by-grade.sql").text(),
                     this.grade.get()
                 )
             );

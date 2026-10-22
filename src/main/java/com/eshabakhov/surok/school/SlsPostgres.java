@@ -9,9 +9,10 @@ import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.School;
 import com.eshabakhov.surok.Schools;
 import com.eshabakhov.surok.page.ResponsePageableList;
-import com.eshabakhov.surok.tables.records.SchoolRecord;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 /**
@@ -20,10 +21,6 @@ import org.jooq.impl.DSL;
  * @since 0.0.1
  */
 public final class SlsPostgres implements Schools {
-
-    /** JOOQ Table for School. */
-    private static final com.eshabakhov.surok.tables.School SCHOOL =
-        com.eshabakhov.surok.tables.School.SCHOOL;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -42,75 +39,84 @@ public final class SlsPostgres implements Schools {
     public School create(final String name) throws Exception {
         return this.ctx.transactionResult(
             config -> {
-                final SchoolRecord created = DSL.using(config).insertInto(SlsPostgres.SCHOOL)
-                    .set(SlsPostgres.SCHOOL.NAME, name)
-                    .set(SlsPostgres.SCHOOL.IS_DELETED, false)
-                    .returning()
-                    .fetchOne();
+                final Record created = DSL.using(config).resultQuery(
+                    new ClasspathSql("school/create.sql").text(),
+                    name,
+                    false
+                ).fetchOne();
                 if (created == null) {
                     throw new SchoolFailedCreateException();
                 }
-                return new SlPostgres(this.ctx, created.getId());
+                return new SlPostgres(this.ctx, created.get("id", Long.class));
             }
         );
     }
 
     @Override
     public School school(final long sid) throws Exception {
-        final SchoolRecord selected = this.ctx.selectFrom(SlsPostgres.SCHOOL)
-            .where(SlsPostgres.SCHOOL.ID.eq(sid).and(SlsPostgres.SCHOOL.IS_DELETED.eq(false)))
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("school/find-by-id.sql").text(),
+            sid,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new SchoolNotFoundException(String.format("School with id=%d not found", sid));
         }
-        return new SlPostgres(this.ctx, selected.getId());
+        return new SlPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
     public School school(final String name) throws Exception {
-        final SchoolRecord selected = this.ctx.selectFrom(SlsPostgres.SCHOOL)
-            .where(SlsPostgres.SCHOOL.NAME.eq(name).and(SlsPostgres.SCHOOL.IS_DELETED.eq(false)))
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("school/find-by-name.sql").text(),
+            name,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new SchoolNotFoundException(
                 String.format("School with name='%s' not found", name)
             );
         }
-        return new SlPostgres(this.ctx, selected.getId());
+        return new SlPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
     public PageableList<School> schools(final Condition condition, final Page page)
         throws Exception {
         return new ResponsePageableList<>(
-            this.ctx.selectFrom(SlsPostgres.SCHOOL)
-                .where(condition)
-                .orderBy(SlsPostgres.SCHOOL.NAME.asc())
-                .limit(page.limit())
-                .offset((page.offset() - 1) * page.limit()).fetch(
-                    selected -> new SlPostgres(this.ctx, selected.getId())
-                ),
-            this.ctx.fetchCount(
-                this.ctx.selectFrom(SlsPostgres.SCHOOL).where(condition)
+            this.ctx.resultQuery(
+                new ClasspathSql("school/list.sql").text(),
+                condition,
+                DSL.val(page.limit()),
+                DSL.val((page.offset() - 1) * page.limit())
+            ).fetch(
+                selected -> new SlPostgres(this.ctx, selected.get("id", Long.class))
             ),
+            this.ctx.resultQuery(
+                new ClasspathSql("school/count.sql").text(),
+                condition
+            ).fetchSingle(0, Integer.class),
             page
         );
     }
 
     @Override
     public void remove(final long sid) throws Exception {
-        final SchoolRecord selected = this.ctx.selectFrom(SlsPostgres.SCHOOL)
-            .where(SlsPostgres.SCHOOL.ID.eq(sid).and(SlsPostgres.SCHOOL.IS_DELETED.eq(false)))
-            .fetchOne();
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("school/find-by-id.sql").text(),
+            sid,
+            false
+        ).fetchOne();
         if (selected == null) {
             throw new SchoolNotFoundException(String.format("School with id=%d not found", sid));
         }
         this.ctx.transaction(
             config ->
-                DSL.using(config).update(SlsPostgres.SCHOOL)
-                    .set(SlsPostgres.SCHOOL.IS_DELETED, true)
-                    .where(SlsPostgres.SCHOOL.ID.eq(sid))
-                    .execute()
+                DSL.using(config).resultQuery(
+                    new ClasspathSql("school/soft-delete.sql").text(),
+                    true,
+                    sid
+                ).execute()
         );
     }
 

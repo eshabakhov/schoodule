@@ -3,7 +3,7 @@
  */
 package com.eshabakhov.surok.user;
 
-import com.eshabakhov.surok.tables.User;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jooq.DSLContext;
 
@@ -55,18 +55,18 @@ public interface Credentials {
 
         @Override
         public String username() {
-            return this.ctx.select(User.USER.USERNAME)
-                .from(User.USER)
-                .where(User.USER.ID.eq(this.user))
-                .fetchOneInto(String.class);
+            return this.ctx.resultQuery(
+                new ClasspathSql("user/find-username.sql").text(),
+                this.user
+            ).fetchOneInto(String.class);
         }
 
         @Override
         public String password() {
-            return this.ctx.select(User.USER.PASSWORD)
-                .from(User.USER)
-                .where(User.USER.ID.eq(this.user))
-                .fetchOneInto(String.class);
+            return this.ctx.resultQuery(
+                new ClasspathSql("user/find-password.sql").text(),
+                this.user
+            ).fetchOneInto(String.class);
         }
     }
 }

@@ -5,10 +5,10 @@ package com.eshabakhov.surok.federal.curriculum.requirement.sort;
 
 import com.eshabakhov.surok.Sort;
 import com.eshabakhov.surok.sort.StJooq;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
 import java.util.Optional;
 import org.jooq.Field;
 import org.jooq.SortField;
+import org.jooq.impl.DSL;
 
 /**
  * Federal curriculum requirement JOOQ sorting parameter.
@@ -16,12 +16,6 @@ import org.jooq.SortField;
  * @since 0.0.1
  */
 public final class StJqRequirement implements StJooq {
-
-    /**
-     * JOOQ Table for Requirement.
-     */
-    private static final FederalCurriculumRequirement REQUIREMENT =
-        FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT;
 
     /**
      * Origin sorting parameter.
@@ -52,10 +46,22 @@ public final class StJqRequirement implements StJooq {
     public SortField<?> field() {
         final Field<?> field = switch (this.origin.name()) {
             case null -> null;
-            case "grade" -> StJqRequirement.REQUIREMENT.GRADE;
-            case "subject" -> StJqRequirement.REQUIREMENT.SUBJECT_NAME;
-            case "hours" -> StJqRequirement.REQUIREMENT.WEEKLY_HOURS;
-            case "part" -> StJqRequirement.REQUIREMENT.PART_TYPE;
+            case "grade" -> DSL.field(
+                DSL.name("public", "federal_curriculum_requirement", "grade"),
+                Integer.class
+            );
+            case "subject" -> DSL.field(
+                DSL.name("public", "federal_curriculum_requirement", "subject_name"),
+                String.class
+            );
+            case "hours" -> DSL.field(
+                DSL.name("public", "federal_curriculum_requirement", "weekly_hours"),
+                Integer.class
+            );
+            case "part" -> DSL.field(
+                DSL.name("public", "federal_curriculum_requirement", "part_type"),
+                String.class
+            );
             default -> null;
         };
         return switch (this.origin.direction()) {

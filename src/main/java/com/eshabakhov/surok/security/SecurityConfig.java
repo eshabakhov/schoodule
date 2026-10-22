@@ -12,11 +12,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -26,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -108,14 +112,19 @@ public class SecurityConfig {
      * Security filter chain configuration.
      *
      * @param http HttpSecurity to configure
+     * @param encoder Password encoder
      * @return Configured SecurityFilterChain
      * @throws Exception if configuration fails
      */
     @Bean
     @Order(1)
-    SecurityFilterChain apiSecurity(final HttpSecurity http) throws Exception {
+    SecurityFilterChain apiSecurity(
+        final HttpSecurity http,
+        final PasswordEncoder encoder
+    ) throws Exception {
+        this.authentication(http, encoder);
         return http
-            .securityMatcher("/api/**")
+            .securityMatcher(PathPatternRequestMatcher.withDefaults().matcher("/api/**"))
             .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth.anyRequest().authenticated()).exceptionHandling(
@@ -128,7 +137,6 @@ public class SecurityConfig {
                     )
             )
             .httpBasic(Customizer.withDefaults())
-            .userDetailsService(this.userdetails)
             .build();
     }
 
@@ -136,12 +144,17 @@ public class SecurityConfig {
      * Security filter chain configuration.
      *
      * @param http HttpSecurity to configure
+     * @param encoder Password encoder
      * @return Configured SecurityFilterChain
      * @throws Exception if configuration fails
      */
     @Bean
     @Order(2)
-    SecurityFilterChain webSecurity(final HttpSecurity http) throws Exception {
+    SecurityFilterChain webSecurity(
+        final HttpSecurity http,
+        final PasswordEncoder encoder
+    ) throws Exception {
+        this.authentication(http, encoder);
         return http
             .cors(Customizer.withDefaults()).csrf(
                 csrf -> csrf
@@ -208,8 +221,7 @@ public class SecurityConfig {
                 logout -> logout
                     .logoutUrl("/logout")
                     .logoutSuccessUrl("/users/login?logout")
-            )
-            .userDetailsService(this.userdetails).exceptionHandling(
+            ).exceptionHandling(
                 exceptions -> exceptions.accessDeniedHandler(
                     (request, response, denied) ->
                         response.sendError(HttpServletResponse.SC_FORBIDDEN)
@@ -257,15 +269,16 @@ public class SecurityConfig {
     /**
      * OpenAPI definition with basic authentication support.
      *
+     * @param build Maven build information
      * @return OpenAPI definition
      * @checkstyle NonStaticMethodCheck (2 lines)
      */
     @Bean
-    OpenAPI openApi() {
+    OpenAPI openApi(final BuildProperties build) {
         return new OpenAPI().info(
             new Info()
                 .title("Surok API")
-                .version("0.0.1")
+                .version(build.getVersion())
             ).components(
                 new Components().addSecuritySchemes(
                     "Basic auth",
@@ -277,22 +290,11 @@ public class SecurityConfig {
             .addSecurityItem(new SecurityRequirement().addList("Basic auth"));
     }
 
-    /**
-     * AuthenticationProvider.
-     *
-     * @param service DatabaseUserDetailsService
-     * @param encoder PasswordEncoder
-     * @return DaoAuthenticationProvider
-     * @checkstyle NonStaticMethodCheck (2 lines)
-     */
-    @Bean
-    DaoAuthenticationProvider authenticationProvider(
-        final DatabaseUserDetailsService service,
-        final PasswordEncoder encoder
-    ) {
-        final DaoAuthenticationProvider provider = new DaoAuthenticationProvider(service);
+    private void authentication(final HttpSecurity http, final PasswordEncoder encoder) {
+        final DaoAuthenticationProvider provider = new DaoAuthenticationProvider(this.userdetails);
         provider.setPasswordEncoder(encoder);
         provider.setHideUserNotFoundExceptions(false);
-        return provider;
+        http.getSharedObject(AuthenticationManagerBuilder.class)
+            .parentAuthenticationManager(new ProviderManager(provider));
     }
 }

@@ -4,7 +4,7 @@
 package com.eshabakhov.surok.security;
 
 import com.eshabakhov.surok.User;
-import com.eshabakhov.surok.tables.LoginAttempt;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.eshabakhov.surok.user.UrsPostgres;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -54,11 +54,12 @@ public final class LoginFailureHandler implements AuthenticationFailureHandler {
             } catch (final Exception ex) {
                 throw new IOException(ex);
             }
-            this.ctx.insertInto(LoginAttempt.LOGIN_ATTEMPT)
-                .set(LoginAttempt.LOGIN_ATTEMPT.USER_ID, user.uid())
-                .set(LoginAttempt.LOGIN_ATTEMPT.TIME, Instant.now().atOffset(ZoneOffset.UTC))
-                .set(LoginAttempt.LOGIN_ATTEMPT.SUCCESS, false)
-                .execute();
+            this.ctx.resultQuery(
+                new ClasspathSql("login-attempt/create.sql").text(),
+                user.uid(),
+                Instant.now().atOffset(ZoneOffset.UTC),
+                false
+            ).execute();
         }
         response.sendRedirect(String.format("/users/login?error=%s", error));
     }

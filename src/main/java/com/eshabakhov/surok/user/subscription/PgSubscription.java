@@ -3,11 +3,12 @@
  */
 package com.eshabakhov.surok.user.subscription;
 
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.eshabakhov.surok.user.Subscription;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import org.jooq.DSLContext;
-import org.jooq.Record1;
+import org.jooq.Record;
 
 /**
  * Immutable subscription snapshot loaded from PostgreSQL.
@@ -23,10 +24,6 @@ import org.jooq.Record1;
  * @since 0.0.1
  */
 public final class PgSubscription implements Subscription {
-
-    /** Subscription table. */
-    private static final com.eshabakhov.surok.tables.Subscription SUBSCRIPTION =
-        com.eshabakhov.surok.tables.Subscription.SUBSCRIPTION;
 
     /** DSL context. */
     private final DSLContext dsl;
@@ -47,31 +44,30 @@ public final class PgSubscription implements Subscription {
 
     @Override
     public Plan plan() {
-        final Record1<String> selected = this.dsl.select(PgSubscription.SUBSCRIPTION.PLAN)
-            .from(PgSubscription.SUBSCRIPTION)
-            .where(PgSubscription.SUBSCRIPTION.USER_ID.eq(this.id))
-            .fetchOne();
+        final Record selected = this.dsl.resultQuery(
+            new ClasspathSql("subscription/find-plan.sql").text(),
+            this.id
+        ).fetchOne();
         final Plan plan;
         if (selected == null) {
             plan = Plan.BASIC;
         } else {
-            plan = Plan.valueOf(selected.get(PgSubscription.SUBSCRIPTION.PLAN));
+            plan = Plan.valueOf(selected.get("plan", String.class));
         }
         return plan;
     }
 
     @Override
     public OffsetDateTime expiry() {
-        final Record1<OffsetDateTime> selected = this.dsl.select(
-            PgSubscription.SUBSCRIPTION.EXPIRES_AT
-        ).from(PgSubscription.SUBSCRIPTION)
-            .where(PgSubscription.SUBSCRIPTION.USER_ID.eq(this.id))
-            .fetchOne();
+        final Record selected = this.dsl.resultQuery(
+            new ClasspathSql("subscription/find-expiry.sql").text(),
+            this.id
+        ).fetchOne();
         final OffsetDateTime expiry;
-        if (selected == null || selected.get(PgSubscription.SUBSCRIPTION.EXPIRES_AT) == null) {
+        if (selected == null || selected.get("expires_at", OffsetDateTime.class) == null) {
             expiry = OffsetDateTime.MAX;
         } else {
-            expiry = selected.get(PgSubscription.SUBSCRIPTION.EXPIRES_AT);
+            expiry = selected.get("expires_at", OffsetDateTime.class);
         }
         return expiry;
     }

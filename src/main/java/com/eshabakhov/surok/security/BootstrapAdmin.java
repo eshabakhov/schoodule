@@ -4,9 +4,7 @@
 package com.eshabakhov.surok.security;
 
 import com.eshabakhov.surok.User;
-import com.eshabakhov.surok.enums.RoleType;
-import com.eshabakhov.surok.tables.Role;
-import com.eshabakhov.surok.tables.UserRole;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.eshabakhov.surok.user.Roles;
 import com.eshabakhov.surok.user.UrsPostgres;
 import org.jooq.DSLContext;
@@ -104,19 +102,9 @@ public final class BootstrapAdmin implements ApplicationRunner {
     }
 
     private boolean hasActiveAdmin() {
-        return this.ctx.fetchExists(
-            this.ctx.selectOne()
-                .from(UserRole.USER_ROLE)
-                .join(Role.ROLE)
-                .on(UserRole.USER_ROLE.ROLE_ID.eq(Role.ROLE.ID))
-                .join(com.eshabakhov.surok.tables.User.USER).on(
-                    UserRole.USER_ROLE.USER_ID.eq(
-                        com.eshabakhov.surok.tables.User.USER.ID
-                    )
-                ).where(
-                    Role.ROLE.NAME.eq(RoleType.ADMIN)
-                        .and(com.eshabakhov.surok.tables.User.USER.DELETED.isNull())
-                )
-        );
+        return this.ctx.resultQuery(
+            new ClasspathSql("user/role/has-active-admin.sql").text(),
+            "ADMIN"
+        ).fetchSingle(0, Boolean.class);
     }
 }

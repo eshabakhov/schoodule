@@ -1,65 +1,61 @@
-name: Build And Deploy
+name: Deploy
 
 'on':
-  push:
+  workflow_run:
+    workflows: [Build]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
+    inputs:
+      revision:
+        description: Full commit SHA of an image already published by Build
+        required: true
+        type: string
 
 permissions:
   contents: read
-  packages: write
 
 concurrency:
-  group: deploy-main
-  cancel-in-progress: true
-
-env:
-  IMAGE_NAME: ghcr.io/${{ github.repository }}
+  group: deploy-production
+  cancel-in-progress: false
 
 jobs:
-  build-and-push:
-    timeout-minutes: 25
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: maven
-
-      - name: Test and build JAR
-        run: mvn -ntp --batch-mode clean verify
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
   deploy:
-    needs: build-and-push
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event != 'pull_request' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     timeout-minutes: 15
     runs-on: ubuntu-24.04
     environment: production
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
     steps:
-      - name: Checkout
+      - name: Resolve release
+        id: release
+        env:
+          REVISION: ${{ github.event.workflow_run.head_sha || inputs.revision }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$REVISION" =~ ^[0-9a-f]{40}$ ]]; then
+            echo 'A full lowercase commit SHA is required' >&2
+            exit 1
+          fi
+          if [[ ! "$DEPLOY_PATH" =~ ^/[a-zA-Z0-9_./-]+$ ]]; then
+            echo 'DEPLOY_PATH must be an absolute path without spaces or shell characters' >&2
+            exit 1
+          fi
+          echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}:$REVISION" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release config
         uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.release.outputs.revision }}
+          persist-credentials: false
 
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
@@ -67,41 +63,66 @@ jobs:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
       - name: Add host
-        run: ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+        run: ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Login and pull release
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          IMAGE: ${{ steps.release.outputs.image }}
+        run: |
+          set -euo pipefail
+          # Expand the runner's actor in the remote command
+          # shellcheck disable=SC2029
+          printf '%s\n' "$GHCR_TOKEN" | ssh "$DEPLOY_USER@$DEPLOY_HOST" \
+            "docker login ghcr.io -u '$GITHUB_ACTOR' --password-stdin"
+          # IMAGE contains the validated commit SHA
+          # shellcheck disable=SC2029
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "docker pull '$IMAGE'"
 
       - name: Sync config files
         run: |
-          rsync -az docker-compose.yml \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
-          rsync -az --delete haproxy/ \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/haproxy/"
-          rsync -az --delete monitoring/ \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/monitoring/"
+          set -euo pipefail
+          # DEPLOY_PATH was validated before checkout
+          # shellcheck disable=SC2029
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" \
+            "mkdir -p '$DEPLOY_PATH/haproxy' '$DEPLOY_PATH/monitoring'"
+          rsync -az docker-compose.yml "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+          rsync -az haproxy/haproxy.tmpl haproxy/fullchain.pem \
+            "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/haproxy/"
+          rsync -az monitoring/prometheus.yml \
+            "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/monitoring/"
 
       - name: Create site.pem
+        env:
+          SSL_PRIVATE_KEY: ${{ secrets.SSL_PRIVATE_KEY }}
         run: |
           set -euo pipefail
           trap 'rm -f key.pem site.pem' EXIT
           umask 077
-          printf '%s\n' "${{ secrets.SSL_PRIVATE_KEY }}" > key.pem
+          printf '%s\n' "$SSL_PRIVATE_KEY" > key.pem
           cat key.pem haproxy/fullchain.pem > site.pem
-          rsync -az site.pem \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/haproxy/"
+          rsync -az site.pem "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/haproxy/"
 
-      - name: Deploy
+      - name: Deploy published image
+        env:
+          IMAGE: ${{ steps.release.outputs.image }}
         run: |
-          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<'EOF'
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" bash -s -- "'$DEPLOY_PATH'" "'$IMAGE'" <<'EOF'
           set -euo pipefail
-          cd "${{ secrets.DEPLOY_PATH }}"
+          cd "$1"
           set -a
           source .env
           set +a
-          export IMAGE="${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          envsubst < haproxy/haproxy.tmpl > haproxy/haproxy.cfg
-          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io \
-            -u "${{ github.actor }}" \
-            --password-stdin
-          docker pull "$IMAGE"
-          docker compose up -d --remove-orphans
-          docker image prune -f
+          : "${DB_PASSWORD:?DB_PASSWORD is required}"
+          export IMAGE="$2"
+          export APP_SECURITY_SECURE_COOKIE="${APP_SECURITY_SECURE_COOKIE:-true}"
+          export COMPOSE_PROFILES=production
+          envsubst '${MONITORING_BASIC_AUTH_USERNAME} ${MONITORING_BASIC_AUTH_PASSWORD}' \
+            < haproxy/haproxy.tmpl > haproxy/haproxy.cfg
+          docker compose -f docker-compose.yml --profile production config --quiet
+          docker compose -f docker-compose.yml --profile production up -d --no-build --pull always \
+            --remove-orphans --wait --wait-timeout 180 haproxy
+          docker compose -f docker-compose.yml --profile production exec -T haproxy \
+            haproxy -c -f /usr/local/etc/haproxy/haproxy.cfg
+          docker compose -f docker-compose.yml --profile production restart haproxy
           EOF

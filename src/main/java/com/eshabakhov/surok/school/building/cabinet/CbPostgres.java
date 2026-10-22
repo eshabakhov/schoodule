@@ -4,6 +4,7 @@
 package com.eshabakhov.surok.school.building.cabinet;
 
 import com.eshabakhov.surok.school.building.Cabinet;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
@@ -14,10 +15,6 @@ import org.jooq.DSLContext;
  * @since 0.0.1
  */
 public final class CbPostgres implements Cabinet {
-
-    /** JOOQ Table for Cabinet. */
-    private static final com.eshabakhov.surok.tables.Cabinet CABINET =
-        com.eshabakhov.surok.tables.Cabinet.CABINET;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -44,35 +41,34 @@ public final class CbPostgres implements Cabinet {
 
     @Override
     public String name() {
-        return this.ctx
-            .select(CbPostgres.CABINET.NAME)
-            .from(CbPostgres.CABINET)
-            .where(CbPostgres.CABINET.ID.eq(this.id))
-            .fetchOneInto(String.class);
+        return this.ctx.resultQuery(
+            new ClasspathSql("cabinet/find-name.sql").text(),
+            this.id
+        ).fetchOneInto(String.class);
     }
 
     @Override
     public Cabinet renamed(final String name) {
         return new CbPostgres(
             this.ctx,
-            this.ctx.update(CbPostgres.CABINET)
-                .set(CbPostgres.CABINET.NAME, name)
-                .where(CbPostgres.CABINET.ID.eq(this.id))
-                .returningResult(CbPostgres.CABINET.ID)
-                .fetchOne(CbPostgres.CABINET.ID)
+            this.ctx.resultQuery(
+                new ClasspathSql("cabinet/rename.sql").text(),
+                name,
+                this.id
+            ).fetchOne("id", Long.class)
         );
     }
 
     @Override
     public ObjectNode json() {
-        return this.ctx
-            .select(CbPostgres.CABINET.ID, CbPostgres.CABINET.NAME)
-            .from(CbPostgres.CABINET)
-            .where(CbPostgres.CABINET.ID.eq(this.id)).fetchOne(
-                clazz ->
-                    JsonNodeFactory.instance.objectNode()
-                        .put("id", clazz.get(CbPostgres.CABINET.ID))
-                        .put("name", clazz.get(CbPostgres.CABINET.NAME))
-            );
+        return this.ctx.resultQuery(
+            new ClasspathSql("cabinet/find-details.sql").text(),
+            this.id
+        ).fetchOne(
+            clazz ->
+                JsonNodeFactory.instance.objectNode()
+                    .put("id", clazz.get("id", Long.class))
+                    .put("name", clazz.get("name", String.class))
+        );
     }
 }

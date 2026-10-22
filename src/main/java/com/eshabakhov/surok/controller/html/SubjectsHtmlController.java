@@ -8,9 +8,11 @@ import com.eshabakhov.surok.School;
 import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.school.SlsPostgres;
 import com.eshabakhov.surok.school.Subject;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import java.util.Map;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -29,10 +31,6 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 @RequestMapping("/schools/{school}/subjects")
 public class SubjectsHtmlController {
-
-    /** JOOQ Table for Subject. */
-    private static final com.eshabakhov.surok.tables.Subject SUBJECT =
-        com.eshabakhov.surok.tables.Subject.SUBJECT;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -65,11 +63,17 @@ public class SubjectsHtmlController {
         @RequestParam(name = "limit", defaultValue = "15") final int limit,
         @RequestParam(name = "name", required = false) final String name
     ) throws Exception {
-        Condition condition = SubjectsHtmlController.SUBJECT.IS_DELETED.eq(false)
-            .and(SubjectsHtmlController.SUBJECT.SCHOOL_ID.eq(school));
+        Condition condition = DSL.condition(
+            new ClasspathSql("subject/conditions/by-is-deleted-and-school-id.sql").text(),
+            false,
+            school
+        );
         if (name != null && !name.isBlank()) {
             condition = condition.and(
-                SubjectsHtmlController.SUBJECT.NAME.likeIgnoreCase(String.format("%%%s%%", name))
+                DSL.condition(
+                    new ClasspathSql("subject/conditions/by-name.sql").text(),
+                    String.format("%%%s%%", name)
+                )
             );
         }
         final School sch = new SlsPostgres(this.ctx).school(school);
@@ -109,11 +113,17 @@ public class SubjectsHtmlController {
         @RequestParam(name = "offset", defaultValue = "1") final int offset,
         @RequestParam(name = "limit", defaultValue = "15") final int limit
     ) throws Exception {
-        Condition condition = SubjectsHtmlController.SUBJECT.IS_DELETED.eq(false)
-            .and(SubjectsHtmlController.SUBJECT.SCHOOL_ID.eq(school));
+        Condition condition = DSL.condition(
+            new ClasspathSql("subject/conditions/by-is-deleted-and-school-id.sql").text(),
+            false,
+            school
+        );
         if (name != null && !name.isBlank()) {
             condition = condition.and(
-                SubjectsHtmlController.SUBJECT.NAME.likeIgnoreCase(String.format("%%%s%%", name))
+                DSL.condition(
+                    new ClasspathSql("subject/conditions/by-name.sql").text(),
+                    String.format("%%%s%%", name)
+                )
             );
         }
         final School sch = new SlsPostgres(this.ctx).school(school);

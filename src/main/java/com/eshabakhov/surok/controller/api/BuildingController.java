@@ -10,6 +10,7 @@ import com.eshabakhov.surok.school.Building;
 import com.eshabakhov.surok.school.SlsPostgres;
 import com.eshabakhov.surok.school.building.BdBase;
 import com.eshabakhov.surok.school.building.BuildingNotFoundException;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,10 +48,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/schools/{school}/buildings/")
 @Tag(name = "Buildings")
 public class BuildingController {
-
-    /** JOOQ Table for Building. */
-    private static final com.eshabakhov.surok.tables.Building BUILDING =
-        com.eshabakhov.surok.tables.Building.BUILDING;
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -219,11 +217,17 @@ public class BuildingController {
             required = false
         ) final String namect
     ) throws Exception {
-        Condition condition = BuildingController.BUILDING.SCHOOL_ID.eq(school)
-            .and(BuildingController.BUILDING.IS_DELETED.eq(false));
+        Condition condition = DSL.condition(
+            new ClasspathSql("building/conditions/by-school-id-and-is-deleted.sql").text(),
+            school,
+            false
+        );
         if (namect != null && !namect.isBlank()) {
             condition = condition.and(
-                BuildingController.BUILDING.NAME.likeIgnoreCase(String.format("%%%s%%", namect))
+                DSL.condition(
+                    new ClasspathSql("building/conditions/by-name.sql").text(),
+                    String.format("%%%s%%", namect)
+                )
             );
         }
         return ResponseEntity.ok().body(

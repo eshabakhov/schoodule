@@ -68,7 +68,7 @@
                    title="Перейти на главную страницу">
                     <xsl:call-template name="brand-mark"/>
                     <xsl:text>Surok</xsl:text>
-                    <span class="app-header-logo-version">v0.0.1</span>
+                    <span class="app-header-logo-version">v@project.version@</span>
                 </a>
                 <h1 class="app-header-title">
                     <xsl:call-template name="page-title"/>

@@ -4,8 +4,9 @@
 package com.eshabakhov.surok.federal.curriculum.requirement.filter;
 
 import com.eshabakhov.surok.filter.FlConditional;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import org.jooq.Condition;
+import org.jooq.impl.DSL;
 
 /**
  * Federal curriculum requirement subject filter.
@@ -40,10 +41,12 @@ public final class FlCdRequirementBySubject implements FlConditional {
         Condition condition = this.origin.condition();
         if (this.subject != null && !this.subject.isBlank()) {
             condition = condition.and(
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT
-                    .SUBJECT_NAME.likeIgnoreCase(
-                        String.format("%%%s%%", this.subject.trim())
-                    )
+                DSL.condition(
+                    new ClasspathSql(
+                        "curriculum/requirement/conditions/by-subject-name.sql"
+                    ).text(),
+                    String.format("%%%s%%", this.subject.trim())
+                )
             );
         }
         return condition;

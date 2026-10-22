@@ -3,12 +3,12 @@
  */
 package com.eshabakhov.surok.federal.curriculum.requirement.filter;
 
-import com.eshabakhov.surok.enums.CurriculumPartType;
 import com.eshabakhov.surok.federal.curriculum.requirement.Requirement;
 import com.eshabakhov.surok.filter.FlConditional;
-import com.eshabakhov.surok.tables.FederalCurriculumRequirement;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import java.util.Optional;
 import org.jooq.Condition;
+import org.jooq.impl.DSL;
 
 /**
  * Federal curriculum requirement part filter.
@@ -55,8 +55,9 @@ public final class FlCdRequirementByPart implements FlConditional {
         Condition condition = this.origin.condition();
         if (this.part.isPresent()) {
             condition = condition.and(
-                FederalCurriculumRequirement.FEDERAL_CURRICULUM_REQUIREMENT.PART_TYPE.eq(
-                    CurriculumPartType.valueOf(this.part.get().name())
+                DSL.condition(
+                    new ClasspathSql("curriculum/requirement/conditions/by-part-type.sql").text(),
+                    this.part.get().name()
                 )
             );
         }

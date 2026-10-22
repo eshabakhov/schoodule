@@ -3,7 +3,7 @@
  */
 package com.eshabakhov.surok.user;
 
-import com.eshabakhov.surok.tables.UserRole;
+import com.eshabakhov.surok.sql.ClasspathSql;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jooq.DSLContext;
 
@@ -39,10 +39,6 @@ public interface Role {
      */
     final class RlPostgres implements Role {
 
-        /** JOOQ table for role. */
-        private static final com.eshabakhov.surok.tables.Role ROLE =
-            com.eshabakhov.surok.tables.Role.ROLE;
-
         /** Database context. */
         private final DSLContext ctx;
 
@@ -67,12 +63,10 @@ public interface Role {
 
         @Override
         public String name() {
-            return this.ctx.select(Role.RlPostgres.ROLE.NAME)
-                .from(Role.RlPostgres.ROLE)
-                .join(UserRole.USER_ROLE)
-                .on(Role.RlPostgres.ROLE.ID.eq(UserRole.USER_ROLE.ROLE_ID))
-                .where(UserRole.USER_ROLE.ID.eq(this.id))
-                .fetchOneInto(String.class);
+            return this.ctx.resultQuery(
+                new ClasspathSql("role/find-name.sql").text(),
+                this.id
+            ).fetchOneInto(String.class);
         }
     }
 }

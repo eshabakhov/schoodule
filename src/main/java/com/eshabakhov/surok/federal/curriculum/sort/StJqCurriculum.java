@@ -5,10 +5,10 @@ package com.eshabakhov.surok.federal.curriculum.sort;
 
 import com.eshabakhov.surok.Sort;
 import com.eshabakhov.surok.sort.StJooq;
-import com.eshabakhov.surok.tables.FederalCurriculum;
 import java.util.Optional;
 import org.jooq.Field;
 import org.jooq.SortField;
+import org.jooq.impl.DSL;
 
 /**
  * Federal curriculum JOOQ sorting parameter.
@@ -47,11 +47,26 @@ public final class StJqCurriculum implements StJooq {
     public SortField<?> field() {
         final Field<?> field = switch (this.origin.name()) {
             case null -> null;
-            case "title" -> FederalCurriculum.FEDERAL_CURRICULUM.TITLE;
-            case "level" -> FederalCurriculum.FEDERAL_CURRICULUM.EDUCATION_LEVEL;
-            case "week" -> FederalCurriculum.FEDERAL_CURRICULUM.STUDY_WEEK_TYPE;
-            case "version" -> FederalCurriculum.FEDERAL_CURRICULUM.VERSION;
-            case "year" -> FederalCurriculum.FEDERAL_CURRICULUM.ACADEMIC_YEAR;
+            case "title" -> DSL.field(
+                DSL.name("public", "federal_curriculum", "title"),
+                String.class
+            );
+            case "level" -> DSL.field(
+                DSL.name("public", "federal_curriculum", "education_level"),
+                String.class
+            );
+            case "week" -> DSL.field(
+                DSL.name("public", "federal_curriculum", "study_week_type"),
+                String.class
+            );
+            case "version" -> DSL.field(
+                DSL.name("public", "federal_curriculum", "version"),
+                String.class
+            );
+            case "year" -> DSL.field(
+                DSL.name("public", "federal_curriculum", "academic_year"),
+                String.class
+            );
             default -> null;
         };
         return switch (this.origin.direction()) {

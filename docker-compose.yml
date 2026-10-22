@@ -1,5 +1,62 @@
 services:
+  postgres:
+    image: postgres:14-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-surok}
+      POSTGRES_USER: ${DB_USERNAME:-surok}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-local-development}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    ports:
+      - "127.0.0.1:${DB_PORT:-15432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  surok:
+    image: ${IMAGE:-surok:local}
+    build:
+      context: .
+      target: application
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      SERVER_PORT: 9500
+      SERVER_ADDRESS: 0.0.0.0
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-surok}
+      DB_USERNAME: ${DB_USERNAME:-surok}
+      DB_PASSWORD: ${DB_PASSWORD:-local-development}
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-surok}
+      YA_ID: ${YA_ID:-local-development}
+      YA_SECRET: ${YA_SECRET:-local-development}
+      BOOTSTRAP_ADMIN_ENABLED: ${BOOTSTRAP_ADMIN_ENABLED:-false}
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-admin}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@example.com}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-LocalDevPass1!}
+      APP_SECURITY_DOCS_ENABLED: ${APP_SECURITY_DOCS_ENABLED:-false}
+      APP_SECURITY_PROMETHEUS_ENABLED: ${APP_SECURITY_PROMETHEUS_ENABLED:-false}
+      APP_SECURITY_SECURE_COOKIE: ${APP_SECURITY_SECURE_COOKIE:-false}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:9500/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      start_period: 40s
+      retries: 24
+    ports:
+      - "127.0.0.1:${APP_PORT:-19500}:9500"
+
   haproxy:
+    profiles: [production]
     image: haproxy:3.3-alpine
     container_name: haproxy
     depends_on:
@@ -9,41 +66,13 @@ services:
     ports:
       - "443:443"
     env_file:
-      - .env
+      - path: .env
+        required: false
     volumes:
       - ./haproxy:/usr/local/etc/haproxy
 
-  postgres:
-    container_name: postgres
-    image: postgres:14-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_NAME:-surok}
-      POSTGRES_USER: ${DB_USERNAME:-surok}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-postgres}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  surok:
-    container_name: surok
-    image: ${IMAGE:-ghcr.io/eshabakhov/surok:latest}
-    build:
-      context: .
-      args:
-        JAR_FILE: ${JAR_FILE:-target/surok-0.0.1.jar}
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    env_file:
-      - .env
-
   prometheus:
+    profiles: [production]
     image: prom/prometheus
     container_name: prometheus
     volumes:
@@ -56,12 +85,14 @@ services:
       - "--web.route-prefix=/prometheus/"
 
   grafana:
+    profiles: [production]
     image: grafana/grafana
     container_name: grafana
     depends_on:
       - prometheus
     env_file:
-      - .env
+      - path: .env
+        required: false
     volumes:
       - grafana-data:/var/lib/grafana
 
