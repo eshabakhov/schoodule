@@ -37,8 +37,8 @@ jobs:
           docker compose config --quiet
           docker compose --profile production config --quiet
 
-      - name: Test and build JAR
-        run: mvn -ntp --batch-mode clean verify
+      - name: Test, check quality and build JAR
+        run: ./mvnw -ntp --batch-mode clean verify -Pqulice
 
       - name: Resolve image name
         id: image

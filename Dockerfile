@@ -12,8 +12,8 @@ EXPOSE 9500
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
 
 FROM runtime AS prebuilt
-ARG JAR_FILE=target/surok-0.0.1.jar
+ARG JAR_FILE=target/surok.jar
 COPY ${JAR_FILE} app.jar
 
 FROM runtime AS application
-COPY --from=build /build/target/surok-0.0.1.jar app.jar
+COPY --from=build /build/target/surok.jar app.jar

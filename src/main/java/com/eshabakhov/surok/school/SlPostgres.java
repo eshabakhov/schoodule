@@ -23,7 +23,7 @@ import org.jooq.DSLContext;
  *
  * @since 0.0.1
  */
-@ToString(of = "origin")
+@ToString(of = "sid")
 @EqualsAndHashCode
 public final class SlPostgres implements School {
 
