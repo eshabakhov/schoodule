@@ -20,7 +20,7 @@
                    href="#"
                    title="Редактировать"
                    aria-label="Редактировать"
-                   th:href="@{/schools/{s}/schedules/{r}/edit(s=${school.uid()},r=${schedule.uid()})}">
+                   th:href="@{/schools/{s}/schedules/{r}/edit(s=${school.id},r=${schedule.uid()})}">
                     <svg fill="none"
                          height="15"
                          stroke="currentColor"
@@ -33,7 +33,7 @@
                     </svg>
                 </a>
             </h1>
-            <p class="page-subtitle" th:text="${school.name()}">Школа</p>
+            <p class="page-subtitle" th:text="${school.name}">Школа</p>
         </div>
     </div>
     <div class="school-info">
@@ -51,7 +51,7 @@
         <a class="tab-trigger"
            href="#"
            title="Учебная нагрузка классов"
-           th:href="@{/schools/{s}/schedules/{r}/loads(s=${school.uid()},r=${schedule.uid()})}">Учебная нагрузка</a>
+           th:href="@{/schools/{s}/schedules/{r}/loads(s=${school.id},r=${schedule.uid()})}">Учебная нагрузка</a>
     </div>
     <div class="stat-grid" style="margin-top:1.5rem;width:100%;">
         <div class="stat-card">
@@ -79,7 +79,7 @@
 </div>
 <th:block layout:fragment="page-scripts">
     <script th:inline="javascript">
-        const schoolId = /*[[${school.uid()}]]*/ 0;
+        const schoolId = /*[[${school.id}]]*/ 0;
     </script>
     <script>
         $(() => {

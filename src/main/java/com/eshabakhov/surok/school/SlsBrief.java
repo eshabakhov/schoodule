@@ -3,15 +3,15 @@
  */
 package com.eshabakhov.surok.school;
 
+import com.eshabakhov.surok.Filters;
 import com.eshabakhov.surok.Media;
 import com.eshabakhov.surok.Page;
-import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.School;
 import com.eshabakhov.surok.Schools;
-import org.jooq.Condition;
+import com.eshabakhov.surok.Sorts;
 
 /**
- * Brief schools representation for shared browser controls.
+ * Browser representation of schools.
  *
  * @since 0.0.1
  */
@@ -21,7 +21,7 @@ public final class SlsBrief implements Schools {
     private final Schools origin;
 
     /**
-     * New brief representation.
+     * New navigation representation.
      *
      * @param origin Origin schools
      */
@@ -30,8 +30,8 @@ public final class SlsBrief implements Schools {
     }
 
     @Override
-    public School create(final String name) throws Exception {
-        return this.origin.create(name);
+    public School create(final SchoolInput input) throws Exception {
+        return this.origin.create(input);
     }
 
     @Override
@@ -40,25 +40,26 @@ public final class SlsBrief implements Schools {
     }
 
     @Override
-    public School school(final String name) throws Exception {
-        return this.origin.school(name);
-    }
-
-    @Override
-    public PageableList<School> schools(
-        final Condition condition,
-        final Page page
+    public Schools selection(
+        final Filters selected,
+        final Page page,
+        final Sorts selecteds
     ) throws Exception {
-        return this.origin.schools(condition, page);
+        return this.origin.selection(selected, page, selecteds);
     }
 
     @Override
-    public void remove(final long school) throws Exception {
-        this.origin.remove(school);
+    public Iterable<School> iterate() {
+        return this.origin.iterate();
+    }
+
+    @Override
+    public void remove(final long id) throws Exception {
+        this.origin.remove(id);
     }
 
     @Override
     public <T> Media<T> print(final Media<T> media) throws Exception {
-        return this.origin.print(media).include("href");
+        return media.with("href", "/schools");
     }
 }

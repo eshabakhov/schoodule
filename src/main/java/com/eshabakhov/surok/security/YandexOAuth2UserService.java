@@ -4,6 +4,8 @@
 package com.eshabakhov.surok.security;
 
 import com.eshabakhov.surok.school.SlsPostgres;
+import com.eshabakhov.surok.school.input.SlInput;
+import com.eshabakhov.surok.school.input.SlInputName;
 import com.eshabakhov.surok.user.AuthUser;
 import com.eshabakhov.surok.user.UrsPostgres;
 import com.eshabakhov.surok.user.UserNotFoundException;
@@ -35,12 +37,10 @@ import org.springframework.stereotype.Service;
  * @since 0.0.1
  */
 @Service
-@SuppressWarnings(
-    {
-        "PMD.AvoidCatchingGenericException",
-        "PMD.PreserveStackTrace"
-    }
-)
+@SuppressWarnings({
+    "PMD.AvoidCatchingGenericException",
+    "PMD.PreserveStackTrace"
+    })
 public final class YandexOAuth2UserService extends DefaultOAuth2UserService {
 
     /** Database context. */
@@ -90,7 +90,7 @@ public final class YandexOAuth2UserService extends DefaultOAuth2UserService {
         } catch (final UserNotFoundException ignored) {
             username = new UrsPostgres(
                 this.ctx,
-                new SlsPostgres(this.ctx).create("My school").uid()
+                new SlsPostgres(this.ctx).create(new SlInputName(new SlInput(), "My school")).uid()
             ).register(
                 String.format(
                     "%s_%s",
@@ -103,8 +103,7 @@ public final class YandexOAuth2UserService extends DefaultOAuth2UserService {
                 ),
                 email,
                 false
-                )
-                .credentials()
+                ).credentials()
                 .username();
         }
         return (AuthUser) this.userdetails.loadUserByUsername(username);

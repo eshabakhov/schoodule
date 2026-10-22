@@ -5,7 +5,6 @@ package com.eshabakhov.surok.error;
 
 import com.eshabakhov.surok.controller.api.ScheduleRequiredFieldException;
 import com.eshabakhov.surok.controller.api.SchoolClassRequiredFieldException;
-import com.eshabakhov.surok.controller.api.SchoolRequiredFieldException;
 import com.eshabakhov.surok.controller.api.SubjectRequiredFieldException;
 import com.eshabakhov.surok.controller.api.TeacherRequiredFieldException;
 import com.eshabakhov.surok.federal.curriculum.input.CurriculumInputException;
@@ -19,6 +18,7 @@ import com.eshabakhov.surok.school.building.cabinet.CabinetFailedCreateException
 import com.eshabakhov.surok.school.building.cabinet.CabinetNotFoundException;
 import com.eshabakhov.surok.school.building.cabinet.input.CabinetInputException;
 import com.eshabakhov.surok.school.building.input.BuildingInputException;
+import com.eshabakhov.surok.school.input.SchoolInputException;
 import com.eshabakhov.surok.school.schedule.ScheduleAlreadyExistsException;
 import com.eshabakhov.surok.school.schoolclass.SchoolClassAlreadyExistsException;
 import com.eshabakhov.surok.school.subject.SubjectAlreadyExistsException;
@@ -75,7 +75,7 @@ public final class RestResponseEntityExceptionHandler {
      */
     @ExceptionHandler(
         {
-            SchoolRequiredFieldException.class,
+            SchoolInputException.class,
             BuildingInputException.class,
             CabinetInputException.class,
             ScheduleRequiredFieldException.class,

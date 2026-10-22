@@ -21,7 +21,7 @@
            href="#"
            title="Добавить школьный класс в школу"
            style="display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border-radius:var(--radius-sm);font-size:.875rem;font-weight:500;text-decoration:none;"
-           th:href="@{/schools/{id}/classes/create(id=${school.uid()})}">
+           th:href="@{/schools/{id}/classes/create(id=${school.id})}">
             <svg fill="none"
                  stroke="currentColor"
                  stroke-width="2"
@@ -166,7 +166,7 @@
     </th:block>
 </div>
 <th:block layout:fragment="page-scripts">
-    <script type="module" th:src="@{/js/school-classes.js}"></script>
+    <script type="module" th:src="@{/js/school/school-classes.js}"></script>
 </th:block>
 </body>
 </html>

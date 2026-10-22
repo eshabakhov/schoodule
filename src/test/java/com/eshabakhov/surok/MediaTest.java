@@ -3,6 +3,8 @@
  */
 package com.eshabakhov.surok;
 
+import com.eshabakhov.surok.federal.curriculum.input.CrInput;
+import com.eshabakhov.surok.federal.curriculum.input.CrInputYear;
 import com.eshabakhov.surok.media.MdJson;
 import com.eshabakhov.surok.media.MdThymeleaf;
 import com.eshabakhov.surok.media.MdXml;
@@ -56,10 +58,10 @@ final class MediaTest {
     @Test
     void printsCollectionItemsUnderInterfaceName() throws Exception {
         Assertions.assertEquals(
-            "<curriculums><curriculum><id>1</id></curriculum></curriculums>",
+            "<curriculums><curriculum><year>2026/2027</year></curriculum></curriculums>",
             new MdXml("curriculums").with(
                 new PrItems(
-                    "curriculum", List.of(new MediaTest.PrId())
+                    "curriculum", List.of(new CrInputYear(new CrInput(), "2026/2027"))
                 )
             ).print()
         );
@@ -90,7 +92,7 @@ final class MediaTest {
             printed.contains("id=\"federal-curriculums-results\"")
         );
         Assertions.assertTrue(printed.contains("data-sort=\"title\""));
-        Assertions.assertTrue(printed.contains("/js/federal-curriculums.js"));
+        Assertions.assertTrue(printed.contains("/js/federal/curriculums.js"));
     }
 
     @Test
@@ -104,7 +106,7 @@ final class MediaTest {
             """
         );
         Assertions.assertTrue(printed.contains("class=\"school-info\""));
-        Assertions.assertTrue(printed.contains("/js/federal-curriculum.js"));
+        Assertions.assertTrue(printed.contains("/js/federal/curriculum.js"));
     }
 
     @Test
@@ -122,16 +124,7 @@ final class MediaTest {
             printed.contains("id=\"requirements-results\"")
         );
         Assertions.assertTrue(
-            printed.contains("/js/federal-curriculum-requirements.js")
+            printed.contains("/js/federal/curriculum-requirements.js")
         );
-    }
-
-    /** Printable identifier. */
-    private static final class PrId implements Printable {
-
-        @Override
-        public <T> Media<T> print(final Media<T> media) {
-            return media.with("id", 1L);
-        }
     }
 }

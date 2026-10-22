@@ -5,16 +5,16 @@ package com.eshabakhov.surok.federal.curriculum.requirement;
 
 import com.eshabakhov.surok.Filter;
 import com.eshabakhov.surok.Sort;
+import com.eshabakhov.surok.User;
 import com.eshabakhov.surok.filter.FiltersRequest;
 import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.sort.SortsRequest;
-import com.eshabakhov.surok.user.CdFake;
-import com.eshabakhov.surok.user.RlsFake;
 import com.eshabakhov.surok.user.Roles;
-import com.eshabakhov.surok.user.UrFake;
+import com.eshabakhov.surok.user.UrPostgres;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.jooq.DSLContext;
@@ -125,11 +125,22 @@ final class RqsHttpTest {
             request.addHeader(HttpHeaders.ACCEPT, accept);
         }
         request.setRequestURI("/federal/curriculums/1/requirements");
-        final Roles roles = new RlsFake();
-        roles.grant(Roles.RoleEnum.ADMIN);
+        final User user = new UrPostgres(
+            this.ctx,
+            this.ctx.resultQuery(
+                """
+                INSERT INTO public."user" (username, password, email, corporate, school_id)
+                VALUES (?, 'secret', ?, true, ?) RETURNING id
+                """,
+                UUID.randomUUID().toString(),
+                String.format("%s@example.org", UUID.randomUUID()),
+                null
+            ).fetchSingle("id", Long.class)
+        );
+        user.roles().grant(Roles.RoleEnum.ADMIN);
         SecurityContextHolder.getContext().setAuthentication(
             new UsernamePasswordAuthenticationToken(
-                new UrFake(1L, new CdFake("admin", "secret"), roles),
+                user,
                 null,
                 List.of()
             )
@@ -158,11 +169,22 @@ final class RqsHttpTest {
         request.setRequestURI(
             "/federal/curriculums/1/requirements/fragment"
         );
-        final Roles roles = new RlsFake();
-        roles.grant(Roles.RoleEnum.ADMIN);
+        final User user = new UrPostgres(
+            this.ctx,
+            this.ctx.resultQuery(
+                """
+                INSERT INTO public."user" (username, password, email, corporate, school_id)
+                VALUES (?, 'secret', ?, true, ?) RETURNING id
+                """,
+                UUID.randomUUID().toString(),
+                String.format("%s@example.org", UUID.randomUUID()),
+                null
+            ).fetchSingle("id", Long.class)
+        );
+        user.roles().grant(Roles.RoleEnum.ADMIN);
         SecurityContextHolder.getContext().setAuthentication(
             new UsernamePasswordAuthenticationToken(
-                new UrFake(1L, new CdFake("admin", "secret"), roles),
+                user,
                 null,
                 List.of()
             )
@@ -188,11 +210,22 @@ final class RqsHttpTest {
         final MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(HttpHeaders.ACCEPT, "text/html");
         request.setRequestURI(null);
-        final Roles roles = new RlsFake();
-        roles.grant(Roles.RoleEnum.ADMIN);
+        final User user = new UrPostgres(
+            this.ctx,
+            this.ctx.resultQuery(
+                """
+                INSERT INTO public."user" (username, password, email, corporate, school_id)
+                VALUES (?, 'secret', ?, true, ?) RETURNING id
+                """,
+                UUID.randomUUID().toString(),
+                String.format("%s@example.org", UUID.randomUUID()),
+                null
+            ).fetchSingle("id", Long.class)
+        );
+        user.roles().grant(Roles.RoleEnum.ADMIN);
         SecurityContextHolder.getContext().setAuthentication(
             new UsernamePasswordAuthenticationToken(
-                new UrFake(1L, new CdFake("admin", "secret"), roles),
+                user,
                 null,
                 List.of()
             )

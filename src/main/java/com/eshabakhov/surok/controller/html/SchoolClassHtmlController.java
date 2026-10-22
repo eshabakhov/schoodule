@@ -5,8 +5,10 @@ package com.eshabakhov.surok.controller.html;
 
 import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.School;
+import com.eshabakhov.surok.media.MdThymeleaf;
 import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.school.SchoolClass;
+import com.eshabakhov.surok.school.SlWeb;
 import com.eshabakhov.surok.school.SlsPostgres;
 import com.eshabakhov.surok.sql.ClasspathSql;
 import java.util.Map;
@@ -85,8 +87,11 @@ public class SchoolClassHtmlController {
             .classes(condition, new PageRequest(limit, offset));
         return new ModelAndView("schoolclasses/list").addAllObjects(
             Map.of(
-                "school", sch,
-                "pageTitle", String.format("%s - школьные классы", sch.name()),
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
+                "pageTitle", String.format(
+                    "%s - школьные классы",
+                    sch.print(new MdThymeleaf("", "")).print().getModel().get("name")
+                ),
                 "classes", classes.list(),
                 "page", offset,
                 "limit", limit,
@@ -138,7 +143,7 @@ public class SchoolClassHtmlController {
             .classes(condition, new PageRequest(limit, offset));
         return new ModelAndView("schoolclasses/list :: school-classes-grid").addAllObjects(
             Map.of(
-                "school", sch,
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "classes", classes.list(),
                 "page", offset,
                 "limit", limit,
@@ -167,7 +172,7 @@ public class SchoolClassHtmlController {
         final SchoolClass scl = sch.schoolClasses().clazz(clazz);
         return new ModelAndView("schoolclasses/details").addAllObjects(
             Map.of(
-                "school", sch,
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "clazz", scl,
                 "pageTitle", scl.name()
             )
@@ -186,7 +191,8 @@ public class SchoolClassHtmlController {
     public ModelAndView createForm(@PathVariable final long school) throws Exception {
         return new ModelAndView("schoolclasses/create").addAllObjects(
             Map.of(
-                "school", new SlsPostgres(this.ctx).school(school),
+                "school", new SlWeb(new SlsPostgres(this.ctx).school(school))
+                .print(new MdThymeleaf("", "")).print().getModel(),
                 "pageTitle", "Новый класс"
             )
         );
@@ -238,7 +244,7 @@ public class SchoolClassHtmlController {
         final School sch = new SlsPostgres(this.ctx).school(school);
         return new ModelAndView("schoolclasses/edit").addAllObjects(
             Map.of(
-                "school", sch,
+                "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "clazz", sch.schoolClasses().clazz(clazz),
                 "pageTitle", "Редактировать класс"
             )

@@ -1,0 +1,39 @@
+.school-delete {
+    border-color: var(--error-border);
+    background: var(--error-bg);
+    color: var(--destructive);
+}
+
+.school-form-heading {
+    justify-content: center;
+}
+
+.school-form-heading h1 {
+    margin: 0;
+}
+
+.school-form-wrap {
+    max-width: 640px;
+    margin-inline: auto;
+}
+
+.school-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.school-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+    font-size: .875rem;
+    font-weight: 500;
+}
+
+.school-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .75rem;
+    margin-top: .25rem;
+}

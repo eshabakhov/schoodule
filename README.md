@@ -77,7 +77,7 @@ checks Java with Qulice, and lints JavaScript, CSS, and HTML. On Windows, use
 To run a single test class:
 
 ```sh
-./mvnw -Dtest=ClasspathSqlTest test
+./mvnw -Dtest=SlInputNameTest test
 ```
 
 To run Java on your computer with PostgreSQL in Docker:

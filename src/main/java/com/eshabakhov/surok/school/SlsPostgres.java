@@ -3,12 +3,17 @@
  */
 package com.eshabakhov.surok.school;
 
+import com.eshabakhov.surok.Filters;
 import com.eshabakhov.surok.Media;
 import com.eshabakhov.surok.Page;
-import com.eshabakhov.surok.PageableList;
+import com.eshabakhov.surok.PrItems;
 import com.eshabakhov.surok.School;
 import com.eshabakhov.surok.Schools;
-import com.eshabakhov.surok.page.ResponsePageableList;
+import com.eshabakhov.surok.Sorts;
+import com.eshabakhov.surok.page.ResponsePage;
+import com.eshabakhov.surok.school.filter.FlsCdSchool;
+import com.eshabakhov.surok.school.input.MdSlInput;
+import com.eshabakhov.surok.school.sort.StsJqSchool;
 import com.eshabakhov.surok.sql.ClasspathSql;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -36,7 +41,8 @@ public final class SlsPostgres implements Schools {
     }
 
     @Override
-    public School create(final String name) throws Exception {
+    public School create(final SchoolInput input) throws Exception {
+        final String name = input.print(new MdSlInput()).print().get("name");
         return this.ctx.transactionResult(
             config -> {
                 final Record created = DSL.using(config).resultQuery(
@@ -66,38 +72,52 @@ public final class SlsPostgres implements Schools {
     }
 
     @Override
-    public School school(final String name) throws Exception {
-        final Record selected = this.ctx.resultQuery(
-            new ClasspathSql("school/find-by-name.sql").text(),
-            name,
-            false
-        ).fetchOne();
-        if (selected == null) {
-            throw new SchoolNotFoundException(
-                String.format("School with name='%s' not found", name)
-            );
-        }
-        return new SlPostgres(this.ctx, selected.get("id", Long.class));
-    }
-
-    @Override
-    public PageableList<School> schools(final Condition condition, final Page page)
-        throws Exception {
-        return new ResponsePageableList<>(
+    public Schools selection(
+        final Filters filters,
+        final Page page,
+        final Sorts sorts
+    ) throws Exception {
+        final Condition scoped = new FlsCdSchool(filters).condition().and(
+            DSL.condition(
+                new ClasspathSql("school/conditions/by-is-deleted.sql").text(),
+                false
+            )
+        );
+        return new SlsSelected(
+            this,
             this.ctx.resultQuery(
                 new ClasspathSql("school/list.sql").text(),
-                condition,
+                scoped,
+                DSL.list(new StsJqSchool(sorts).fields()),
                 DSL.val(page.limit()),
                 DSL.val((page.offset() - 1) * page.limit())
             ).fetch(
-                selected -> new SlPostgres(this.ctx, selected.get("id", Long.class))
+                selected -> new SlPostgres(
+                    this.ctx,
+                    selected.get("id", Long.class)
+                )
             ),
-            this.ctx.resultQuery(
-                new ClasspathSql("school/count.sql").text(),
-                condition
-            ).fetchSingle(0, Integer.class),
-            page
+            new ResponsePage(
+                page,
+                this.ctx.resultQuery(
+                    new ClasspathSql("school/count.sql").text(),
+                    scoped
+                ).fetchSingle(0, Integer.class)
+            )
         );
+    }
+
+    @Override
+    public Iterable<School> iterate() {
+        return this.ctx.resultQuery(
+            new ClasspathSql("school/list-active.sql").text(),
+            false
+        ).fetch(selected -> new SlPostgres(this.ctx, selected.get("id", Long.class)));
+    }
+
+    @Override
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        return media.with(new PrItems("school", this.iterate()));
     }
 
     @Override
@@ -118,10 +138,5 @@ public final class SlsPostgres implements Schools {
                     sid
                 ).execute()
         );
-    }
-
-    @Override
-    public <T> Media<T> print(final Media<T> media) {
-        return media.with("href", "/schools");
     }
 }

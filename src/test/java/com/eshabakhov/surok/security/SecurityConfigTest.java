@@ -4,6 +4,9 @@
 package com.eshabakhov.surok.security;
 
 import com.eshabakhov.surok.User;
+import com.eshabakhov.surok.school.SlsPostgres;
+import com.eshabakhov.surok.school.input.SlInput;
+import com.eshabakhov.surok.school.input.SlInputName;
 import com.eshabakhov.surok.user.AuthUser;
 import com.eshabakhov.surok.user.Roles;
 import com.eshabakhov.surok.user.UrsPostgres;
@@ -126,7 +129,12 @@ final class SecurityConfigTest {
         Assertions.assertEquals(
             HttpStatus.OK.value(),
             mvc.perform(
-                MockMvcRequestBuilders.get("/api/schools").with(
+                MockMvcRequestBuilders.get(
+                    "/api/schools/{school}/teachers",
+                    new SlsPostgres(ctx).create(
+                        new SlInputName(new SlInput(), "Школа проверки доступа")
+                    ).uid()
+                ).with(
                     SecurityMockMvcRequestPostProcessors.httpBasic(
                         SecurityConfigTest.administrator(ctx).credentials().username(),
                         "ValidPassword1!"
@@ -150,7 +158,7 @@ final class SecurityConfigTest {
         Assertions.assertEquals(
             HttpStatus.UNAUTHORIZED.value(),
             mvc.perform(
-                MockMvcRequestBuilders.get("/api/schools").with(
+                MockMvcRequestBuilders.get("/api/schools/1/teachers").with(
                     SecurityMockMvcRequestPostProcessors.httpBasic(
                         SecurityConfigTest.administrator(ctx).credentials().username(),
                         "WrongPassword1!"
@@ -171,7 +179,7 @@ final class SecurityConfigTest {
     void rejectsAnonymousApiRequests(@Autowired final MockMvc mvc) throws Exception {
         Assertions.assertEquals(
             HttpStatus.UNAUTHORIZED.value(),
-            mvc.perform(MockMvcRequestBuilders.get("/api/schools"))
+            mvc.perform(MockMvcRequestBuilders.get("/api/schools/1/teachers"))
                 .andReturn().getResponse().getStatus(),
             "Anonymous request bypassed API authentication"
         );

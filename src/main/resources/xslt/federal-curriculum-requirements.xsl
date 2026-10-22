@@ -37,7 +37,7 @@
 
     <xsl:template name="scripts">
         <script type="module"
-                src="/js/federal-curriculum-requirements.js"></script>
+                src="/js/federal/curriculum-requirements.js"></script>
     </xsl:template>
 
     <xsl:template name="requirements">

@@ -21,7 +21,7 @@
             <a class="tab-link active"
                href="#"
                title="Перейти к учебной нагрузке для школьных классов"
-               th:href="@{/schools/{schoolId}/schedules/{scheduleId}/loads(schoolId=${school.uid()},scheduleId=${schedule.uid()})}">
+               th:href="@{/schools/{schoolId}/schedules/{scheduleId}/loads(schoolId=${school.id},scheduleId=${schedule.uid()})}">
                 Учебная нагрузка
             </a>
         </nav>
@@ -54,7 +54,7 @@
                     <form method="post"
                           onsubmit="return confirm('Удалить нагрузку?')"
                           style="display: inline;"
-                          th:action="@{/schools/{schoolId}/schedules/{scheduleId}/loads/{loadId}/delete(schoolId=${school.uid()},scheduleId=${schedule.uid()},loadId=${load.uid()})}">
+                          th:action="@{/schools/{schoolId}/schedules/{scheduleId}/loads/{loadId}/delete(schoolId=${school.id},scheduleId=${schedule.uid()},loadId=${load.uid()})}">
                         <button class="btn-action btn-delete" type="submit">Удалить</button>
                     </form>
                 </td>
@@ -67,7 +67,7 @@
             <span class="close" onclick="document.getElementById('add-modal').style.display='none'">&times;</span>
             <h2>Добавить нагрузку</h2>
             <form method="post"
-                  th:action="@{/schools/{schoolId}/schedules/{scheduleId}/loads/create(schoolId=${school.uid()},scheduleId=${schedule.uid()})}">
+                  th:action="@{/schools/{schoolId}/schedules/{scheduleId}/loads/create(schoolId=${school.id},scheduleId=${schedule.uid()})}">
                 <label>
                     Класс
                     <select name="clazz" required="required">

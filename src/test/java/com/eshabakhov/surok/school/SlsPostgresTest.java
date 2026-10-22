@@ -3,12 +3,22 @@
  */
 package com.eshabakhov.surok.school;
 
+import com.eshabakhov.surok.School;
+import com.eshabakhov.surok.Schools;
+import com.eshabakhov.surok.Sort;
+import com.eshabakhov.surok.filter.FilterRequest;
+import com.eshabakhov.surok.filter.FiltersRequest;
+import com.eshabakhov.surok.media.MdJson;
 import com.eshabakhov.surok.page.PageRequest;
-import com.eshabakhov.surok.page.ResponsePageableList;
+import com.eshabakhov.surok.school.input.SlInput;
+import com.eshabakhov.surok.school.input.SlInputName;
+import com.eshabakhov.surok.sort.SortRequest;
+import com.eshabakhov.surok.sort.SortsRequest;
 import java.util.List;
+import java.util.Set;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.jooq.DSLContext;
-import org.jooq.impl.DSL;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +33,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * Test for {@link SlsPostgres}.
  *
  * @since 0.0.1
+ * @checkstyle NoJavadocForPrivateMethodsCheck (1000 lines)
  * @checkstyle ProhibitFieldsInTestClassesCheck (1000 lines)
  */
 @Testcontainers
@@ -34,9 +45,9 @@ final class SlsPostgresTest {
     @Container
     private static final PostgreSQLContainer<?> POSTGRES =
         new PostgreSQLContainer<>("postgres:16")
-            .withDatabaseName("surok")
-            .withUsername("test")
-            .withPassword("test");
+        .withDatabaseName("surok")
+        .withUsername("test")
+        .withPassword("test");
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
@@ -46,206 +57,129 @@ final class SlsPostgresTest {
         this.ctx = ctx;
     }
 
-    @AfterEach
-    void truncateSchool() {
-        this.ctx.resultQuery(
-            """
-                TRUNCATE TABLE public.school CASCADE
-                """
-        ).execute();
-    }
-
-    @Test
-    void createsSchool() throws Exception {
-        Assertions.assertEquals(
-            new SlsPostgres(this.ctx).create("Awesome school"),
-            new SlPostgres(
-                this.ctx,
-                this.ctx.resultQuery(
-                    """
-                        SELECT * FROM public.school
-                        WHERE (school.name = ?) AND (school.is_deleted = ?)
-                        """,
-                    "Awesome school",
-                    false
-                ).fetchOne()
-                    .get("id", Long.class)
-            )
-        );
-    }
-
-    /** Verifies that SQL-like Unicode names remain literal data. */
+    /** Checks Unicode values are bound as literal data. */
     @Test
     void preservesQuotedUnicodeSchoolNames() throws Exception {
         final String name = String.format(
-            "Школа O'Brien '%s'; DROP TABLE public.school; --", java.util.UUID.randomUUID()
+            "Школа O'Brien '%s'; DROP TABLE school; --",
+            java.util.UUID.randomUUID()
         );
-        Assertions.assertEquals(
-            name,
-            new SlsPostgres(this.ctx).create(name).name(),
-            "School creation did not preserve the SQL-like name"
-        );
-    }
-
-    /** Verifies that name lookup binds quoted values. */
-    @Test
-    void findsSchoolsUsingBoundNames() throws Exception {
-        final String name = String.format(
-            "Лицей '%s' OR '1'='1", java.util.UUID.randomUUID()
-        );
-        Assertions.assertEquals(
-            new SlsPostgres(this.ctx).create(name).uid(),
-            new SlsPostgres(this.ctx).school(name).uid(),
-            "School lookup did not bind the supplied name"
+        MatcherAssert.assertThat(
+            "School creation changed the bound name",
+            this.collection().create(new SlInputName(new SlInput(), name))
+            .print(new MdJson()).print().path("name").asText(),
+            Matchers.equalTo(name)
         );
     }
 
+    /** Checks identity lookup preserves quoted Unicode names. */
     @Test
-    void findsSchoolById() throws Exception {
-        this.ctx.resultQuery(
-            """
-                INSERT INTO public.school (id, name, is_deleted)
-                VALUES (?, ?, ?)
-                """,
-            1L,
-            "Boring school",
-            false
-        ).execute();
-        Assertions.assertEquals(
-            new SlPostgres(
-                this.ctx,
-                1L
-            ),
-            new SlsPostgres(this.ctx).school(1L)
+    void findsSchoolsByIdentity() throws Exception {
+        final Schools schools = this.collection();
+        final String name = String.format("Лицей '%s' OR '1'='1", java.util.UUID.randomUUID());
+        MatcherAssert.assertThat(
+            "School lookup changed its quoted Unicode name",
+            schools.school(
+                schools.create(new SlInputName(new SlInput(), name)).uid()
+            ).print(new MdJson()).print().path("name").asText(),
+            Matchers.equalTo(name)
         );
     }
 
+    /** Checks normalization is applied in persistence input. */
     @Test
-    void findsSchoolByName() throws Exception {
-        this.ctx.resultQuery(
-            """
-                INSERT INTO public.school (id, name, is_deleted)
-                VALUES (?, ?, ?)
-                """,
-            1L,
-            "Cool school",
-            false
-        ).execute();
-        Assertions.assertEquals(
-            new SlPostgres(
-                this.ctx,
-                1L
-            ),
-            new SlsPostgres(this.ctx).school("Cool school")
+    void revisesSchoolUsingValidatedInput() throws Exception {
+        final Schools schools = this.collection();
+        MatcherAssert.assertThat(
+            "Revised school name was not normalized",
+            schools.revise(
+                schools.create(new SlInputName(new SlInput(), "Школа")).uid(),
+                new SlInputName(new SlInput(), "  Лицей  ")
+            ).print(new MdJson()).print().path("name").asText(),
+            Matchers.equalTo("Лицей")
         );
     }
 
+    /** Checks selection excludes soft deleted rows without caller conditions. */
     @Test
-    void findsSchools() throws Exception {
-        this.ctx.resultQuery(
-            """
-                INSERT INTO public.school (id, name, is_deleted)
-                VALUES (?, ?, ?)
-                """,
-            1L,
-            "Big school",
-            false
-        ).execute();
-        this.ctx.resultQuery(
-            """
-                INSERT INTO public.school (id, name, is_deleted)
-                VALUES (?, ?, ?)
-                """,
-            2L,
-            "Small school",
-            false
-        ).execute();
-        Assertions.assertEquals(
-            new ResponsePageableList<>(
-                List.of(
-                    new SlPostgres(
-                        this.ctx,
-                        1L
-                    ),
-                    new SlPostgres(
-                        this.ctx,
-                        2L
+    void scopesSchoolSelectionsToActiveRows() throws Exception {
+        final Schools schools = this.collection();
+        final School removed = schools.create(new SlInputName(new SlInput(), "Удалённая"));
+        schools.create(new SlInputName(new SlInput(), "Живая"));
+        schools.remove(removed.uid());
+        MatcherAssert.assertThat(
+            "School selection counted deleted rows",
+            schools.selection(
+                new FiltersRequest(Set.of()), new PageRequest(1, 1),
+                new SortsRequest(List.of())
+            ).print(new MdJson()).print().path("page").path("total").asInt(),
+            Matchers.equalTo(1)
+        );
+    }
+
+    /** Checks filtering, descending sorting and pagination share the same scope. */
+    @Test
+    void filtersAndSortsSchoolPages() throws Exception {
+        final Schools schools = this.collection();
+        schools.create(new SlInputName(new SlInput(), "Лицей А"));
+        schools.create(new SlInputName(new SlInput(), "Лицей Я"));
+        schools.create(new SlInputName(new SlInput(), "Школа"));
+        MatcherAssert.assertThat(
+            "School page ignored its filter or descending order",
+            schools.selection(
+                new FiltersRequest(Set.of(new FilterRequest("name", "Лицей"))),
+                new PageRequest(1, 2), new SortsRequest(
+                    List.of(
+                        new SortRequest(
+                            "name",
+                            Sort.Direction.DESC
+                        )
                     )
-                ),
-                2,
-                new PageRequest(10, 1)
-            ),
-            new SlsPostgres(this.ctx).schools(
-                DSL.trueCondition(),
-                new PageRequest(10, 1)
-            )
+                )
+            ).print(new MdJson()).print().path("items").path(0).path("name").asText(),
+            Matchers.equalTo("Лицей А")
         );
     }
 
+    /** Checks updates cannot revive a school through a stale object. */
     @Test
-    void updatesSchool() throws Exception {
-        this.ctx.resultQuery(
-            """
-                INSERT INTO public.school (id, name, is_deleted)
-                VALUES (?, ?, ?)
-                """,
-            1L,
-            "Math school",
-            false
-        ).execute();
-        Assertions.assertEquals(
-            "Simple school",
-            new SlsPostgres(this.ctx)
-                .school(1L)
-                .renamed("Simple school")
-                .name()
+    void rejectsRevisionOfDeletedSchools() throws Exception {
+        final Schools schools = this.collection();
+        final School school = schools.create(new SlInputName(new SlInput(), "Школа"));
+        schools.remove(school.uid());
+        Assertions.assertThrows(
+            SchoolNotFoundException.class,
+            () -> school.revise(new SlInputName(new SlInput(), "Лицей")),
+            "Deleted school was revised"
         );
     }
 
+    /** Checks iteration consistently hides deleted schools. */
     @Test
-    void removesSchool() throws Exception {
-        this.ctx.resultQuery(
-            """
-                INSERT INTO public.school (id, name, is_deleted)
-                VALUES (?, ?, ?)
-                """,
-            1L,
-            "Bad school",
-            false
-        ).execute();
-        this.ctx.resultQuery(
-            """
-                INSERT INTO public.school (id, name, is_deleted)
-                VALUES (?, ?, ?)
-                """,
-            2L,
-            "Good school",
-            false
-        ).execute();
-        new SlsPostgres(this.ctx).remove(1L);
-        Assertions.assertEquals(
-            new ResponsePageableList<>(
-                List.of(
-                    new SlPostgres(
-                        this.ctx,
-                        2L
-                    )
-                ),
-                1,
-                new PageRequest(10, 1)
-            ),
-            new SlsPostgres(this.ctx).schools(
-                DSL.condition(
-                    """
-                        school.is_deleted = ?
-                        """,
-                    false
-                ),
-                new PageRequest(10, 1)
-            )
+    void iteratesOnlyActiveSchools() throws Exception {
+        final Schools schools = this.collection();
+        schools.remove(schools.create(new SlInputName(new SlInput(), "Удалённая")).uid());
+        MatcherAssert.assertThat(
+            "School iteration exposed deleted rows", schools.iterate(),
+            Matchers.emptyIterable()
         );
     }
 
+    /**
+     * Prepares a clean collection before each behavioral scenario.
+     *
+     * @return Empty school collection
+     */
+    private Schools collection() {
+        this.ctx.execute("TRUNCATE TABLE public.school RESTART IDENTITY CASCADE");
+        return new SlsPostgres(this.ctx);
+    }
+
+    /**
+     * Configures the disposable database.
+     *
+     * @param registry Test properties
+     */
     @DynamicPropertySource
     private static void properties(final DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");

@@ -3,21 +3,22 @@
  */
 package com.eshabakhov.surok.school;
 
+import com.eshabakhov.surok.Media;
 import com.eshabakhov.surok.School;
 import com.eshabakhov.surok.Users;
 import com.eshabakhov.surok.school.building.BdsPostgres;
 import com.eshabakhov.surok.school.building.Buildings;
+import com.eshabakhov.surok.school.input.MdSlInput;
 import com.eshabakhov.surok.school.schedule.SdsPostgres;
 import com.eshabakhov.surok.school.schoolclass.ScsPostgres;
 import com.eshabakhov.surok.school.subject.SbsPostgres;
 import com.eshabakhov.surok.school.teacher.ThsPostgres;
 import com.eshabakhov.surok.sql.ClasspathSql;
 import com.eshabakhov.surok.user.UrsPostgres;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 
 /**
  * Postgres implementation of {@link School}.
@@ -48,30 +49,21 @@ public final class SlPostgres implements School {
 
     @Override
     public Long uid() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("school/find-id.sql").text(),
-            this.sid
-        ).fetchOneInto(Long.class);
+        return this.sid;
     }
 
     @Override
-    public String name() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("school/find-name.sql").text(),
-            this.sid
-        ).fetchOneInto(String.class);
-    }
-
-    @Override
-    public School renamed(final String name) {
-        return new SlPostgres(
-            this.ctx,
-            this.ctx.resultQuery(
-                new ClasspathSql("school/rename.sql").text(),
-                name,
-                this.sid
-            ).fetchOne("id", Long.class)
-        );
+    public School revise(final SchoolInput input) throws Exception {
+        final Record revised = this.ctx.resultQuery(
+            new ClasspathSql("school/revise.sql").text(),
+            input.print(new MdSlInput()).print().get("name"), this.sid, false
+        ).fetchOne();
+        if (revised == null) {
+            throw new SchoolNotFoundException(
+                String.format("School with id=%d not found", this.sid)
+            );
+        }
+        return new SlPostgres(this.ctx, revised.get("id", Long.class));
     }
 
     @Override
@@ -105,15 +97,16 @@ public final class SlPostgres implements School {
     }
 
     @Override
-    public ObjectNode json() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("school/find-details.sql").text(),
-            this.sid
-        ).fetchOne(
-            school ->
-                JsonNodeFactory.instance.objectNode()
-                    .put("id", school.get("id", Long.class))
-                    .put("name", school.get("name", String.class))
-        );
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("school/find-details.sql").text(), this.sid, false
+        ).fetchOne();
+        if (selected == null) {
+            throw new SchoolNotFoundException(
+                String.format("School with id=%d not found", this.sid)
+            );
+        }
+        return media.with("id", selected.get("id", Long.class))
+            .with("name", selected.get("name", String.class));
     }
 }
