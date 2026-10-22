@@ -9,6 +9,7 @@ import com.eshabakhov.surok.user.CdFake;
 import com.eshabakhov.surok.user.RiFake;
 import com.eshabakhov.surok.user.RlsFake;
 import com.eshabakhov.surok.user.Roles;
+import java.util.List;
 import org.hamcrest.Matchers;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterEach;
@@ -120,7 +121,8 @@ final class CbsHttpTest {
     void printsJsonPage() throws Exception {
         this.mvc.perform(
             MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets/")
-                .accept(MediaType.APPLICATION_JSON).session(this.session(Roles.RoleEnum.VIEWER, 1L))
+                .accept("application/vnd.surok.cabinets.v1+json")
+                .session(this.session(Roles.RoleEnum.VIEWER, 1L))
                 .param("name_ct", "room").param("limit", "1").param("offset", "2")
         ).andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.items.length()").value(1))
@@ -134,7 +136,8 @@ final class CbsHttpTest {
     void printsJsonCabinet() throws Exception {
         this.mvc.perform(
             MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets/30")
-                .accept(MediaType.APPLICATION_JSON).session(this.session(Roles.RoleEnum.VIEWER, 1L))
+                .accept("application/vnd.surok.cabinet-v1+json")
+                .session(this.session(Roles.RoleEnum.VIEWER, 1L))
         ).andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.content().json("{\"id\":30,\"name\":\"Room\"}"));
     }
@@ -143,7 +146,7 @@ final class CbsHttpTest {
     void deniesAnotherSchool() throws Exception {
         this.mvc.perform(
             MockMvcRequestBuilders.get("/schools/2/buildings/20/cabinets/50")
-                .accept(MediaType.APPLICATION_JSON)
+                .accept("application/vnd.surok.cabinet-v1+json")
                 .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
         ).andExpect(MockMvcResultMatchers.status().isForbidden());
     }
@@ -154,9 +157,62 @@ final class CbsHttpTest {
             this.authorized(
                 MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets"),
                 Roles.RoleEnum.VIEWER
-            ).accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON)
+            ).accept("application/vnd.surok.cabinet-v1+json")
+                .contentType("application/vnd.surok.cabinet-v1+json")
                 .content("{\"name\":\"East\"}")
         ).andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "/", "/create"})
+    void createsThroughJsonAliases(final String suffix) throws Exception {
+        this.mvc.perform(
+            this.authorized(
+                MockMvcRequestBuilders.post(
+                    String.format("%s%s", "/schools/1/buildings/10/cabinets", suffix)
+                ), Roles.RoleEnum.DIRECTOR
+            ).contentType("application/vnd.surok.cabinet-v1+json")
+                .accept("application/vnd.surok.cabinet-v1+json").content("{\"name\":\"East\"}")
+        ).andExpect(MockMvcResultMatchers.status().isCreated())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("East"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+        strings = {
+            "application/json", "application/xml",
+            "application/vnd.surok.cabinet-v2+json",
+            "application/vnd.surok.cabinets.v1+json"
+        }
+    )
+    void rejectsUnsupportedInputBeforeMutation(final String type) throws Exception {
+        for (final String suffix : List.of("", "/", "/create", "/30/edit")) {
+            this.mvc.perform(
+                this.authorized(
+                    MockMvcRequestBuilders.post(
+                        String.format("%s%s", "/schools/1/buildings/10/cabinets", suffix)
+                    ), Roles.RoleEnum.DIRECTOR
+                ).contentType(type).accept("application/vnd.surok.cabinet-v1+json")
+                    .content("{\"name\":\"Rejected\"}")
+            ).andExpect(MockMvcResultMatchers.status().isUnsupportedMediaType());
+        }
+        this.mvc.perform(
+            this.authorized(
+                MockMvcRequestBuilders.put("/schools/1/buildings/10/cabinets/30"),
+                Roles.RoleEnum.DIRECTOR
+            ).contentType(type).accept("application/vnd.surok.cabinet-v1+json")
+                .content("{\"name\":\"Rejected\"}")
+        ).andExpect(MockMvcResultMatchers.status().isUnsupportedMediaType());
+        this.mvc.perform(
+            MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets")
+                .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
+                .accept("application/vnd.surok.cabinets.v1+json").param("name_ct", "Rejected")
+        ).andExpect(MockMvcResultMatchers.jsonPath("$.page.total").value(0));
+        this.mvc.perform(
+            MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets/30")
+                .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
+                .accept("application/vnd.surok.cabinet-v1+json")
+        ).andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Room"));
     }
 
     @Test
@@ -165,7 +221,8 @@ final class CbsHttpTest {
             this.authorized(
                 MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets"),
                 Roles.RoleEnum.DIRECTOR
-            ).accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON)
+            ).accept("application/vnd.surok.cabinet-v1+json")
+                .contentType("application/vnd.surok.cabinet-v1+json")
                 .content("{\"name\":\"East\"}")
         ).andExpect(MockMvcResultMatchers.status().isCreated()).andExpect(
             MockMvcResultMatchers.header().string(
@@ -181,13 +238,14 @@ final class CbsHttpTest {
             this.authorized(
                 MockMvcRequestBuilders.put("/schools/1/buildings/10/cabinets/{id}", identifier),
                 Roles.RoleEnum.DIRECTOR
-            ).accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON)
+            ).accept("application/vnd.surok.cabinet-v1+json")
+                .contentType("application/vnd.surok.cabinet-v1+json")
                 .content("{\"name\":\"West\"}")
         ).andExpect(MockMvcResultMatchers.status().isNotFound());
         this.mvc.perform(
             MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets")
                 .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
-                .accept(MediaType.APPLICATION_JSON).param("name_ct", "West")
+                .accept("application/vnd.surok.cabinets.v1+json").param("name_ct", "West")
         ).andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.page.total").value(0));
     }
@@ -198,7 +256,8 @@ final class CbsHttpTest {
             this.authorized(
                 MockMvcRequestBuilders.put("/schools/1/buildings/10/cabinets/30"),
                 Roles.RoleEnum.DIRECTOR
-            ).accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON)
+            ).accept("application/vnd.surok.cabinet-v1+json")
+                .contentType("application/vnd.surok.cabinet-v1+json")
                 .content("{\"name\":\"Renamed\"}")
         ).andExpect(MockMvcResultMatchers.status().isOk()).andExpect(
             MockMvcResultMatchers.content().json("{\"id\":30,\"name\":\"Renamed\"}")
@@ -221,6 +280,74 @@ final class CbsHttpTest {
         );
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"/create", "/30/edit"})
+    void redirectsInvalidBrowserForms(final String suffix) throws Exception {
+        final String form = String.format("/schools/1/buildings/10/cabinets%s", suffix);
+        this.mvc.perform(
+            this.authorized(MockMvcRequestBuilders.post(form), Roles.RoleEnum.DIRECTOR)
+                .accept(MediaType.TEXT_HTML)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("name", " ")
+        ).andExpect(MockMvcResultMatchers.status().isFound()).andExpect(
+            MockMvcResultMatchers.redirectedUrl(String.format("%s?error=empty", form))
+        );
+        this.mvc.perform(
+            MockMvcRequestBuilders.get(form).param("error", "empty")
+                .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
+                .accept(MediaType.TEXT_HTML)
+        ).andExpect(MockMvcResultMatchers.status().isOk()).andExpect(
+            MockMvcResultMatchers.content().string(
+                Matchers.containsString("Название не может быть пустым")
+            )
+        );
+        this.mvc.perform(
+            MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets")
+                .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
+                .accept("application/vnd.surok.cabinets.v1+json")
+        ).andExpect(MockMvcResultMatchers.jsonPath("$.page.total").value(2));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "/create, application/vnd.surok.cabinet-v1+json",
+        "/create, application/vnd.surok.cabinet-v1+xml",
+        "/30/edit, application/vnd.surok.cabinet-v1+json",
+        "/30/edit, application/vnd.surok.cabinet-v1+xml"
+    })
+    void keepsApiValidationForFormFields(final String suffix, final String accept)
+        throws Exception {
+        this.mvc.perform(
+            this.authorized(
+                MockMvcRequestBuilders.post(
+                    String.format("/schools/1/buildings/10/cabinets%s", suffix)
+                ),
+                Roles.RoleEnum.DIRECTOR
+            ).header("Accept", accept)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("name", " ")
+        ).andExpect(MockMvcResultMatchers.status().isBadRequest())
+            .andExpect(MockMvcResultMatchers.header().doesNotExist("Location"));
+    }
+
+    @Test
+    void revisesThroughProtectedForm() throws Exception {
+        this.mvc.perform(
+            this.authorized(
+                MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets/30/edit"),
+                Roles.RoleEnum.DIRECTOR
+            ).accept(MediaType.TEXT_HTML)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("name", " Revised through form ")
+        ).andExpect(MockMvcResultMatchers.status().isFound())
+            .andExpect(MockMvcResultMatchers.redirectedUrl("/schools/1/buildings/10/cabinets/30"));
+        this.mvc.perform(
+            MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets/30")
+                .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
+                .accept("application/vnd.surok.cabinet-v1+json")
+        ).andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Revised through form"));
+    }
+
     @Test
     void createsThroughProtectedForm() throws Exception {
         final MockHttpSession session = this.session(Roles.RoleEnum.DIRECTOR, 1L);
@@ -234,6 +361,7 @@ final class CbsHttpTest {
             MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets/create")
                 .session(session).cookie(form.getResponse().getCookies())
                 .param(token.getParameterName(), token.getToken())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("name", " Web cabinet ")
         ).andExpect(MockMvcResultMatchers.status().isFound())
             .andExpect(MockMvcResultMatchers.redirectedUrl("/schools/1/buildings/10/cabinets"));
@@ -246,7 +374,8 @@ final class CbsHttpTest {
             this.authorized(
                 MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets"),
                 Roles.RoleEnum.DIRECTOR
-            ).accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON)
+            ).accept("application/vnd.surok.cabinet-v1+json")
+                .contentType("application/vnd.surok.cabinet-v1+json")
                 .content(body)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
@@ -257,7 +386,7 @@ final class CbsHttpTest {
         this.mvc.perform(
             MockMvcRequestBuilders.get(
                 "/schools/1/buildings/10/cabinets/{cabinet}", cabinet
-            ).accept(MediaType.APPLICATION_JSON)
+            ).accept("application/vnd.surok.cabinet-v1+json")
                 .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
         ).andExpect(MockMvcResultMatchers.status().isNotFound());
     }
@@ -292,21 +421,22 @@ final class CbsHttpTest {
             MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets/30/edit")
                 .session(session).cookie(form.getResponse().getCookies())
                 .param(token.getParameterName(), token.getToken())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("name", " Web revision ")
         ).andExpect(MockMvcResultMatchers.status().isFound()).andExpect(
             MockMvcResultMatchers.redirectedUrl("/schools/1/buildings/10/cabinets/30")
         );
         this.mvc.perform(
             MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets/30")
-                .accept(MediaType.APPLICATION_JSON).session(session)
+                .accept("application/vnd.surok.cabinet-v1+json").session(session)
         ).andExpect(MockMvcResultMatchers.status().isOk()).andExpect(
             MockMvcResultMatchers.content().json("{\"id\":30,\"name\":\"Web revision\"}")
         );
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"application/json", "application/vnd.surok.cabinet-v1+json"})
-    void negotiatesJsonOnBrowserRoute(final String accept) throws Exception {
+    @Test
+    void negotiatesJsonOnBrowserRoute() throws Exception {
+        final String accept = "application/vnd.surok.cabinet-v1+json";
         this.mvc.perform(
             MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets/30")
                 .session(this.session(Roles.RoleEnum.VIEWER, 1L)).header("Accept", accept)
@@ -315,9 +445,9 @@ final class CbsHttpTest {
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Room"));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"application/xml", "application/vnd.surok.cabinet-v1+xml"})
-    void negotiatesXmlOnBrowserRoute(final String accept) throws Exception {
+    @Test
+    void negotiatesXmlOnBrowserRoute() throws Exception {
+        final String accept = "application/vnd.surok.cabinet-v1+xml";
         this.mvc.perform(
             MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets/30")
                 .session(this.session(Roles.RoleEnum.VIEWER, 1L)).header("Accept", accept)
@@ -329,8 +459,8 @@ final class CbsHttpTest {
     @ParameterizedTest
     @CsvSource(
         delimiter = '|', value = {
-            "text/html;q=0.2,application/json;q=0.9|application/json",
-            "text/html;q=0,*/*;q=1|application/json",
+            "text/html;q=0.2,application/*;q=0.9|application/vnd.surok.cabinet-v1+json",
+            "text/html;q=0,*/*;q=1|application/vnd.surok.cabinet-v1+json",
             "application/xml;q=0.1,*/*;q=0.8|text/html",
             "application/vnd.surok.cabinet-v1+xml|application/vnd.surok.cabinet-v1+xml",
             "text/html;charset=UTF-8|text/html",
@@ -359,6 +489,41 @@ final class CbsHttpTest {
             MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets/30")
                 .session(this.session(Roles.RoleEnum.VIEWER, 1L)).header("Accept", accept)
         ).andExpect(MockMvcResultMatchers.status().isNotAcceptable());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"application/json", "application/xml"})
+    void rejectsUnversionedRepresentations(final String accept) throws Exception {
+        for (final String suffix : List.of("", "/", "/fragment", "/create", "/30", "/30/edit")) {
+            this.mvc.perform(
+                MockMvcRequestBuilders.get(
+                    String.format("%s%s", "/schools/1/buildings/10/cabinets", suffix)
+                ).session(this.session(Roles.RoleEnum.VIEWER, 1L)).header("Accept", accept)
+            ).andExpect(MockMvcResultMatchers.status().isNotAcceptable());
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"ASC, Room, Room annex", "DESC, Room annex, Room"})
+    void sortsByName(final String direction, final String first, final String second)
+        throws Exception {
+        this.mvc.perform(
+            MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets")
+                .session(this.session(Roles.RoleEnum.VIEWER, 1L))
+                .accept("application/vnd.surok.cabinets.v1+json")
+                .param("sort", String.format("name:%s", direction))
+        ).andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.items[0].name").value(first))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.items[1].name").value(second));
+        this.mvc.perform(
+            MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets/fragment")
+                .session(this.session(Roles.RoleEnum.VIEWER, 1L)).accept(MediaType.TEXT_HTML)
+                .param("sort", String.format("name:%s", direction))
+        ).andExpect(MockMvcResultMatchers.status().isOk()).andExpect(
+            MockMvcResultMatchers.content().string(
+                Matchers.containsString("class=\"cabinets-sort active\"")
+            )
+        );
     }
 
     @Test
@@ -392,71 +557,95 @@ final class CbsHttpTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"application/pdf", "*/*;q=0", "invalid", "application/json;q=2"})
+    @ValueSource(
+        strings = {
+            "application/pdf", "*/*;q=0", "invalid", "application/json;q=2",
+            "application/json", "application/xml"
+        }
+    )
     void rejectsUnsupportedRepresentationBeforeCreation(final String accept) throws Exception {
         this.mvc.perform(
             this.authorized(
                 MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets"),
                 Roles.RoleEnum.DIRECTOR
-            ).header("Accept", accept).contentType(MediaType.APPLICATION_JSON)
+            ).header("Accept", accept).contentType("application/vnd.surok.cabinet-v1+json")
                 .content("{\"name\":\"Rejected\"}")
         ).andExpect(MockMvcResultMatchers.status().isNotAcceptable());
         this.mvc.perform(
             MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets")
                 .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
-                .accept(MediaType.APPLICATION_JSON).param("name_ct", "Rejected")
+                .accept("application/vnd.surok.cabinets.v1+json").param("name_ct", "Rejected")
         ).andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.page.total").value(0));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"application/pdf", "*/*;q=0", "invalid", "application/json;q=2"})
+    @ValueSource(
+        strings = {
+            "application/pdf", "*/*;q=0", "invalid", "application/json;q=2",
+            "application/json", "application/xml"
+        }
+    )
     void rejectsUnsupportedRepresentationBeforeFormCreation(final String accept) throws Exception {
         this.mvc.perform(
             this.authorized(
                 MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets/create"),
                 Roles.RoleEnum.DIRECTOR
-            ).header("Accept", accept).param("name", "Rejected")
+            ).header("Accept", accept)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("name", "Rejected")
         ).andExpect(MockMvcResultMatchers.status().isNotAcceptable());
         this.mvc.perform(
             MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets")
                 .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
-                .accept(MediaType.APPLICATION_JSON).param("name_ct", "Rejected")
+                .accept("application/vnd.surok.cabinets.v1+json").param("name_ct", "Rejected")
         ).andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.page.total").value(0));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"application/pdf", "*/*;q=0", "invalid", "application/json;q=2"})
+    @ValueSource(
+        strings = {
+            "application/pdf", "*/*;q=0", "invalid", "application/json;q=2",
+            "application/json", "application/xml"
+        }
+    )
     void rejectsUnsupportedRepresentationBeforeRevision(final String accept) throws Exception {
         this.mvc.perform(
             this.authorized(
                 MockMvcRequestBuilders.put("/schools/1/buildings/10/cabinets/30"),
                 Roles.RoleEnum.DIRECTOR
-            ).header("Accept", accept).contentType(MediaType.APPLICATION_JSON)
+            ).header("Accept", accept).contentType("application/vnd.surok.cabinet-v1+json")
                 .content("{\"name\":\"Rejected\"}")
         ).andExpect(MockMvcResultMatchers.status().isNotAcceptable());
         this.mvc.perform(
             MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets/30")
                 .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
-                .accept(MediaType.APPLICATION_JSON)
+                .accept("application/vnd.surok.cabinet-v1+json")
         ).andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Room"));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"application/pdf", "*/*;q=0", "invalid", "application/json;q=2"})
+    @ValueSource(
+        strings = {
+            "application/pdf", "*/*;q=0", "invalid", "application/json;q=2",
+            "application/json", "application/xml"
+        }
+    )
     void rejectsUnsupportedRepresentationBeforeFormRevision(final String accept) throws Exception {
         this.mvc.perform(
             this.authorized(
                 MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets/30/edit"),
                 Roles.RoleEnum.DIRECTOR
-            ).header("Accept", accept).param("name", "Rejected")
+            ).header("Accept", accept)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("name", "Rejected")
         ).andExpect(MockMvcResultMatchers.status().isNotAcceptable());
         this.mvc.perform(
             MockMvcRequestBuilders.get("/schools/1/buildings/10/cabinets/30")
                 .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
-                .accept(MediaType.APPLICATION_JSON)
+                .accept("application/vnd.surok.cabinet-v1+json")
         ).andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Room"));
     }
@@ -473,7 +662,9 @@ final class CbsHttpTest {
         this.mvc.perform(
             MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets/create")
                 .session(session).cookie(form.getResponse().getCookies())
-                .param(token.getParameterName(), token.getToken()).param("name", "Forbidden")
+                .param(token.getParameterName(), token.getToken())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("name", "Forbidden")
         ).andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
@@ -481,7 +672,9 @@ final class CbsHttpTest {
     void requiresCsrfOnBrowserMutation() throws Exception {
         this.mvc.perform(
             MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets/create")
-                .session(this.session(Roles.RoleEnum.DIRECTOR, 1L)).param("name", "Forbidden")
+                .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("name", "Forbidden")
         ).andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
@@ -490,7 +683,8 @@ final class CbsHttpTest {
         this.mvc.perform(
             MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets")
                 .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
-                .accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON)
+                .accept("application/vnd.surok.cabinet-v1+json")
+                .contentType("application/vnd.surok.cabinet-v1+json")
                 .content("{\"name\":\"Forbidden\"}")
         ).andExpect(MockMvcResultMatchers.status().isForbidden());
     }
@@ -507,7 +701,9 @@ final class CbsHttpTest {
         this.mvc.perform(
             MockMvcRequestBuilders.post("/schools/1/buildings/10/cabinets/create")
                 .session(session).cookie(form.getResponse().getCookies())
-                .param(token.getParameterName(), token.getToken()).param("name", " Актовый зал ")
+                .param(token.getParameterName(), token.getToken())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("name", " Актовый зал ")
                 .header("Accept", "application/vnd.surok.cabinet-v1+xml")
         ).andExpect(MockMvcResultMatchers.status().isCreated()).andExpect(
             MockMvcResultMatchers.header().string(
@@ -542,7 +738,7 @@ final class CbsHttpTest {
             MockMvcRequestBuilders.get(
                 String.format("/api/schools/1/buildings/10/cabinets%s", suffix)
             ).session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
-                .accept(MediaType.APPLICATION_JSON)
+                .accept("application/vnd.surok.cabinet-v1+json")
         ).andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 

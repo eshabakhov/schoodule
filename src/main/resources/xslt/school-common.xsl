@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:import href="federal-common.xsl"/>
     <xsl:variable name="school" select="/surok/school"/>
-    <xsl:variable name="building" select="/surok/building | /surok/buildings/building"/>
-    <xsl:variable name="cabinet" select="/surok/cabinets/cabinet"/>
+    <xsl:variable name="building" select="/surok/building | /surok/buildings/building[$view = 'details' or $view = 'edit']"/>
+    <xsl:variable name="cabinet" select="/surok/cabinets/cabinet[$view = 'details' or $view = 'edit']"/>
     <xsl:variable name="school-path" select="concat('/schools/', $school/id)"/>
 
     <xsl:template name="school-navigation">
@@ -27,6 +27,16 @@
                         </svg>
                         <span class="sidebar-link-label">Расписания</span>
                     </a>
+        <xsl:if test="$school/schedules/schedule">
+            <div class="sidebar-subnav">
+                <xsl:for-each select="$school/schedules/schedule">
+                    <a class="sidebar-schedule-link"
+                       href="{$school-path}/schedules/{id}" title="{name}">
+                        <span><xsl:value-of select="name"/></span>
+                    </a>
+                </xsl:for-each>
+            </div>
+        </xsl:if>
         <a class="sidebar-link"
                        href="{$school-path}/teachers"
                        title="Учителя">
@@ -103,5 +113,26 @@
                 </xsl:if>
             </div>
         </xsl:if>
+    </xsl:template>
+    <xsl:template name="name-sort">
+        <xsl:param name="prefix"/>
+        <xsl:param name="direction"/>
+        <button type="button" title="Сортировать по названию" data-sort="name"
+                aria-pressed="{$direction = 'ASC' or $direction = 'DESC'}">
+            <xsl:attribute name="class">
+                <xsl:value-of select="concat($prefix, '-sort')"/>
+                <xsl:if test="$direction = 'ASC' or $direction = 'DESC'">
+                    <xsl:text> active</xsl:text>
+                </xsl:if>
+            </xsl:attribute>
+            <span>Название</span>
+            <span class="{$prefix}-sort-icon">
+                <xsl:choose>
+                    <xsl:when test="$direction = 'ASC'">↑</xsl:when>
+                    <xsl:when test="$direction = 'DESC'">↓</xsl:when>
+                    <xsl:otherwise>↕</xsl:otherwise>
+                </xsl:choose>
+            </span>
+        </button>
     </xsl:template>
 </xsl:stylesheet>

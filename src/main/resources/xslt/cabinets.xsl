@@ -5,7 +5,7 @@
                 doctype-system="about:legacy-compat"/>
     <xsl:param name="view"/>
     <xsl:variable name="entries" select="/surok/cabinets"/>
-    <xsl:variable name="selected" select="$entries/cabinet"/>
+    <xsl:variable name="selected" select="$entries/cabinet[$view = 'details' or $view = 'edit']"/>
     <xsl:variable name="base" select="concat($school-path, '/buildings/', $building/id, '/cabinets')"/>
 
     <xsl:template match="/">
@@ -20,8 +20,12 @@
             <xsl:when test="$view = 'create'">Новый кабинет</xsl:when>
             <xsl:when test="$view = 'edit'">Редактировать кабинет</xsl:when>
             <xsl:when test="$view = 'details'"><xsl:value-of select="$selected/name"/></xsl:when>
-            <xsl:otherwise>Кабинеты</xsl:otherwise>
+            <xsl:otherwise><xsl:value-of select="concat($school/name, ' - кабинеты')"/></xsl:otherwise>
         </xsl:choose>
+    </xsl:template>
+
+    <xsl:template name="styles">
+        <link rel="stylesheet" href="/css/school/cabinets.css"/>
     </xsl:template>
 
     <xsl:template name="content">
@@ -31,31 +35,51 @@
             <xsl:otherwise>
                 <div class="page-title-row">
                     <div><h1>Кабинеты</h1><p class="page-subtitle">Управление кабинетами школы</p></div>
-                    <a class="btn-primary" href="{$base}/create" title="Добавить кабинет">Добавить кабинет</a>
+                    <a class="btn btn-primary cabinets-add"
+                       href="{$base}/create"
+                       title="Добавить кабинет в школу">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             viewBox="0 0 24 24">
+                            <line x1="12" x2="12" y1="5" y2="19"/>
+                            <line x1="5" x2="19" y1="12" y2="12"/>
+                        </svg>
+                        <xsl:text>Добавить кабинет</xsl:text>
+                    </a>
                 </div>
-                <div class="search-wrap" style="width:100%;max-width:320px;margin-bottom:1.25rem;">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
-                         stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/>
-                    </svg>
-                    <label for="cabinet-search">
-                        <input id="cabinet-search" type="text" placeholder="Поиск кабинета..."
-                               value="{$entries/filters/item[name='name' or name='name_ct']/value}"/>
-                    </label>
+                <div class="cabinets-content">
+                    <div class="search-wrap cabinets-search">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                             stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/>
+                        </svg>
+                        <label for="cabinet-search">
+                            <input id="cabinet-search" type="text" placeholder="Поиск кабинета..."
+                                   value="{$entries/filters/item[name='name' or name='name_ct']/value}"/>
+                        </label>
+                    </div>
+                    <xsl:call-template name="results"/>
                 </div>
-                <xsl:call-template name="results"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
     <xsl:template name="results">
-        <div id="cabinets-results">
+        <div id="cabinets-results" class="cabinets-results">
+            <div class="cabinets-sort-controls">
+                <xsl:call-template name="name-sort">
+                    <xsl:with-param name="prefix" select="'cabinets'"/>
+                    <xsl:with-param name="direction" select="$entries/sorts/item[name = 'name']/direction"/>
+                </xsl:call-template>
+            </div>
             <div class="card-grid" id="cabinets-container">
                 <xsl:if test="not($entries/cabinet)">
-                    <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted-fg);">Кабинеты не найдены.</div>
+                    <div class="cabinets-empty">Кабинеты не найдены.</div>
                 </xsl:if>
                 <xsl:for-each select="$entries/cabinet">
-                    <div class="card-item cabinet-row" style="cursor:pointer;" data-id="{id}" data-name="{name}">
+                    <div class="card-item cabinet-row cabinet-card" data-id="{id}" data-name="{name}">
                         <div class="card-item-header"><div class="card-item-title-row"><div class="card-item-icon">
                             <svg fill="none"
                                      stroke="currentColor"
@@ -83,7 +107,7 @@
     </xsl:template>
 
     <xsl:template name="details">
-        <div class="page-title-row" style="margin-bottom:1.5rem;">
+        <div class="page-title-row cabinet-details-heading">
             <div>
                 <h1 class="title-with-action">
                     <span><xsl:value-of select="$selected/name"/></span>
@@ -103,18 +127,32 @@
             <div class="info-row"><span class="info-label">Название:</span><span class="info-value"><xsl:value-of select="$selected/name"/></span></div>
         </div>
         <div class="details-footer-actions">
-            <button class="btn-outline-action btn-delete-row" type="button"
-                    style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;"
+            <button class="btn-outline-action btn-delete-row cabinet-delete" type="button"
                     data-name="{$selected/name}" data-uri="{$base}/{$selected/id}" data-redirect="{$base}">Удалить</button>
         </div>
     </xsl:template>
 
     <xsl:template name="form">
-        <div class="page-title-row" style="justify-content:center;">
-            <h1><xsl:call-template name="page-title"/></h1>
+        <div class="page-title-row cabinet-form-heading">
+            <div class="cabinet-form-title">
+                <div>
+                    <h1>
+                        <xsl:choose>
+                            <xsl:when test="$view = 'edit'">Редактировать</xsl:when>
+                            <xsl:otherwise><xsl:call-template name="page-title"/></xsl:otherwise>
+                        </xsl:choose>
+                    </h1>
+                    <xsl:if test="$view = 'create'">
+                        <p class="page-subtitle">Заполните данные для создания кабинета</p>
+                    </xsl:if>
+                </div>
+            </div>
         </div>
-        <div style="max-width:480px;margin:0 auto;">
-            <form method="post" style="display:flex;flex-direction:column;gap:1rem;">
+        <xsl:if test="/surok/error = 'true'">
+            <div class="error-message">Название не может быть пустым</div>
+        </xsl:if>
+        <div class="cabinet-form-wrap">
+            <form method="post" class="cabinet-form">
                 <xsl:attribute name="action">
                     <xsl:choose>
                         <xsl:when test="$view = 'edit'"><xsl:value-of select="concat($base, '/', $selected/id, '/edit')"/></xsl:when>
@@ -122,13 +160,23 @@
                     </xsl:choose>
                 </xsl:attribute>
                 <xsl:call-template name="csrf-input"/>
-                <label for="cabinet-name" style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                <label for="cabinet-name" class="cabinet-form-field">
                     Название кабинета
                     <input id="cabinet-name" name="name" type="text" autofocus="autofocus"
-                           required="required" value="{$selected/name}"/>
+                           required="required" value="{$selected/name}">
+                        <xsl:if test="$view = 'create'">
+                            <xsl:attribute name="placeholder">Например: Кабинет 301</xsl:attribute>
+                        </xsl:if>
+                    </input>
                 </label>
-                <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
-                    <a class="btn-outline-action" title="Отменить изменение">
+                <div class="cabinet-form-actions">
+                    <a class="btn-outline-action">
+                        <xsl:attribute name="title">
+                            <xsl:choose>
+                                <xsl:when test="$view = 'edit'">Отменить редактирование кабинета</xsl:when>
+                                <xsl:otherwise>Отменить создание кабинета</xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:attribute>
                         <xsl:attribute name="href">
                             <xsl:choose>
                                 <xsl:when test="$view = 'edit'"><xsl:value-of select="concat($base, '/', $selected/id)"/></xsl:when>

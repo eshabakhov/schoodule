@@ -5,7 +5,7 @@
                 doctype-system="about:legacy-compat"/>
     <xsl:param name="view"/>
     <xsl:variable name="entries" select="/surok/buildings"/>
-    <xsl:variable name="selected" select="$entries/building"/>
+    <xsl:variable name="selected" select="$entries/building[$view = 'details' or $view = 'edit']"/>
     <xsl:variable name="base" select="concat($school-path, '/buildings')"/>
 
     <xsl:template match="/">
@@ -20,8 +20,12 @@
             <xsl:when test="$view = 'create'">Новый корпус</xsl:when>
             <xsl:when test="$view = 'edit'">Редактировать корпус</xsl:when>
             <xsl:when test="$view = 'details'"><xsl:value-of select="$selected/name"/></xsl:when>
-            <xsl:otherwise>Корпусы</xsl:otherwise>
+            <xsl:otherwise><xsl:value-of select="concat($school/name, ' - корпуса')"/></xsl:otherwise>
         </xsl:choose>
+    </xsl:template>
+
+    <xsl:template name="styles">
+        <link rel="stylesheet" href="/css/school/buildings.css"/>
     </xsl:template>
 
     <xsl:template name="content">
@@ -31,31 +35,51 @@
             <xsl:otherwise>
                 <div class="page-title-row">
                     <div><h1>Корпусы</h1><p class="page-subtitle">Управление корпусами школы</p></div>
-                    <a class="btn-primary" href="{$base}/create" title="Добавить корпус">Добавить корпус</a>
+                    <a class="btn btn-primary buildings-add"
+                       href="{$base}/create"
+                       title="Добавить корпус в школу">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             viewBox="0 0 24 24">
+                            <line x1="12" x2="12" y1="5" y2="19"/>
+                            <line x1="5" x2="19" y1="12" y2="12"/>
+                        </svg>
+                        <xsl:text>Добавить корпус</xsl:text>
+                    </a>
                 </div>
-                <div class="search-wrap" style="width:100%;max-width:320px;margin-bottom:1.25rem;">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
-                         stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/>
-                    </svg>
-                    <label for="building-search">
-                        <input id="building-search" type="text" placeholder="Поиск корпуса..."
-                               value="{$entries/filters/item[name='name' or name='name_ct']/value}"/>
-                    </label>
+                <div class="buildings-content">
+                    <div class="search-wrap buildings-search">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                             stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/>
+                        </svg>
+                        <label for="building-search">
+                            <input id="building-search" type="text" placeholder="Поиск корпуса..."
+                                   value="{$entries/filters/item[name='name' or name='name_ct']/value}"/>
+                        </label>
+                    </div>
+                    <xsl:call-template name="results"/>
                 </div>
-                <xsl:call-template name="results"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
     <xsl:template name="results">
-        <div id="buildings-results">
+        <div id="buildings-results" class="buildings-results">
+            <div class="buildings-sort-controls">
+                <xsl:call-template name="name-sort">
+                    <xsl:with-param name="prefix" select="'buildings'"/>
+                    <xsl:with-param name="direction" select="$entries/sorts/item[name = 'name']/direction"/>
+                </xsl:call-template>
+            </div>
             <div class="card-grid" id="buildings-container">
                 <xsl:if test="not($entries/building)">
-                    <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted-fg);">Корпусы не найдены.</div>
+                    <div class="buildings-empty">Корпусы не найдены.</div>
                 </xsl:if>
                 <xsl:for-each select="$entries/building">
-                    <div class="card-item building-row" style="cursor:pointer;" data-id="{id}" data-name="{name}">
+                    <div class="card-item building-row building-card" data-id="{id}" data-name="{name}">
                         <div class="card-item-header"><div class="card-item-title-row"><div class="card-item-icon">
                             <svg fill="none"
                                      stroke="currentColor"
@@ -82,7 +106,7 @@
     </xsl:template>
 
     <xsl:template name="details">
-        <div class="page-title-row" style="margin-bottom:1.5rem;">
+        <div class="page-title-row building-details-heading">
             <div>
                 <h1 class="title-with-action">
                     <span><xsl:value-of select="$selected/name"/></span>
@@ -102,18 +126,32 @@
             <div class="info-row"><span class="info-label">Название:</span><span class="info-value"><xsl:value-of select="$selected/name"/></span></div>
         </div>
         <div class="details-footer-actions">
-            <button class="btn-outline-action btn-delete-row" type="button"
-                    style="color:var(--destructive);border-color:#fecaca;background:#fef2f2;"
+            <button class="btn-outline-action btn-delete-row building-delete" type="button"
                     data-name="{$selected/name}" data-uri="{$base}/{$selected/id}" data-redirect="{$base}">Удалить</button>
         </div>
     </xsl:template>
 
     <xsl:template name="form">
-        <div class="page-title-row" style="justify-content:center;">
-            <h1><xsl:call-template name="page-title"/></h1>
+        <div class="page-title-row building-form-heading">
+            <div class="building-form-title">
+                <div>
+                    <h1>
+                        <xsl:choose>
+                            <xsl:when test="$view = 'edit'">Редактировать</xsl:when>
+                            <xsl:otherwise><xsl:call-template name="page-title"/></xsl:otherwise>
+                        </xsl:choose>
+                    </h1>
+                    <xsl:if test="$view = 'create'">
+                        <p class="page-subtitle">Заполните данные для создания корпуса</p>
+                    </xsl:if>
+                </div>
+            </div>
         </div>
-        <div style="max-width:480px;margin:0 auto;">
-            <form method="post" style="display:flex;flex-direction:column;gap:1rem;">
+        <xsl:if test="/surok/error = 'true'">
+            <div class="error-message">Название не может быть пустым</div>
+        </xsl:if>
+        <div class="building-form-wrap">
+            <form method="post" class="building-form">
                 <xsl:attribute name="action">
                     <xsl:choose>
                         <xsl:when test="$view = 'edit'"><xsl:value-of select="concat($base, '/', $selected/id, '/edit')"/></xsl:when>
@@ -121,13 +159,23 @@
                     </xsl:choose>
                 </xsl:attribute>
                 <xsl:call-template name="csrf-input"/>
-                <label for="building-name" style="display:flex;flex-direction:column;gap:.375rem;font-size:.875rem;font-weight:500;">
+                <label for="building-name" class="building-form-field">
                     Название корпуса
                     <input id="building-name" name="name" type="text" autofocus="autofocus"
-                           required="required" value="{$selected/name}"/>
+                           required="required" value="{$selected/name}">
+                        <xsl:if test="$view = 'create'">
+                            <xsl:attribute name="placeholder">Например: Корпус 1</xsl:attribute>
+                        </xsl:if>
+                    </input>
                 </label>
-                <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
-                    <a class="btn-outline-action" title="Отменить изменение">
+                <div class="building-form-actions">
+                    <a class="btn-outline-action">
+                        <xsl:attribute name="title">
+                            <xsl:choose>
+                                <xsl:when test="$view = 'edit'">Отменить редактирование корпуса</xsl:when>
+                                <xsl:otherwise>Отменить создание корпуса</xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:attribute>
                         <xsl:attribute name="href">
                             <xsl:choose>
                                 <xsl:when test="$view = 'edit'"><xsl:value-of select="concat($base, '/', $selected/id)"/></xsl:when>

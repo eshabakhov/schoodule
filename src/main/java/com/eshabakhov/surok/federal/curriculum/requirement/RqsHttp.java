@@ -4,6 +4,7 @@
 package com.eshabakhov.surok.federal.curriculum.requirement;
 
 import com.eshabakhov.surok.Filters;
+import com.eshabakhov.surok.Media;
 import com.eshabakhov.surok.Page;
 import com.eshabakhov.surok.Sorts;
 import com.eshabakhov.surok.User;
@@ -11,6 +12,7 @@ import com.eshabakhov.surok.federal.curriculum.CrWithRequirements;
 import com.eshabakhov.surok.federal.curriculum.CrsPostgres;
 import com.eshabakhov.surok.federal.curriculum.CrsSingle;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RqInputHttp;
+import com.eshabakhov.surok.media.AcHttp;
 import com.eshabakhov.surok.media.MdJson;
 import com.eshabakhov.surok.media.MdXml;
 import com.eshabakhov.surok.media.MdXslt;
@@ -25,16 +27,17 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.Objects;
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.jooq.DSLContext;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,10 +45,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -53,10 +53,9 @@ import org.springframework.web.server.ResponseStatusException;
  *
  * @since 0.0.1
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
- * @checkstyle NestedSwitchCheck (1000 lines)
  * @checkstyle ParameterNumberCheck (1000 lines)
  */
-@Controller
+@RestController
 @RequestMapping("/federal/curriculums/{curriculum}/requirements")
 @Tag(name = "Federal Curriculum Requirements")
 @PreAuthorize("hasRole('ADMIN')")
@@ -82,10 +81,10 @@ public class RqsHttp {
      * @param filters Filtering
      * @param page Pagination
      * @param sorts Sorting
-     * @return Printed representation
+     * @param request HTTP request
+     * @return Response with the negotiated representation or redirect
      * @throws Exception If selection fails
      */
-    @ResponseBody
     @GetMapping(
         value = {"", "/fragment"},
         produces = {
@@ -100,66 +99,46 @@ public class RqsHttp {
         description = "Federal curriculum requirements",
         content = @Content(schema = @Schema(type = "object"))
     )
-    public Object selection(
+    public ResponseEntity<?> selection(
         @PathVariable("curriculum") final long current,
         final Filters filters,
         final Page page,
-        final Sorts sorts
+        final Sorts sorts,
+        final HttpServletRequest request
     ) throws Exception {
+        final MediaType type = new AcHttp(request, "federal-curriculum-requirements.v1").type();
         final Requirements selected = new RqsPostgres(this.ctx, current)
             .selection(filters, page, sorts);
-        final ServletRequestAttributes servlet = (ServletRequestAttributes)
-            RequestContextHolder.currentRequestAttributes();
-        return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
-            case String html when html.contains(MediaType.TEXT_HTML_VALUE)
-                || html.contains(MediaType.ALL_VALUE) -> new SrWeb(
-                    new UrBrief(
-                        (User) SecurityContextHolder.getContext()
-                            .getAuthentication().getPrincipal()
-                    ),
-                    new SlsBrief(new SlsPostgres(this.ctx)),
-                    new CsToken(
-                        (CsrfToken) servlet.getRequest().getAttribute(
-                            CsrfToken.class.getName()
+        return ResponseEntity.ok().contentType(new MediaType(type, StandardCharsets.UTF_8)).body(
+            switch (type.toString()) {
+                case MediaType.TEXT_HTML_VALUE -> {
+                    final String view;
+                    final String uri = request.getRequestURI();
+                    if (uri != null && uri.endsWith("/fragment")) {
+                        view = "list-fragment";
+                    } else {
+                        view = "list";
+                    }
+                    yield this.web(request, view).with(
+                        "curriculums",
+                        new CrsSingle(
+                            new CrsPostgres(this.ctx),
+                            new CrWithRequirements(
+                                new CrsPostgres(this.ctx).curriculum(current),
+                                new RqsWeb(selected, filters, sorts)
+                            )
                         )
-                    )
-                ).print(
-                    new MdXslt(
-                        new MdXml("surok"),
-                        new XsClasspath(
-                            "xslt/federal-curriculum-requirements.xsl",
-                            switch (
-                                servlet.getRequest().getRequestURI()
-                            ) {
-                                case String uri when
-                                    uri.endsWith("/fragment") ->
-                                    "list-fragment";
-                                case null -> "list";
-                                default -> "list";
-                            }
-                        )
-                    )
-                ).with(
-                    "curriculums",
-                    new CrsSingle(
-                        new CrsPostgres(this.ctx),
-                        new CrWithRequirements(
-                            new CrsPostgres(this.ctx).curriculum(current),
-                            new RqsWeb(selected, filters, sorts)
-                        )
-                    )
-                ).print();
-            case "application/vnd.surok.federal-curriculum-requirements.v1+json" ->
-                selected.print(new MdJson()).print();
-            case "application/vnd.surok.federal-curriculum-requirements.v1+xml" ->
-                selected.print(new MdXml("requirements")).print();
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
-            default -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
-            );
-        };
+                    ).print();
+                }
+                case "application/vnd.surok.federal-curriculum-requirements.v1+json" ->
+                    selected.print(new MdJson()).print();
+                case "application/vnd.surok.federal-curriculum-requirements.v1+xml" ->
+                    selected.print(new MdXml("requirements")).print();
+                case null, default -> throw new ResponseStatusException(
+                    HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
+                );
+            }
+        );
     }
 
     /**
@@ -167,10 +146,10 @@ public class RqsHttp {
      *
      * @param current Curriculum ID
      * @param requirement Requirement ID
-     * @return Printed representation
+     * @param request HTTP request
+     * @return Response with the negotiated representation or redirect
      * @throws Exception If lookup fails
      */
-    @ResponseBody
     @GetMapping(
         value = "/{requirement}",
         produces = {
@@ -185,34 +164,34 @@ public class RqsHttp {
         content = @Content(schema = @Schema(type = "object"))
     )
     @ApiResponse(responseCode = "404", description = "Requirement not found")
-    public Object requirement(
+    public ResponseEntity<?> requirement(
         @PathVariable("curriculum") final long current,
-        @PathVariable final long requirement
+        @PathVariable final long requirement,
+        final HttpServletRequest request
     ) throws Exception {
-        return switch (
-            ((ServletRequestAttributes) RequestContextHolder
-                .currentRequestAttributes()).getRequest()
-                .getHeader(HttpHeaders.ACCEPT)
-        ) {
-            case String json when
-                "application/vnd.surok.federal-curriculum-requirement-v1+json"
-                    .equals(json) -> new RqV1(
-                        new RqsPostgres(this.ctx, current)
-                            .requirement(requirement)
-                    ).print(new MdJson()).print();
-            case String xml when
-                "application/vnd.surok.federal-curriculum-requirement-v1+xml"
-                    .equals(xml) -> new RqV1(
-                        new RqsPostgres(this.ctx, current)
-                            .requirement(requirement)
-                    ).print(new MdXml("requirement")).print();
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
-            default -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
-            );
-        };
+        final MediaType type = new AcHttp(
+            request,
+            List.of(
+                MediaType.parseMediaType(
+                    "application/vnd.surok.federal-curriculum-requirement-v1+json"
+                ),
+                MediaType.parseMediaType(
+                    "application/vnd.surok.federal-curriculum-requirement-v1+xml"
+                )
+            )
+        ).type();
+        final Requirement selected = new RqsPostgres(this.ctx, current).requirement(requirement);
+        return ResponseEntity.ok().contentType(new MediaType(type, StandardCharsets.UTF_8)).body(
+            switch (type.toString()) {
+                case "application/vnd.surok.federal-curriculum-requirement-v1+json" ->
+                    new RqV1(selected).print(new MdJson()).print();
+                case "application/vnd.surok.federal-curriculum-requirement-v1+xml" ->
+                    new RqV1(selected).print(new MdXml("requirement")).print();
+                case null, default -> throw new ResponseStatusException(
+                    HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
+                );
+            }
+        );
     }
 
     /**
@@ -220,10 +199,10 @@ public class RqsHttp {
      *
      * @param current Curriculum ID
      * @param parameters Requirement input parameters
-     * @return Printed representation
+     * @param request HTTP request
+     * @return Response with the negotiated representation or redirect
      * @throws Exception If creation fails
      */
-    @ResponseBody
     @PostMapping(
         value = "/create",
         produces = {
@@ -241,61 +220,16 @@ public class RqsHttp {
         responseCode = "302",
         description = "HTML client redirected to the requirements"
     )
-    public Object create(
+    public ResponseEntity<?> create(
         @PathVariable("curriculum") final long current,
-        @RequestParam final MultiValueMap<String, String> parameters
+        @RequestParam final MultiValueMap<String, String> parameters,
+        final HttpServletRequest request
     ) throws Exception {
-        final Requirement created = new RqsPostgres(this.ctx, current).create(
-            new RqInputHttp(parameters)
+        return RqsHttp.result(
+            new AcHttp(request, "federal-curriculum-requirement-v1").type(),
+            new RqsPostgres(this.ctx, current).create(new RqInputHttp(parameters)),
+            HttpStatus.CREATED, current
         );
-        final ServletRequestAttributes servlet = (ServletRequestAttributes)
-            RequestContextHolder.currentRequestAttributes();
-        final HttpServletResponse response = Objects.requireNonNull(
-            servlet.getResponse()
-        );
-        return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
-            case String html when html.contains(MediaType.TEXT_HTML_VALUE)
-                || html.contains(MediaType.ALL_VALUE) -> {
-                response.sendRedirect(
-                    String.format(
-                        "/federal/curriculums/%d/requirements", current
-                    )
-                );
-                yield null;
-            }
-            case "application/vnd.surok.federal-curriculum-requirement-v1+json" -> {
-                response.setStatus(HttpStatus.CREATED.value());
-                response.setHeader(
-                    HttpHeaders.LOCATION,
-                    String.format(
-                        "/federal/curriculums/%d/requirements/%d",
-                        current,
-                        created.uid()
-                    )
-                );
-                yield new RqV1(created).print(new MdJson()).print();
-            }
-            case "application/vnd.surok.federal-curriculum-requirement-v1+xml" -> {
-                response.setStatus(HttpStatus.CREATED.value());
-                response.setHeader(
-                    HttpHeaders.LOCATION,
-                    String.format(
-                        "/federal/curriculums/%d/requirements/%d",
-                        current,
-                        created.uid()
-                    )
-                );
-                yield new RqV1(created).print(
-                    new MdXml("requirement")
-                ).print();
-            }
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
-            default -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
-            );
-        };
     }
 
     /**
@@ -304,10 +238,10 @@ public class RqsHttp {
      * @param current Curriculum ID
      * @param requirement Requirement ID
      * @param parameters Requirement input parameters
-     * @return Printed representation
+     * @param request HTTP request
+     * @return Response with the negotiated representation or redirect
      * @throws Exception If update fails
      */
-    @ResponseBody
     @PostMapping(
         value = "/{requirement}/edit",
         produces = {
@@ -326,38 +260,17 @@ public class RqsHttp {
         description = "HTML client redirected to the requirements"
     )
     @ApiResponse(responseCode = "404", description = "Requirement not found")
-    public Object revise(
+    public ResponseEntity<?> revise(
         @PathVariable("curriculum") final long current,
         @PathVariable final long requirement,
-        @RequestParam final MultiValueMap<String, String> parameters
+        @RequestParam final MultiValueMap<String, String> parameters,
+        final HttpServletRequest request
     ) throws Exception {
-        final Requirement revised = new RqsPostgres(this.ctx, current)
-            .revise(requirement, new RqInputHttp(parameters));
-        final ServletRequestAttributes servlet = (ServletRequestAttributes)
-            RequestContextHolder.currentRequestAttributes();
-        return switch (servlet.getRequest().getHeader(HttpHeaders.ACCEPT)) {
-            case String html when html.contains(MediaType.TEXT_HTML_VALUE)
-                || html.contains(MediaType.ALL_VALUE) -> {
-                Objects.requireNonNull(servlet.getResponse()).sendRedirect(
-                    String.format(
-                        "/federal/curriculums/%d/requirements", current
-                    )
-                );
-                yield null;
-            }
-            case "application/vnd.surok.federal-curriculum-requirement-v1+json" ->
-                new RqV1(revised).print(new MdJson()).print();
-            case "application/vnd.surok.federal-curriculum-requirement-v1+xml" ->
-                new RqV1(revised).print(
-                    new MdXml("requirement")
-                ).print();
-            case null -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Accept header is required"
-            );
-            default -> throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
-            );
-        };
+        return RqsHttp.result(
+            new AcHttp(request, "federal-curriculum-requirement-v1").type(),
+            new RqsPostgres(this.ctx, current).revise(requirement, new RqInputHttp(parameters)),
+            HttpStatus.OK, current
+        );
     }
 
     /**
@@ -365,20 +278,62 @@ public class RqsHttp {
      *
      * @param current Curriculum ID
      * @param requirement Requirement ID
+     * @return Empty response
      * @throws Exception If removal fails
      */
     @DeleteMapping("/{requirement}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Remove federal curriculum requirement")
     @ApiResponse(
         responseCode = "204",
         description = "Federal curriculum requirement removed"
     )
     @ApiResponse(responseCode = "404", description = "Requirement not found")
-    public void remove(
+    public ResponseEntity<Void> remove(
         @PathVariable("curriculum") final long current,
         @PathVariable final long requirement
     ) throws Exception {
         new RqsPostgres(this.ctx, current).remove(requirement);
+        return ResponseEntity.noContent().build();
+    }
+
+    private static ResponseEntity<?> result(
+        final MediaType type,
+        final Requirement selected,
+        final HttpStatus status,
+        final long current
+    ) throws Exception {
+        final String base = String.format("/federal/curriculums/%d/requirements", current);
+        final ResponseEntity.BodyBuilder response = ResponseEntity.status(status)
+            .contentType(new MediaType(type, StandardCharsets.UTF_8));
+        if (HttpStatus.CREATED.equals(status)) {
+            response.location(URI.create(String.format("%s/%d", base, selected.uid())));
+        }
+        return switch (type.toString()) {
+            case MediaType.TEXT_HTML_VALUE -> ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(base)).build();
+            case "application/vnd.surok.federal-curriculum-requirement-v1+json" ->
+                response.body(new RqV1(selected).print(new MdJson()).print());
+            case "application/vnd.surok.federal-curriculum-requirement-v1+xml" ->
+                response.body(new RqV1(selected).print(new MdXml("requirement")).print());
+            case null, default -> throw new ResponseStatusException(
+                HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
+            );
+        };
+    }
+
+    private Media<String> web(final HttpServletRequest request, final String view)
+        throws Exception {
+        return new SrWeb(
+            new UrBrief(
+                (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()
+            ),
+            new SlsBrief(new SlsPostgres(this.ctx)),
+            new CsToken((CsrfToken) request.getAttribute(CsrfToken.class.getName()))
+        ).print(
+            new MdXslt(
+                new MdXml("surok"),
+                new XsClasspath("xslt/federal-curriculum-requirements.xsl", view)
+            )
+        );
     }
 }

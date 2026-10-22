@@ -1,0 +1,144 @@
+.buildings-add {
+    text-decoration: none;
+}
+
+.buildings-add svg {
+    width: 15px;
+    height: 15px;
+}
+
+.buildings-content {
+    display: grid;
+    grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+}
+
+.buildings-search {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+.buildings-results {
+    display: contents;
+}
+
+.buildings-sort-controls {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.buildings-sort {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .375rem;
+    min-height: 34px;
+    padding: .375rem .75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--muted-fg);
+    font-size: .8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--ease), color var(--ease), border-color var(--ease);
+}
+
+.buildings-sort:hover {
+    background: var(--accent);
+    color: var(--fg);
+}
+
+.buildings-sort.active {
+    border-color: var(--primary);
+    color: var(--fg);
+}
+
+.buildings-sort-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1em;
+    line-height: 1;
+}
+
+.buildings-content .card-grid,
+.buildings-content .pagination-wrap {
+    grid-column: 1 / -1;
+}
+
+.buildings-empty {
+    grid-column: 1 / -1;
+    padding: 3rem;
+    color: var(--muted-fg);
+    text-align: center;
+}
+
+.building-card {
+    cursor: pointer;
+}
+
+.building-details-heading {
+    margin-bottom: 1.5rem;
+}
+
+.building-delete,
+.building-delete:hover {
+    border-color: var(--error-border);
+    background: var(--error-bg);
+    color: var(--destructive);
+}
+
+.building-form-heading {
+    justify-content: center;
+}
+
+.building-form-heading h1 {
+    margin: 0;
+}
+
+.building-form-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.building-form-wrap {
+    max-width: 480px;
+    margin-inline: auto;
+}
+
+.building-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.building-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+    font-size: .875rem;
+    font-weight: 500;
+}
+
+.building-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .75rem;
+    margin-top: .25rem;
+}
+
+@media (width <= 900px) {
+    .buildings-content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .buildings-sort {
+        width: 100%;
+    }
+}

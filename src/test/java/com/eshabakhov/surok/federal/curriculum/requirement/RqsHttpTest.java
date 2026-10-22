@@ -23,21 +23,20 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -109,7 +108,6 @@ final class RqsHttpTest {
 
     @AfterEach
     void cleanContextAndCurriculums() {
-        RequestContextHolder.resetRequestAttributes();
         SecurityContextHolder.clearContext();
         this.ctx.resultQuery(
             """
@@ -118,17 +116,15 @@ final class RqsHttpTest {
         ).execute();
     }
 
-    @Test
-    void returnsRequirementsHtmlPage() throws Exception {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"text/html", "*/*"})
+    void returnsRequirementsHtmlPage(final String accept) throws Exception {
         final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(HttpHeaders.ACCEPT, "*/*");
+        if (accept != null) {
+            request.addHeader(HttpHeaders.ACCEPT, accept);
+        }
         request.setRequestURI("/federal/curriculums/1/requirements");
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
-        );
         final Roles roles = new RlsFake();
         roles.grant(Roles.RoleEnum.ADMIN);
         SecurityContextHolder.getContext().setAuthentication(
@@ -144,8 +140,9 @@ final class RqsHttpTest {
                 1L,
                 new FiltersRequest(Set.<Filter>of()),
                 new PageRequest(15, 1),
-                new SortsRequest(List.<Sort>of())
-            ),
+                new SortsRequest(List.<Sort>of()),
+                request
+            ).getBody(),
             Matchers.allOf(
                 Matchers.containsString("<html lang=\"ru\">"),
                 Matchers.containsString("Basic plan"),
@@ -160,12 +157,6 @@ final class RqsHttpTest {
         request.addHeader(HttpHeaders.ACCEPT, "text/html");
         request.setRequestURI(
             "/federal/curriculums/1/requirements/fragment"
-        );
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
         );
         final Roles roles = new RlsFake();
         roles.grant(Roles.RoleEnum.ADMIN);
@@ -182,8 +173,9 @@ final class RqsHttpTest {
                 1L,
                 new FiltersRequest(Set.<Filter>of()),
                 new PageRequest(15, 1),
-                new SortsRequest(List.<Sort>of())
-            ),
+                new SortsRequest(List.<Sort>of()),
+                request
+            ).getBody(),
             Matchers.allOf(
                 Matchers.not(Matchers.containsString("<html")),
                 Matchers.containsString("Mathematics")
@@ -196,12 +188,6 @@ final class RqsHttpTest {
         final MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(HttpHeaders.ACCEPT, "text/html");
         request.setRequestURI(null);
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
-        );
         final Roles roles = new RlsFake();
         roles.grant(Roles.RoleEnum.ADMIN);
         SecurityContextHolder.getContext().setAuthentication(
@@ -217,8 +203,9 @@ final class RqsHttpTest {
                 1L,
                 new FiltersRequest(Set.<Filter>of()),
                 new PageRequest(15, 1),
-                new SortsRequest(List.<Sort>of())
-            ),
+                new SortsRequest(List.<Sort>of()),
+                request
+            ).getBody(),
             Matchers.containsString("<html lang=\"ru\">")
         );
     }
@@ -230,18 +217,13 @@ final class RqsHttpTest {
             HttpHeaders.ACCEPT,
             "application/vnd.surok.federal-curriculum-requirements.v1+json"
         );
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
-        );
         final ObjectNode response = (ObjectNode) new RqsHttp(this.ctx).selection(
             1L,
             new FiltersRequest(Set.<Filter>of()),
             new PageRequest(15, 1),
-            new SortsRequest(List.<Sort>of())
-        );
+            new SortsRequest(List.<Sort>of()),
+            request
+        ).getBody();
         MatcherAssert.assertThat(
             "JSON requirements must contain the selected requirement",
             response.path("items").get(0).path("subjectName").asText(),
@@ -261,20 +243,15 @@ final class RqsHttpTest {
             HttpHeaders.ACCEPT,
             "application/vnd.surok.federal-curriculum-requirements.v1+xml"
         );
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
-        );
         MatcherAssert.assertThat(
             "XML requirements must use the collection root",
             (String) new RqsHttp(this.ctx).selection(
                 1L,
                 new FiltersRequest(Set.<Filter>of()),
                 new PageRequest(15, 1),
-                new SortsRequest(List.<Sort>of())
-            ),
+                new SortsRequest(List.<Sort>of()),
+                request
+            ).getBody(),
             Matchers.allOf(
                 Matchers.startsWith("<requirements>"),
                 Matchers.containsString("<requirement>"),
@@ -284,38 +261,9 @@ final class RqsHttpTest {
     }
 
     @Test
-    void rejectsRequirementsWithoutAccept() {
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                new MockHttpServletRequest(),
-                new MockHttpServletResponse()
-            )
-        );
-        MatcherAssert.assertThat(
-            "Missing Accept must result in 406",
-            Assertions.assertThrows(
-                ResponseStatusException.class,
-                () -> new RqsHttp(this.ctx).selection(
-                    1L,
-                    new FiltersRequest(Set.<Filter>of()),
-                    new PageRequest(15, 1),
-                    new SortsRequest(List.<Sort>of())
-                )
-            ).getStatusCode(),
-            Matchers.is(HttpStatus.NOT_ACCEPTABLE)
-        );
-    }
-
-    @Test
     void rejectsUnsupportedRequirementsAccept() {
         final MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(HttpHeaders.ACCEPT, "application/json");
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
-        );
         MatcherAssert.assertThat(
             "Unsupported Accept must result in 406",
             Assertions.assertThrows(
@@ -324,7 +272,8 @@ final class RqsHttpTest {
                     1L,
                     new FiltersRequest(Set.<Filter>of()),
                     new PageRequest(15, 1),
-                    new SortsRequest(List.<Sort>of())
+                    new SortsRequest(List.<Sort>of()),
+                    request
                 )
             ).getStatusCode(),
             Matchers.is(HttpStatus.NOT_ACCEPTABLE)
@@ -338,15 +287,9 @@ final class RqsHttpTest {
             HttpHeaders.ACCEPT,
             "application/vnd.surok.federal-curriculum-requirement-v1+json"
         );
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
-        );
         MatcherAssert.assertThat(
             "JSON requirement must contain its identity",
-            ((ObjectNode) new RqsHttp(this.ctx).requirement(1L, 7L))
+            ((ObjectNode) new RqsHttp(this.ctx).requirement(1L, 7L, request).getBody())
                 .path("id").longValue(),
             Matchers.is(7L)
         );
@@ -359,15 +302,9 @@ final class RqsHttpTest {
             HttpHeaders.ACCEPT,
             "application/vnd.surok.federal-curriculum-requirement-v1+xml"
         );
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
-        );
         MatcherAssert.assertThat(
             "XML requirement must use the entity root",
-            (String) new RqsHttp(this.ctx).requirement(1L, 7L),
+            (String) new RqsHttp(this.ctx).requirement(1L, 7L, request).getBody(),
             Matchers.allOf(
                 Matchers.startsWith("<requirement>"),
                 Matchers.containsString("<id>7</id>"),
@@ -377,16 +314,13 @@ final class RqsHttpTest {
     }
 
     @Test
-    void rejectsRequirementWithoutAccept() {
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                new MockHttpServletRequest(),
-                new MockHttpServletResponse()
-            )
-        );
-        Assertions.assertThrows(
-            ResponseStatusException.class,
-            () -> new RqsHttp(this.ctx).requirement(1L, 7L)
+    void defaultsToRequirementJsonWithoutAccept() throws Exception {
+        MatcherAssert.assertThat(
+            ((ObjectNode) new RqsHttp(this.ctx).requirement(
+                1L, 7L, new MockHttpServletRequest()
+            ).getBody())
+                .path("id").longValue(),
+            Matchers.is(7L)
         );
     }
 
@@ -394,42 +328,37 @@ final class RqsHttpTest {
     void rejectsUnsupportedRequirementAccept() {
         final MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(HttpHeaders.ACCEPT, "application/xml");
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
-        );
         Assertions.assertThrows(
             ResponseStatusException.class,
-            () -> new RqsHttp(this.ctx).requirement(1L, 7L)
+            () -> new RqsHttp(this.ctx).requirement(1L, 7L, request)
         );
     }
 
     @ParameterizedTest
+    @NullSource
     @ValueSource(strings = {"text/html", "*/*"})
     void createsRequirementForHtml(final String accept) throws Exception {
         final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(HttpHeaders.ACCEPT, accept);
-        final MockHttpServletResponse response =
-            new MockHttpServletResponse();
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(request, response)
-        );
+        if (accept != null) {
+            request.addHeader(HttpHeaders.ACCEPT, accept);
+        }
         final MultiValueMap<String, String> parameters =
             new LinkedMultiValueMap<>();
         parameters.add("grade", "6");
         parameters.add("subjectName", "History");
         parameters.add("weeklyHours", "2");
         parameters.add("partType", "OPTIONAL");
+        final ResponseEntity<?> response = new RqsHttp(this.ctx).create(
+            1L, parameters, request
+        );
         MatcherAssert.assertThat(
             "HTML creation must not return a response body",
-            new RqsHttp(this.ctx).create(1L, parameters),
+            response.getBody(),
             Matchers.nullValue()
         );
         MatcherAssert.assertThat(
             "HTML creation must redirect to requirements",
-            response.getRedirectedUrl(),
+            response.getHeaders().getLocation().toString(),
             Matchers.is("/federal/curriculums/1/requirements")
         );
     }
@@ -441,29 +370,25 @@ final class RqsHttpTest {
             HttpHeaders.ACCEPT,
             "application/vnd.surok.federal-curriculum-requirement-v1+json"
         );
-        final MockHttpServletResponse response =
-            new MockHttpServletResponse();
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(request, response)
-        );
         final MultiValueMap<String, String> parameters =
             new LinkedMultiValueMap<>();
         parameters.add("grade", "6");
         parameters.add("subjectName", "History");
         parameters.add("weeklyHours", "2");
         parameters.add("partType", "OPTIONAL");
-        new RqsHttp(this.ctx).create(
+        final ResponseEntity<?> response = new RqsHttp(this.ctx).create(
             1L,
-            parameters
+            parameters,
+            request
         );
         MatcherAssert.assertThat(
             "JSON creation must return status 201",
-            response.getStatus(),
+            response.getStatusCode().value(),
             Matchers.is(HttpStatus.CREATED.value())
         );
         MatcherAssert.assertThat(
             "JSON creation must expose the created location",
-            response.getHeader(HttpHeaders.LOCATION),
+            response.getHeaders().getFirst(HttpHeaders.LOCATION),
             Matchers.matchesPattern(
                 "/federal/curriculums/1/requirements/[0-9]+"
             )
@@ -477,46 +402,22 @@ final class RqsHttpTest {
             HttpHeaders.ACCEPT,
             "application/vnd.surok.federal-curriculum-requirement-v1+xml"
         );
-        final MockHttpServletResponse response =
-            new MockHttpServletResponse();
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(request, response)
-        );
         final MultiValueMap<String, String> parameters =
             new LinkedMultiValueMap<>();
         parameters.add("grade", "6");
         parameters.add("subjectName", "History");
         parameters.add("weeklyHours", "2");
         parameters.add("partType", "OPTIONAL");
+        final ResponseEntity<?> response = new RqsHttp(this.ctx).create(1L, parameters, request);
         MatcherAssert.assertThat(
             "XML creation must return the created requirement",
-            (String) new RqsHttp(this.ctx).create(1L, parameters),
+            (String) response.getBody(),
             Matchers.containsString("<subjectName>History</subjectName>")
         );
         MatcherAssert.assertThat(
             "XML creation must return status 201",
-            response.getStatus(),
+            response.getStatusCode().value(),
             Matchers.is(HttpStatus.CREATED.value())
-        );
-    }
-
-    @Test
-    void rejectsCreationWithoutAccept() {
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                new MockHttpServletRequest(),
-                new MockHttpServletResponse()
-            )
-        );
-        final MultiValueMap<String, String> parameters =
-            new LinkedMultiValueMap<>();
-        parameters.add("grade", "6");
-        parameters.add("subjectName", "History");
-        parameters.add("weeklyHours", "2");
-        parameters.add("partType", "OPTIONAL");
-        Assertions.assertThrows(
-            ResponseStatusException.class,
-            () -> new RqsHttp(this.ctx).create(1L, parameters)
         );
     }
 
@@ -524,12 +425,6 @@ final class RqsHttpTest {
     void rejectsUnsupportedCreationAccept() {
         final MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(HttpHeaders.ACCEPT, "application/json");
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
-        );
         final MultiValueMap<String, String> parameters =
             new LinkedMultiValueMap<>();
         parameters.add("grade", "6");
@@ -538,34 +433,35 @@ final class RqsHttpTest {
         parameters.add("partType", "OPTIONAL");
         Assertions.assertThrows(
             ResponseStatusException.class,
-            () -> new RqsHttp(this.ctx).create(1L, parameters)
+            () -> new RqsHttp(this.ctx).create(1L, parameters, request)
         );
     }
 
     @ParameterizedTest
+    @NullSource
     @ValueSource(strings = {"text/html", "*/*"})
     void revisesRequirementForHtml(final String accept) throws Exception {
         final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(HttpHeaders.ACCEPT, accept);
-        final MockHttpServletResponse response =
-            new MockHttpServletResponse();
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(request, response)
-        );
+        if (accept != null) {
+            request.addHeader(HttpHeaders.ACCEPT, accept);
+        }
         final MultiValueMap<String, String> parameters =
             new LinkedMultiValueMap<>();
         parameters.add("grade", "7");
         parameters.add("subjectName", "Algebra");
         parameters.add("weeklyHours", "4");
         parameters.add("partType", "MANDATORY");
+        final ResponseEntity<?> response = new RqsHttp(this.ctx).revise(
+            1L, 7L, parameters, request
+        );
         MatcherAssert.assertThat(
             "HTML revision must not return a response body",
-            new RqsHttp(this.ctx).revise(1L, 7L, parameters),
+            response.getBody(),
             Matchers.nullValue()
         );
         MatcherAssert.assertThat(
             "HTML revision must redirect to requirements",
-            response.getRedirectedUrl(),
+            response.getHeaders().getLocation().toString(),
             Matchers.is("/federal/curriculums/1/requirements")
         );
     }
@@ -577,12 +473,6 @@ final class RqsHttpTest {
             HttpHeaders.ACCEPT,
             "application/vnd.surok.federal-curriculum-requirement-v1+json"
         );
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
-        );
         final MultiValueMap<String, String> parameters =
             new LinkedMultiValueMap<>();
         parameters.add("grade", "7");
@@ -591,7 +481,7 @@ final class RqsHttpTest {
         parameters.add("partType", "MANDATORY");
         MatcherAssert.assertThat(
             "JSON revision must return revised fields",
-            ((ObjectNode) new RqsHttp(this.ctx).revise(1L, 7L, parameters))
+            ((ObjectNode) new RqsHttp(this.ctx).revise(1L, 7L, parameters, request).getBody())
                 .path("subjectName").asText(),
             Matchers.is("Algebra")
         );
@@ -604,12 +494,6 @@ final class RqsHttpTest {
             HttpHeaders.ACCEPT,
             "application/vnd.surok.federal-curriculum-requirement-v1+xml"
         );
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
-        );
         final MultiValueMap<String, String> parameters =
             new LinkedMultiValueMap<>();
         parameters.add("grade", "7");
@@ -618,28 +502,8 @@ final class RqsHttpTest {
         parameters.add("partType", "MANDATORY");
         MatcherAssert.assertThat(
             "XML revision must return revised fields",
-            (String) new RqsHttp(this.ctx).revise(1L, 7L, parameters),
+            (String) new RqsHttp(this.ctx).revise(1L, 7L, parameters, request).getBody(),
             Matchers.containsString("<subjectName>Algebra</subjectName>")
-        );
-    }
-
-    @Test
-    void rejectsRevisionWithoutAccept() {
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                new MockHttpServletRequest(),
-                new MockHttpServletResponse()
-            )
-        );
-        final MultiValueMap<String, String> parameters =
-            new LinkedMultiValueMap<>();
-        parameters.add("grade", "7");
-        parameters.add("subjectName", "Algebra");
-        parameters.add("weeklyHours", "4");
-        parameters.add("partType", "MANDATORY");
-        Assertions.assertThrows(
-            ResponseStatusException.class,
-            () -> new RqsHttp(this.ctx).revise(1L, 7L, parameters)
         );
     }
 
@@ -647,12 +511,6 @@ final class RqsHttpTest {
     void rejectsUnsupportedRevisionAccept() {
         final MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(HttpHeaders.ACCEPT, "application/xml");
-        RequestContextHolder.setRequestAttributes(
-            new ServletRequestAttributes(
-                request,
-                new MockHttpServletResponse()
-            )
-        );
         final MultiValueMap<String, String> parameters =
             new LinkedMultiValueMap<>();
         parameters.add("grade", "7");
@@ -661,7 +519,7 @@ final class RqsHttpTest {
         parameters.add("partType", "MANDATORY");
         Assertions.assertThrows(
             ResponseStatusException.class,
-            () -> new RqsHttp(this.ctx).revise(1L, 7L, parameters)
+            () -> new RqsHttp(this.ctx).revise(1L, 7L, parameters, request)
         );
     }
 

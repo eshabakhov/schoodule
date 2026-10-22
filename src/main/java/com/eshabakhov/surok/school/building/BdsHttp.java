@@ -12,6 +12,7 @@ import com.eshabakhov.surok.Sorts;
 import com.eshabakhov.surok.User;
 import com.eshabakhov.surok.filter.FilterRequest;
 import com.eshabakhov.surok.filter.FiltersRequest;
+import com.eshabakhov.surok.media.AcHttp;
 import com.eshabakhov.surok.media.MdJson;
 import com.eshabakhov.surok.media.MdXml;
 import com.eshabakhov.surok.media.MdXslt;
@@ -21,6 +22,7 @@ import com.eshabakhov.surok.school.SlBrief;
 import com.eshabakhov.surok.school.SlsBrief;
 import com.eshabakhov.surok.school.SlsPostgres;
 import com.eshabakhov.surok.school.building.input.BdInputHttp;
+import com.eshabakhov.surok.school.building.input.BuildingInputException;
 import com.eshabakhov.surok.security.CsToken;
 import com.eshabakhov.surok.user.UrBrief;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,16 +31,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.jooq.DSLContext;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,8 +54,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * Unified building HTTP resource; Accept selects HTML, JSON or XML.
- * For example, GET /schools/{school}/buildings with application/json returns the collection.
+ * Unified building HTTP resource; Accept selects HTML or versioned JSON/XML.
+ * For example, request application/vnd.surok.buildings.v1+json for the collection.
  *
  * @since 0.0.1
  * @checkstyle ClassFanOutComplexityCheck (1000 lines)
@@ -96,8 +93,7 @@ public class BdsHttp {
     @GetMapping(
         value = {"", "/", "/fragment", "/create"},
         produces = {
-            MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_JSON_VALUE,
-            MediaType.APPLICATION_XML_VALUE,
+            MediaType.TEXT_HTML_VALUE,
             "application/vnd.surok.buildings.v1+json",
             "application/vnd.surok.buildings.v1+xml"
         }
@@ -110,7 +106,7 @@ public class BdsHttp {
         final Sorts sorts,
         final HttpServletRequest request
     ) throws Exception {
-        final MediaType type = BdsHttp.accepted(request, "buildings.v1");
+        final MediaType type = new AcHttp(request, "buildings.v1").type();
         final School sch = new SlsPostgres(this.ctx).school(school);
         final Set<Filter> requested = new LinkedHashSet<>(filters.filters());
         requested.addAll(
@@ -137,9 +133,9 @@ public class BdsHttp {
                         "buildings", new BdsWeb(selected, applied, sorts)
                     ).print();
                 }
-                case MediaType.APPLICATION_JSON_VALUE, "application/vnd.surok.buildings.v1+json" ->
+                case "application/vnd.surok.buildings.v1+json" ->
                     selected.print(new MdJson()).print();
-                case MediaType.APPLICATION_XML_VALUE, "application/vnd.surok.buildings.v1+xml" ->
+                case "application/vnd.surok.buildings.v1+xml" ->
                     selected.print(new MdXml("buildings")).print();
                 case null, default -> throw new ResponseStatusException(
                     HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
@@ -160,8 +156,7 @@ public class BdsHttp {
     @GetMapping(
         value = {"/{building}", "/{building}/edit"},
         produces = {
-            MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_JSON_VALUE,
-            MediaType.APPLICATION_XML_VALUE,
+            MediaType.TEXT_HTML_VALUE,
             "application/vnd.surok.building-v1+json",
             "application/vnd.surok.building-v1+xml"
         }
@@ -172,7 +167,7 @@ public class BdsHttp {
         @PathVariable final long building,
         final HttpServletRequest request
     ) throws Exception {
-        final MediaType type = BdsHttp.accepted(request, "building-v1");
+        final MediaType type = new AcHttp(request, "building-v1").type();
         final School sch = new SlsPostgres(this.ctx).school(school);
         final Buildings origin = sch.buildings();
         final Building selected = origin.building(building);
@@ -189,9 +184,9 @@ public class BdsHttp {
                         "buildings", new BdsSingle(origin, selected)
                     ).print();
                 }
-                case MediaType.APPLICATION_JSON_VALUE, "application/vnd.surok.building-v1+json" ->
+                case "application/vnd.surok.building-v1+json" ->
                     new BdV1(selected).print(new MdJson()).print();
-                case MediaType.APPLICATION_XML_VALUE, "application/vnd.surok.building-v1+xml" ->
+                case "application/vnd.surok.building-v1+xml" ->
                     new BdV1(selected).print(new MdXml("building")).print();
                 case null, default -> throw new ResponseStatusException(
                     HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
@@ -211,9 +206,9 @@ public class BdsHttp {
      */
     @PostMapping(
         value = "/create",
+        consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
         produces = {
-            MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_JSON_VALUE,
-            MediaType.APPLICATION_XML_VALUE,
+            MediaType.TEXT_HTML_VALUE,
             "application/vnd.surok.building-v1+json",
             "application/vnd.surok.building-v1+xml"
         }
@@ -231,13 +226,25 @@ public class BdsHttp {
         @RequestParam final MultiValueMap<String, String> parameters,
         final HttpServletRequest request
     ) throws Exception {
-        return BdsHttp.result(
-            BdsHttp.accepted(request, "building-v1"),
-            new SlsPostgres(this.ctx).school(school).buildings()
-                .create(new BdInputHttp(parameters)), HttpStatus.CREATED,
-            String.format("/schools/%d/buildings", school),
-            String.format("/schools/%d/buildings", school)
-        );
+        final MediaType type = new AcHttp(request, "building-v1").type();
+        ResponseEntity<?> response;
+        try {
+            response = BdsHttp.result(
+                type,
+                new SlsPostgres(this.ctx).school(school).buildings()
+                    .create(new BdInputHttp(parameters)), HttpStatus.CREATED,
+                String.format("/schools/%d/buildings", school),
+                String.format("/schools/%d/buildings", school)
+            );
+        } catch (final BuildingInputException exception) {
+            if (!MediaType.TEXT_HTML.equals(type)) {
+                throw exception;
+            }
+            response = ResponseEntity.status(HttpStatus.FOUND).location(
+                URI.create(String.format("%s?error=empty", request.getRequestURI()))
+            ).build();
+        }
+        return response;
     }
 
     /**
@@ -251,10 +258,9 @@ public class BdsHttp {
      */
     @PostMapping(
         value = {"", "/", "/create"},
-        consumes = MediaType.APPLICATION_JSON_VALUE,
+        consumes = "application/vnd.surok.building-v1+json",
         produces = {
-            MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_JSON_VALUE,
-            MediaType.APPLICATION_XML_VALUE,
+            MediaType.TEXT_HTML_VALUE,
             "application/vnd.surok.building-v1+json",
             "application/vnd.surok.building-v1+xml"
         }
@@ -273,7 +279,7 @@ public class BdsHttp {
         final HttpServletRequest request
     ) throws Exception {
         return BdsHttp.result(
-            BdsHttp.accepted(request, "building-v1"),
+            new AcHttp(request, "building-v1").type(),
             new SlsPostgres(this.ctx).school(school).buildings()
                 .create(new BdInputHttp(json)), HttpStatus.CREATED,
             String.format("/schools/%d/buildings", school),
@@ -293,9 +299,9 @@ public class BdsHttp {
      */
     @PostMapping(
         value = "/{building}/edit",
+        consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
         produces = {
-            MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_JSON_VALUE,
-            MediaType.APPLICATION_XML_VALUE,
+            MediaType.TEXT_HTML_VALUE,
             "application/vnd.surok.building-v1+json",
             "application/vnd.surok.building-v1+xml"
         }
@@ -314,13 +320,24 @@ public class BdsHttp {
         @RequestParam final MultiValueMap<String, String> parameters,
         final HttpServletRequest request
     ) throws Exception {
-        final MediaType type = BdsHttp.accepted(request, "building-v1");
-        final Building revised = new SlsPostgres(this.ctx).school(school).buildings()
-            .revise(building, new BdInputHttp(parameters));
-        return BdsHttp.result(
-            type, revised, HttpStatus.OK, String.format("/schools/%d/buildings", school),
-            String.format("/schools/%d/buildings/%d", school, revised.uid())
-        );
+        final MediaType type = new AcHttp(request, "building-v1").type();
+        ResponseEntity<?> response;
+        try {
+            final Building revised = new SlsPostgres(this.ctx).school(school).buildings()
+                .revise(building, new BdInputHttp(parameters));
+            response = BdsHttp.result(
+                type, revised, HttpStatus.OK, String.format("/schools/%d/buildings", school),
+                String.format("/schools/%d/buildings/%d", school, revised.uid())
+            );
+        } catch (final BuildingInputException exception) {
+            if (!MediaType.TEXT_HTML.equals(type)) {
+                throw exception;
+            }
+            response = ResponseEntity.status(HttpStatus.FOUND).location(
+                URI.create(String.format("%s?error=empty", request.getRequestURI()))
+            ).build();
+        }
+        return response;
     }
 
     /**
@@ -335,10 +352,9 @@ public class BdsHttp {
      */
     @PutMapping(
         value = "/{building}",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
+        consumes = "application/vnd.surok.building-v1+json",
         produces = {
-            MediaType.TEXT_HTML_VALUE, MediaType.APPLICATION_JSON_VALUE,
-            MediaType.APPLICATION_XML_VALUE,
+            MediaType.TEXT_HTML_VALUE,
             "application/vnd.surok.building-v1+json",
             "application/vnd.surok.building-v1+xml"
         }
@@ -357,7 +373,7 @@ public class BdsHttp {
         @RequestBody final JsonNode json,
         final HttpServletRequest request
     ) throws Exception {
-        final MediaType type = BdsHttp.accepted(request, "building-v1");
+        final MediaType type = new AcHttp(request, "building-v1").type();
         final Building revised = new SlsPostgres(this.ctx).school(school).buildings()
             .revise(building, new BdInputHttp(json));
         return BdsHttp.result(
@@ -401,12 +417,12 @@ public class BdsHttp {
         return switch (type.toString()) {
             case MediaType.TEXT_HTML_VALUE -> ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(redirect)).build();
-            case MediaType.APPLICATION_JSON_VALUE, "application/vnd.surok.building-v1+json" ->
+            case "application/vnd.surok.building-v1+json" ->
                 ResponseEntity.status(status)
                     .location(URI.create(String.format("%s/%d", base, selected.uid())))
                     .contentType(new MediaType(type, StandardCharsets.UTF_8))
                     .body(new BdV1(selected).print(new MdJson()).print());
-            case MediaType.APPLICATION_XML_VALUE, "application/vnd.surok.building-v1+xml" ->
+            case "application/vnd.surok.building-v1+xml" ->
                 ResponseEntity.status(status)
                     .location(URI.create(String.format("%s/%d", base, selected.uid())))
                     .contentType(new MediaType(type, StandardCharsets.UTF_8))
@@ -430,59 +446,7 @@ public class BdsHttp {
             new CsToken((CsrfToken) request.getAttribute(CsrfToken.class.getName()))
         ).print(
             new MdXslt(new MdXml("surok"), new XsClasspath("xslt/buildings.xsl", view))
-        ).with("school", new SlBrief(school));
-    }
-
-    private static MediaType accepted(
-        final HttpServletRequest request, final String resource
-    ) {
-        final List<MediaType> supported = List.of(
-            MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML,
-            MediaType.parseMediaType(
-                String.format("application/vnd.surok.%s+json", resource)
-            ),
-            MediaType.parseMediaType(
-                String.format("application/vnd.surok.%s+xml", resource)
-            )
-        );
-        final List<MediaType> accepted;
-        try {
-            accepted = new ArrayList<>(
-                MediaType.parseMediaTypes(request.getHeader(HttpHeaders.ACCEPT))
-            );
-        } catch (final InvalidMediaTypeException exception) {
-            throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Invalid Accept header", exception
-            );
-        }
-        if (accepted.isEmpty()) {
-            accepted.add(MediaType.ALL);
-        }
-        return supported.stream()
-            .filter(candidate -> BdsHttp.quality(candidate, accepted) > 0).max(
-                Comparator.comparingDouble(candidate -> BdsHttp.quality(candidate, accepted))
-            ).orElseThrow(
-                () -> new ResponseStatusException(
-                    HttpStatus.NOT_ACCEPTABLE, "Unsupported Accept header"
-                )
-            );
-    }
-
-    private static double quality(final MediaType candidate, final List<MediaType> accepted) {
-        return accepted.stream().filter(wanted -> wanted.isCompatibleWith(candidate)).max(
-            Comparator.comparingInt(
-                (MediaType wanted) -> {
-                    final int specificity;
-                    if (wanted.isWildcardType()) {
-                        specificity = 0;
-                    } else if (wanted.isWildcardSubtype()) {
-                        specificity = 1;
-                    } else {
-                        specificity = 2;
-                    }
-                    return specificity;
-                }
-            ).thenComparingDouble(MediaType::getQualityValue)
-        ).map(MediaType::getQualityValue).orElse(0.0);
+        ).with("school", new SlBrief(school))
+            .with("error", request.getParameter("error") != null);
     }
 }

@@ -1,4 +1,4 @@
-import { confirmed, removal } from './federal/removal.js';
+import { confirmed, removal } from './shared/removal.js';
 
 $(() => {
     $(document).on('click', '.btn-delete-curriculum', function () {
