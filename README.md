@@ -8,6 +8,9 @@
 [![yamllint](https://github.com/eshabakhov/surok/actions/workflows/yamllint.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/yamllint.yml)
 [![shellcheck](https://github.com/eshabakhov/surok/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/eshabakhov/surok/actions/workflows/shellcheck.yml)
 
+[![Lines-of-Code](https://img.shields.io/tokei/lines/github/eshabakhov/surok)](https://github.com/eshabakhov/surok)
+[![Hits-of-Code](https://hitsofcode.com/github/eshabakhov/surok)](https://hitsofcode.com/view/github/eshabakhov/surok)
+
 [![Version](https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2Feshabakhov%2Fsurok%2Fmain%2Fpom.xml&query=%2F%2A%5Blocal-name%28%29%3D%27project%27%5D%2F%2A%5Blocal-name%28%29%3D%27version%27%5D&label=Version&color=111827)](pom.xml)
 [![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE.txt)
 
