@@ -102,6 +102,8 @@
         </header>
     </xsl:template>
 
+    <xsl:template name="school-navigation"/>
+
     <xsl:template name="sidebar">
         <aside class="sidebar" id="sidebar">
             <nav class="sidebar-nav">
@@ -138,6 +140,7 @@
                         <span class="sidebar-link-label">Федеральные планы</span>
                     </a>
                 </xsl:if>
+                <xsl:call-template name="school-navigation"/>
             </nav>
         </aside>
     </xsl:template>

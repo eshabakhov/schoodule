@@ -1,6 +1,6 @@
 SELECT *
 FROM public.building
 WHERE {0}
-ORDER BY building.name ASC
-LIMIT {1}
-OFFSET {2}
+ORDER BY {1}
+LIMIT {2}
+OFFSET {3}

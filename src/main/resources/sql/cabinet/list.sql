@@ -1,6 +1,6 @@
 SELECT *
 FROM public.cabinet
 WHERE {0}
-ORDER BY cabinet.name ASC
-LIMIT {1}
-OFFSET {2}
+ORDER BY {1}
+LIMIT {2}
+OFFSET {3}

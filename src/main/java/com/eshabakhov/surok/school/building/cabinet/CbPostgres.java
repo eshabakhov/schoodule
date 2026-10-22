@@ -3,11 +3,11 @@
  */
 package com.eshabakhov.surok.school.building.cabinet;
 
-import com.eshabakhov.surok.school.building.Cabinet;
+import com.eshabakhov.surok.Media;
+import com.eshabakhov.surok.school.building.cabinet.input.MdCbInput;
 import com.eshabakhov.surok.sql.ClasspathSql;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 
 /**
  * Postgres implementation of {@link Cabinet}.
@@ -40,35 +40,32 @@ public final class CbPostgres implements Cabinet {
     }
 
     @Override
-    public String name() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("cabinet/find-name.sql").text(),
-            this.id
-        ).fetchOneInto(String.class);
+    public Cabinet revise(final CabinetInput input) throws Exception {
+        final Long revised = this.ctx.resultQuery(
+            new ClasspathSql("cabinet/rename.sql").text(),
+            input.print(new MdCbInput()).print().get("name"),
+            this.id,
+            false
+        ).fetchOne("id", Long.class);
+        if (revised == null) {
+            throw new CabinetNotFoundException(
+                String.format("Cabinet with id=%d not found", this.id)
+            );
+        }
+        return new CbPostgres(this.ctx, revised);
     }
 
     @Override
-    public Cabinet renamed(final String name) {
-        return new CbPostgres(
-            this.ctx,
-            this.ctx.resultQuery(
-                new ClasspathSql("cabinet/rename.sql").text(),
-                name,
-                this.id
-            ).fetchOne("id", Long.class)
-        );
-    }
-
-    @Override
-    public ObjectNode json() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("cabinet/find-details.sql").text(),
-            this.id
-        ).fetchOne(
-            clazz ->
-                JsonNodeFactory.instance.objectNode()
-                    .put("id", clazz.get("id", Long.class))
-                    .put("name", clazz.get("name", String.class))
-        );
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("cabinet/find-details.sql").text(), this.id, false
+        ).fetchOne();
+        if (selected == null) {
+            throw new CabinetNotFoundException(
+                String.format("Cabinet with id=%d not found", this.id)
+            );
+        }
+        return media.with("id", selected.get("id", Long.class))
+            .with("name", selected.get("name", String.class));
     }
 }

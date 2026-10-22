@@ -80,6 +80,22 @@ To run a single test class:
 ./mvnw -Dtest=ClasspathSqlTest test
 ```
 
+To run Java on your computer with PostgreSQL in Docker:
+
+```sh
+docker compose up -d postgres
+./mvnw clean spring-boot:run
+```
+
+The database defaults in [application.yml] match Compose. If you customize
+database settings in `.env`, pass the same `DB_*` variables to Maven or your
+IDE: Compose reads `.env`, while a direct Java launch uses its environment.
+For local HTTP login, set `APP_SECURITY_SECURE_COOKIE=false`. Yandex login
+requires real `YA_ID` and `YA_SECRET`; local defaults support password login.
+
+Before launching `SurokApplication` from an IDE, run `./mvnw process-classes`
+to generate build metadata and prepare templates in `target/classes`.
+
 After editing the application, run `docker compose up --build` again to see
 the changes. If a command fails, include the command and its log in the issue.
 Pull requests run CI checks before review.
@@ -89,3 +105,4 @@ Pull requests run CI checks before review.
 [JDK 21]: https://adoptium.net/temurin/releases/?version=21
 [create an account]: http://localhost:19500/users/register
 [issue]: https://github.com/eshabakhov/surok/issues
+[application.yml]: src/main/resources/application.yml

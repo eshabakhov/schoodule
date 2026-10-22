@@ -1,10 +1,10 @@
-import { delayed } from './federal/delayed.js';
-import { filters } from './federal/filters.js';
-import { fragment, remembered } from './federal/fragment.js';
-import { query } from './federal/query.js';
-import { confirmed, removal } from './federal/removal.js';
+import { delayed } from './shared/delayed.js';
+import { filters } from './shared/filters.js';
+import { fragment, remembered } from './shared/fragment.js';
+import { query } from './shared/query.js';
+import { confirmed, removal } from './shared/removal.js';
 import { requirement } from './federal/requirement.js';
-import { sorts } from './federal/sorts.js';
+import { sorts } from './shared/sorts.js';
 
 $(() => {
     const path = window.location.pathname;

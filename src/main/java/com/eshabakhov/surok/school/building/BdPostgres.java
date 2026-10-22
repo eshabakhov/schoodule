@@ -3,12 +3,13 @@
  */
 package com.eshabakhov.surok.school.building;
 
-import com.eshabakhov.surok.school.Building;
+import com.eshabakhov.surok.Media;
+import com.eshabakhov.surok.school.building.cabinet.Cabinets;
 import com.eshabakhov.surok.school.building.cabinet.CbsPostgres;
+import com.eshabakhov.surok.school.building.input.MdBdInput;
 import com.eshabakhov.surok.sql.ClasspathSql;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 
 /**
  * Postgres implementation of {@link Building}.
@@ -41,23 +42,19 @@ public final class BdPostgres implements Building {
     }
 
     @Override
-    public String name() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("building/find-name.sql").text(),
-            this.id
-        ).fetchOneInto(String.class);
-    }
-
-    @Override
-    public Building renamed(final String name) {
-        return new BdPostgres(
-            this.ctx,
-            this.ctx.resultQuery(
-                new ClasspathSql("building/rename.sql").text(),
-                name,
-                this.id
-            ).fetchOne("id", Long.class)
-        );
+    public Building revise(final BuildingInput input) throws Exception {
+        final Long revised = this.ctx.resultQuery(
+            new ClasspathSql("building/rename.sql").text(),
+            input.print(new MdBdInput()).print().get("name"),
+            this.id,
+            false
+        ).fetchOne("id", Long.class);
+        if (revised == null) {
+            throw new BuildingNotFoundException(
+                String.format("Building with id=%d not found", this.id)
+            );
+        }
+        return new BdPostgres(this.ctx, revised);
     }
 
     @Override
@@ -66,15 +63,16 @@ public final class BdPostgres implements Building {
     }
 
     @Override
-    public ObjectNode json() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("building/find-details.sql").text(),
-            this.id
-        ).fetchOne(
-            clazz ->
-                JsonNodeFactory.instance.objectNode()
-                    .put("id", clazz.get("id", Long.class))
-                    .put("name", clazz.get("name", String.class))
-        );
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("building/find-details.sql").text(), this.id, false
+        ).fetchOne();
+        if (selected == null) {
+            throw new BuildingNotFoundException(
+                String.format("Building with id=%d not found", this.id)
+            );
+        }
+        return media.with("id", selected.get("id", Long.class))
+            .with("name", selected.get("name", String.class));
     }
 }

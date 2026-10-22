@@ -1,3 +1,3 @@
 SELECT cabinet.id, cabinet.name
 FROM public.cabinet
-WHERE cabinet.id = ?
+WHERE (cabinet.id = ?) AND (cabinet.is_deleted = ?)

@@ -1,4 +1,4 @@
 UPDATE public.building
 SET name = ?
-WHERE building.id = ?
+WHERE (building.id = ?) AND (building.is_deleted = ?)
 RETURNING id

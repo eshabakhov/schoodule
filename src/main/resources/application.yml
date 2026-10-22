@@ -3,9 +3,9 @@ spring:
     name: surok
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DB_URL:${db.url:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:15432}/${DB_NAME:postgres}}}
-    username: ${DB_USERNAME:${db.username:postgres}}
-    password: ${DB_PASSWORD:${db.password:postgres}}
+    url: ${DB_URL:${db.url:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:15432}/${DB_NAME:surok}}}
+    username: ${DB_USERNAME:${db.username:surok}}
+    password: ${DB_PASSWORD:${db.password:local-development}}
   liquibase:
     enabled: true
     change-log: classpath:changelog/changelog.xml
@@ -20,8 +20,8 @@ spring:
       client:
         registration:
           yandex:
-            client-id: ${YA_ID:${ya-id:}}
-            client-secret: ${YA_SECRET:${ya-secret:}}
+            client-id: ${YA_ID:${ya-id:local-development}}
+            client-secret: ${YA_SECRET:${ya-secret:local-development}}
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/yandex"
             scope:

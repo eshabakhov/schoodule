@@ -3,7 +3,6 @@
  */
 package com.eshabakhov.surok.error;
 
-import com.eshabakhov.surok.controller.api.CabinetRequiredFieldException;
 import com.eshabakhov.surok.controller.api.ScheduleRequiredFieldException;
 import com.eshabakhov.surok.controller.api.SchoolClassRequiredFieldException;
 import com.eshabakhov.surok.controller.api.SchoolRequiredFieldException;
@@ -13,9 +12,13 @@ import com.eshabakhov.surok.federal.curriculum.input.CurriculumInputException;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RequirementInputException;
 import com.eshabakhov.surok.school.SchoolFailedCreateException;
 import com.eshabakhov.surok.school.SchoolNotFoundException;
+import com.eshabakhov.surok.school.building.BuildingAlreadyExistsException;
+import com.eshabakhov.surok.school.building.BuildingNotFoundException;
 import com.eshabakhov.surok.school.building.cabinet.CabinetAlreadyExistsException;
 import com.eshabakhov.surok.school.building.cabinet.CabinetFailedCreateException;
 import com.eshabakhov.surok.school.building.cabinet.CabinetNotFoundException;
+import com.eshabakhov.surok.school.building.cabinet.input.CabinetInputException;
+import com.eshabakhov.surok.school.building.input.BuildingInputException;
 import com.eshabakhov.surok.school.schedule.ScheduleAlreadyExistsException;
 import com.eshabakhov.surok.school.schoolclass.SchoolClassAlreadyExistsException;
 import com.eshabakhov.surok.school.subject.SubjectAlreadyExistsException;
@@ -73,7 +76,8 @@ public final class RestResponseEntityExceptionHandler {
     @ExceptionHandler(
         {
             SchoolRequiredFieldException.class,
-            CabinetRequiredFieldException.class,
+            BuildingInputException.class,
+            CabinetInputException.class,
             ScheduleRequiredFieldException.class,
             SchoolClassRequiredFieldException.class,
             SubjectRequiredFieldException.class,
@@ -98,6 +102,7 @@ public final class RestResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(
         {
+            BuildingNotFoundException.class,
             CabinetNotFoundException.class,
             SchoolNotFoundException.class,
             TeacherNotFoundException.class
@@ -132,6 +137,7 @@ public final class RestResponseEntityExceptionHandler {
     @ExceptionHandler(
         {
             SchoolClassAlreadyExistsException.class,
+            BuildingAlreadyExistsException.class,
             CabinetAlreadyExistsException.class,
             ScheduleAlreadyExistsException.class,
             SchoolClassAlreadyExistsException.class,
