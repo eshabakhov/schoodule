@@ -5,6 +5,7 @@
     <xsl:variable name="building" select="/surok/building | /surok/buildings/building[$view = 'details' or $view = 'edit']"/>
     <xsl:variable name="cabinet" select="/surok/cabinets/cabinet[$view = 'details' or $view = 'edit']"/>
     <xsl:variable name="clazz" select="/surok/classes/school-class[not(/surok/loads) and ($view = 'details' or $view = 'edit')]"/>
+    <xsl:variable name="teacher" select="/surok/teachers/teacher[$view = 'details' or $view = 'edit']"/>
     <xsl:variable name="subject" select="/surok/subjects/subject[not(/surok/loads) and ($view = 'details' or $view = 'edit')]"/>
     <xsl:variable name="school-path" select="concat('/schools/', $school/id)"/>
 
@@ -57,6 +58,12 @@
                         </svg>
                         <span class="sidebar-link-label">Учителя</span>
                     </a>
+        <xsl:if test="$teacher/id">
+            <div class="sidebar-subnav">
+                <a class="sidebar-subnav-link active" href="{$school-path}/teachers/{$teacher/id}"
+                   title="Перейти к учителю"><xsl:value-of select="$teacher/name"/></a>
+            </div>
+        </xsl:if>
         <a class="sidebar-link"
                        href="{$school-path}/classes"
                        title="Классы">
@@ -135,7 +142,9 @@
     <xsl:template name="name-sort">
         <xsl:param name="prefix"/>
         <xsl:param name="direction"/>
-        <button type="button" title="Сортировать по названию" data-sort="name"
+        <xsl:param name="label" select="'Название'"/>
+        <xsl:param name="title" select="'Сортировать по названию'"/>
+        <button type="button" title="{$title}" data-sort="name"
                 aria-pressed="{$direction = 'ASC' or $direction = 'DESC'}">
             <xsl:attribute name="class">
                 <xsl:value-of select="concat($prefix, '-sort')"/>
@@ -143,7 +152,7 @@
                     <xsl:text> active</xsl:text>
                 </xsl:if>
             </xsl:attribute>
-            <span>Название</span>
+            <span><xsl:value-of select="$label"/></span>
             <span class="{$prefix}-sort-icon">
                 <xsl:choose>
                     <xsl:when test="$direction = 'ASC'">↑</xsl:when>

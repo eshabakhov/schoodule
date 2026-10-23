@@ -130,7 +130,7 @@ final class SecurityConfigTest {
             HttpStatus.OK.value(),
             mvc.perform(
                 MockMvcRequestBuilders.get(
-                    "/api/schools/{school}/teachers",
+                    "/api/schools/{school}/schedules",
                     new SlsPostgres(ctx).create(
                         new SlInputName(new SlInput(), "Школа проверки доступа")
                     ).uid()
@@ -158,7 +158,7 @@ final class SecurityConfigTest {
         Assertions.assertEquals(
             HttpStatus.UNAUTHORIZED.value(),
             mvc.perform(
-                MockMvcRequestBuilders.get("/api/schools/1/teachers").with(
+                MockMvcRequestBuilders.get("/api/schools/1/schedules").with(
                     SecurityMockMvcRequestPostProcessors.httpBasic(
                         SecurityConfigTest.administrator(ctx).credentials().username(),
                         "WrongPassword1!"
@@ -179,7 +179,7 @@ final class SecurityConfigTest {
     void rejectsAnonymousApiRequests(@Autowired final MockMvc mvc) throws Exception {
         Assertions.assertEquals(
             HttpStatus.UNAUTHORIZED.value(),
-            mvc.perform(MockMvcRequestBuilders.get("/api/schools/1/teachers"))
+            mvc.perform(MockMvcRequestBuilders.get("/api/schools/1/schedules"))
                 .andReturn().getResponse().getStatus(),
             "Anonymous request bypassed API authentication"
         );

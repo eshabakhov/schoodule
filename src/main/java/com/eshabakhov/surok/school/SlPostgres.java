@@ -14,6 +14,7 @@ import com.eshabakhov.surok.school.schoolclass.SchoolClasses;
 import com.eshabakhov.surok.school.schoolclass.ScsPostgres;
 import com.eshabakhov.surok.school.subject.SbsPostgres;
 import com.eshabakhov.surok.school.subject.Subjects;
+import com.eshabakhov.surok.school.teacher.Teachers;
 import com.eshabakhov.surok.school.teacher.ThsPostgres;
 import com.eshabakhov.surok.sql.ClasspathSql;
 import com.eshabakhov.surok.user.UrsPostgres;

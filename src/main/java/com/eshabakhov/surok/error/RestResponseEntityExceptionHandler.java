@@ -4,7 +4,6 @@
 package com.eshabakhov.surok.error;
 
 import com.eshabakhov.surok.controller.api.ScheduleRequiredFieldException;
-import com.eshabakhov.surok.controller.api.TeacherRequiredFieldException;
 import com.eshabakhov.surok.federal.curriculum.input.CurriculumInputException;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RequirementInputException;
 import com.eshabakhov.surok.school.SchoolFailedCreateException;
@@ -34,6 +33,7 @@ import com.eshabakhov.surok.school.subject.input.SubjectInputException;
 import com.eshabakhov.surok.school.teacher.TeacherAlreadyExistsException;
 import com.eshabakhov.surok.school.teacher.TeacherFailedCreateException;
 import com.eshabakhov.surok.school.teacher.TeacherNotFoundException;
+import com.eshabakhov.surok.school.teacher.input.TeacherInputException;
 import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -90,7 +90,7 @@ public final class RestResponseEntityExceptionHandler {
             ScheduleRequiredFieldException.class,
             SchoolClassInputException.class,
             SubjectInputException.class,
-            TeacherRequiredFieldException.class,
+            TeacherInputException.class,
             CurriculumInputException.class,
             LoadInputException.class,
             RequirementInputException.class

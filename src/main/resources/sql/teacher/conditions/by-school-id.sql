@@ -1,1 +1,0 @@
-teacher.school_id = ?
