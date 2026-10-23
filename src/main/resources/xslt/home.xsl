@@ -1,26 +1,23 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-          content="Surok - онлайн-сервис для составления школьных расписаний, управления учебными планами, учителями и кабинетами.">
-    <link rel="canonical" href="https://surok.com">
-    <title>Surok</title>
-    <link rel="stylesheet" href="/css/tokens.css">
-    <link rel="stylesheet" href="/css/landing.css">
-    <link rel="stylesheet" href="/css/footer.css">
-    <link type="image/svg+xml" rel="icon" href="/favicon.svg">
-</head>
-<body>
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:import href="web-common.xsl"/>
+    <xsl:output method="html" encoding="UTF-8" omit-xml-declaration="yes" doctype-system="about:legacy-compat"/>
+    <xsl:template match="/"><xsl:call-template name="page"/></xsl:template>
+    <xsl:template name="page-description">Surok - онлайн-сервис для составления школьных расписаний, управления учебными планами, учителями и кабинетами.</xsl:template>
+    <xsl:template name="canonical"><link rel="canonical" href="https://surok.com"/></xsl:template>
+    <xsl:template name="base-styles"><link rel="stylesheet" href="/css/tokens.css"/></xsl:template>
+    <xsl:template name="styles">
+        <link rel="stylesheet" href="/css/landing.css"/>
+        <link rel="stylesheet" href="/css/footer.css"/>
+    </xsl:template>
+    <xsl:template name="page-body">
 <div class="landing">
     <header class="hero">
         <h1>Surok</h1>
         <p>Открой для себя новый опыт составления расписаний</p>
         <a class="cta"
-           href="#"
-           title="Начать работу с расписаниями"
-           th:href="${url}">
+           href="{/surok/url}"
+           title="Начать работу с расписаниями">
             Открыть расписание
         </a>
     </header>
@@ -118,6 +115,6 @@
         </section>
     </main>
 </div>
-<div th:replace="~{footer}"></div>
-</body>
-</html>
+        <xsl:call-template name="footer"/>
+    </xsl:template>
+</xsl:stylesheet>

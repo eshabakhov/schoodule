@@ -1,5 +1,9 @@
 @import url("tokens.css");
 
+.eye-icon.is-hidden {
+    display: none;
+}
+
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;

@@ -16,6 +16,16 @@ public final class RegistrationException extends Exception {
      * @param message Error message
      */
     public RegistrationException(final String message) {
-        super(message);
+        this(message, null);
+    }
+
+    /**
+     * New exception retaining a storage failure.
+     *
+     * @param message Error message
+     * @param cause Original failure
+     */
+    public RegistrationException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }

@@ -145,7 +145,7 @@
 					<include>**/application*.yaml</include>
 					<include>**/application*.properties</include>
 					<include>templates/base.html</include>
-					<include>xslt/federal-common.xsl</include>
+					<include>xslt/web-common.xsl</include>
 				</includes>
 			</resource>
 			<resource>
@@ -156,7 +156,7 @@
 					<exclude>**/application*.yaml</exclude>
 					<exclude>**/application*.properties</exclude>
 					<exclude>templates/base.html</exclude>
-					<exclude>xslt/federal-common.xsl</exclude>
+					<exclude>xslt/web-common.xsl</exclude>
 				</excludes>
 			</resource>
 		</resources>
