@@ -3,7 +3,7 @@
  */
 
 /**
- * School schedule domain objects.
+ * School schedule implementations.
  *
  * @since 0.0.1
  */

@@ -7,9 +7,6 @@ import com.eshabakhov.surok.Media;
 import com.eshabakhov.surok.PrItems;
 import com.eshabakhov.surok.Printable;
 import com.eshabakhov.surok.School;
-import com.eshabakhov.surok.page.PageRequest;
-import com.eshabakhov.surok.school.schedule.SdBrief;
-import org.jooq.impl.DSL;
 
 /**
  * School navigation data, for example {@code new SlBrief(school).print(media)}.
@@ -36,9 +33,7 @@ public final class SlBrief implements Printable {
             "schedules",
             new PrItems(
                 "schedule",
-                this.origin.schedules().schedules(
-                    DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1)
-                ).list().stream().map(SdBrief::new).toList()
+                this.origin.schedules().iterate()
             )
         );
     }

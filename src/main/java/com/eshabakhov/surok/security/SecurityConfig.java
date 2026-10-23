@@ -11,11 +11,14 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
@@ -27,9 +30,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -155,8 +161,16 @@ public class SecurityConfig {
         final PasswordEncoder encoder
     ) throws Exception {
         this.authentication(http, encoder);
+        final MediaTypeRequestMatcher wildcard = new MediaTypeRequestMatcher(MediaType.ALL);
+        wildcard.setUseEquals(true);
+        final MediaTypeRequestMatcher data = new MediaTypeRequestMatcher(
+            MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML,
+            MediaType.parseMediaType("application/*+json"),
+            MediaType.parseMediaType("application/*+xml")
+        );
+        data.setIgnoredMediaTypes(Set.of(MediaType.ALL));
         return http
-            .cors(Customizer.withDefaults()).csrf(
+            .httpBasic(Customizer.withDefaults()).cors(Customizer.withDefaults()).csrf(
                 csrf -> csrf
                     .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             ).authorizeHttpRequests(
@@ -222,7 +236,11 @@ public class SecurityConfig {
                     .logoutUrl("/logout")
                     .logoutSuccessUrl("/users/login?logout")
             ).exceptionHandling(
-                exceptions -> exceptions.accessDeniedHandler(
+                exceptions -> exceptions.defaultAuthenticationEntryPointFor(
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), data
+                ).defaultAuthenticationEntryPointFor(
+                    new LoginUrlAuthenticationEntryPoint("/users/login"), wildcard
+                ).accessDeniedHandler(
                     (request, response, denied) ->
                         response.sendError(HttpServletResponse.SC_FORBIDDEN)
                     )

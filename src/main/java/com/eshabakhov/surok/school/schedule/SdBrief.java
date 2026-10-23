@@ -5,7 +5,6 @@ package com.eshabakhov.surok.school.schedule;
 
 import com.eshabakhov.surok.Media;
 import com.eshabakhov.surok.Printable;
-import com.eshabakhov.surok.school.Schedule;
 
 /**
  * Schedule navigation item.
@@ -27,7 +26,7 @@ public final class SdBrief implements Printable {
     }
 
     @Override
-    public <T> Media<T> print(final Media<T> media) {
-        return media.with("id", this.origin.uid()).with("name", this.origin.name());
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        return this.origin.print(media).include("id", "name");
     }
 }

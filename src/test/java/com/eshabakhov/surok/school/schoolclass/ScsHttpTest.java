@@ -397,8 +397,11 @@ final class ScsHttpTest {
         this.mvc.perform(
             MockMvcRequestBuilders.get("/schools/1/schedules/100")
                 .session(this.session(Roles.RoleEnum.DIRECTOR, 1L))
-        ).andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.model().attribute("classCount", 2));
+        ).andExpect(MockMvcResultMatchers.status().isOk()).andExpect(
+            MockMvcResultMatchers.content().string(
+                Matchers.containsString("class=\"stat-value\">2</div>")
+            )
+        );
         MatcherAssert.assertThat(
             new ClassLoadPostgres(this.ctx, 40L)
                 .print(new MdJson()).print().path("schoolClassName").asText(),

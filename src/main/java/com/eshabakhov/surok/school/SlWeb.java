@@ -7,9 +7,6 @@ import com.eshabakhov.surok.Media;
 import com.eshabakhov.surok.PrItems;
 import com.eshabakhov.surok.Printable;
 import com.eshabakhov.surok.School;
-import com.eshabakhov.surok.page.PageRequest;
-import com.eshabakhov.surok.school.schedule.SdBrief;
-import org.jooq.impl.DSL;
 
 /**
  * School data for legacy Thymeleaf pages, for example {@code new SlWeb(school).print(media)}.
@@ -36,9 +33,7 @@ public final class SlWeb implements Printable {
             "schedules",
             new PrItems(
                 "item",
-                this.origin.schedules().schedules(
-                    DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1)
-                ).list().stream().map(SdBrief::new).toList()
+                this.origin.schedules().iterate()
             )
         );
     }

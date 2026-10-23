@@ -1,0 +1,17 @@
+/*
+ * © 2025-2026 Eset Shabakhov. Surok
+ */
+package com.eshabakhov.surok.school.schedule;
+
+import com.eshabakhov.surok.Printable;
+
+/**
+ * Input fields of a school schedule.
+ *
+ * <p>Implementations compose individual fields and print them into the
+ * supplied medium without exposing their values through getters.</p>
+ *
+ * @since 0.0.1
+ */
+public interface ScheduleInput extends Printable {
+}

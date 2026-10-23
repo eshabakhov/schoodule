@@ -3,79 +3,109 @@
  */
 package com.eshabakhov.surok.school.schedule;
 
-import com.eshabakhov.surok.school.Schedule;
+import com.eshabakhov.surok.Media;
+import com.eshabakhov.surok.school.schedule.input.MdSdInput;
 import com.eshabakhov.surok.school.schedule.load.ClassLoads;
 import com.eshabakhov.surok.school.schedule.load.ClassLoadsPostgres;
 import com.eshabakhov.surok.sql.ClasspathSql;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
+import org.jooq.impl.DSL;
 
 /**
- * Postgres implementation of {@link Schedule}.
+ * Postgres school schedule.
+ *
+ * <p>Checked domain failures are unwrapped from transaction failures.</p>
  *
  * @since 0.0.1
+ * @checkstyle LambdaBodyLengthCheck (100 lines)
  */
 public final class SdPostgres implements Schedule {
 
-    /** JOOQ DSL context for executing database queries. */
+    /** Database context. */
     private final DSLContext ctx;
 
-    /** Schedule id. */
-    private final Long sid;
+    /** Schedule identifier. */
+    private final Long id;
 
     /**
      * New schedule.
      *
      * @param ctx Database context
-     * @param sid Schedule ID
-     * @since 0.0.1
+     * @param id Schedule identifier
      */
-    public SdPostgres(final DSLContext ctx, final Long sid) {
+    public SdPostgres(final DSLContext ctx, final Long id) {
         this.ctx = ctx;
-        this.sid = sid;
+        this.id = id;
     }
 
     @Override
     public Long uid() {
-        return this.sid;
+        return this.id;
     }
 
     @Override
-    public String name() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("schedule/find-name.sql").text(),
-            this.sid
-        ).fetchOneInto(String.class);
+    @SuppressWarnings("PMD.PreserveStackTrace")
+    public Schedule revise(final ScheduleInput input) throws Exception {
+        final String name = input.print(new MdSdInput()).print().get("name");
+        try {
+            return this.ctx.transactionResult(
+                config -> {
+                    final DSLContext transaction = DSL.using(config);
+                    final Record current = transaction.resultQuery(
+                        new ClasspathSql("schedule/find-details.sql").text(), this.id, false
+                    ).fetchOne();
+                    if (current == null) {
+                        throw new ScheduleNotFoundException(
+                            String.format("Schedule with id=%d not found", this.id)
+                        );
+                    }
+                    final Record existing = transaction.resultQuery(
+                        new ClasspathSql("schedule/find-existing.sql").text(),
+                        current.get("school_id", Long.class), name, false
+                    ).fetchOne();
+                    if (existing != null && !this.id.equals(existing.get("id", Long.class))) {
+                        throw new ScheduleAlreadyExistsException(
+                            String.format("Schedule `%s` already exists", name)
+                        );
+                    }
+                    final Long revised = transaction.resultQuery(
+                        new ClasspathSql("schedule/rename.sql").text(), name, this.id, false
+                    ).fetchOne("id", Long.class);
+                    if (revised == null) {
+                        throw new ScheduleNotFoundException(
+                            String.format("Schedule with id=%d not found", this.id)
+                        );
+                    }
+                    return new SdPostgres(this.ctx, revised);
+                }
+            );
+        } catch (final DataAccessException exception) {
+            switch (exception.getCause()) {
+                case ScheduleAlreadyExistsException duplicate -> throw duplicate;
+                case ScheduleNotFoundException missing -> throw missing;
+                case null, default -> throw exception;
+            }
+        }
     }
 
     @Override
-    public Schedule renamed(final String name) {
-        return new SdPostgres(
-            this.ctx,
-            this.ctx.resultQuery(
-                new ClasspathSql("schedule/rename.sql").text(),
-                name,
-                this.sid
-            ).fetchOne("id", Long.class)
-        );
-    }
-
-    @Override
-    public ObjectNode json() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("schedule/find-details.sql").text(),
-            this.sid
-        ).fetchOne(
-            clazz ->
-                JsonNodeFactory.instance.objectNode()
-                    .put("id", clazz.get("id", Long.class))
-                    .put("name", clazz.get("name", String.class))
-        );
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("schedule/find-details.sql").text(), this.id, false
+        ).fetchOne();
+        if (selected == null) {
+            throw new ScheduleNotFoundException(
+                String.format("Schedule with id=%d not found", this.id)
+            );
+        }
+        return media.with("id", selected.get("id", Long.class))
+            .with("name", selected.get("name", String.class));
     }
 
     @Override
     public ClassLoads loads() {
-        return new ClassLoadsPostgres(this.ctx, this.sid);
+        return new ClassLoadsPostgres(this.ctx, this.id);
     }
 }

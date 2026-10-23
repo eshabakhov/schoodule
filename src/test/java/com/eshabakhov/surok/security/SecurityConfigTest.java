@@ -130,11 +130,11 @@ final class SecurityConfigTest {
             HttpStatus.OK.value(),
             mvc.perform(
                 MockMvcRequestBuilders.get(
-                    "/api/schools/{school}/schedules",
+                    "/schools/{school}/schedules",
                     new SlsPostgres(ctx).create(
                         new SlInputName(new SlInput(), "Школа проверки доступа")
                     ).uid()
-                ).with(
+                ).accept("application/vnd.surok.schedules.v1+json").with(
                     SecurityMockMvcRequestPostProcessors.httpBasic(
                         SecurityConfigTest.administrator(ctx).credentials().username(),
                         "ValidPassword1!"
@@ -158,7 +158,8 @@ final class SecurityConfigTest {
         Assertions.assertEquals(
             HttpStatus.UNAUTHORIZED.value(),
             mvc.perform(
-                MockMvcRequestBuilders.get("/api/schools/1/schedules").with(
+                MockMvcRequestBuilders.get("/schools/1/schedules")
+                    .accept("application/vnd.surok.schedules.v1+json").with(
                     SecurityMockMvcRequestPostProcessors.httpBasic(
                         SecurityConfigTest.administrator(ctx).credentials().username(),
                         "WrongPassword1!"
@@ -170,18 +171,80 @@ final class SecurityConfigTest {
     }
 
     /**
-     * Anonymous API requests must remain protected.
+     * Anonymous data requests must remain protected.
      *
+     * @param accept Requested representation
      * @param mvc HTTP client
      * @throws Exception If the request fails
      */
-    @Test
-    void rejectsAnonymousApiRequests(@Autowired final MockMvc mvc) throws Exception {
+    @ParameterizedTest
+    @ValueSource(
+        strings = {
+            "application/vnd.surok.schedules.v1+json", "application/vnd.surok.schedules.v1+xml",
+            "application/json", "application/xml"
+        }
+    )
+    void rejectsAnonymousDataRequests(final String accept, @Autowired final MockMvc mvc)
+        throws Exception {
         Assertions.assertEquals(
             HttpStatus.UNAUTHORIZED.value(),
-            mvc.perform(MockMvcRequestBuilders.get("/api/schools/1/schedules"))
-                .andReturn().getResponse().getStatus(),
-            "Anonymous request bypassed API authentication"
+            mvc.perform(
+                MockMvcRequestBuilders.get("/schools/1/schedules")
+                    .accept(accept)
+            ).andReturn().getResponse().getStatus(),
+            "Anonymous request bypassed resource authentication"
+        );
+    }
+
+    /**
+     * Browser requests must retain the existing login redirect.
+     *
+     * @param accept Requested representation
+     * @param mvc HTTP client
+     * @throws Exception If the request fails
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"text/html", "*/*"})
+    void redirectsAnonymousBrowserRequests(final String accept, @Autowired final MockMvc mvc)
+        throws Exception {
+        Assertions.assertEquals(
+            "http://localhost/users/login",
+            mvc.perform(
+                MockMvcRequestBuilders.get("/schools/1/schedules").accept(accept)
+            ).andReturn().getResponse().getRedirectedUrl(),
+            "Browser request lost its login redirect"
+        );
+    }
+
+    /**
+     * Basic authentication must not bypass CSRF on the unified resource.
+     *
+     * @param mvc HTTP client
+     * @param ctx Database context
+     * @throws Exception If the request fails
+     */
+    @Test
+    void protectsBasicMutationsWithCsrf(
+        @Autowired final MockMvc mvc, @Autowired final DSLContext ctx
+    ) throws Exception {
+        Assertions.assertEquals(
+            HttpStatus.FORBIDDEN.value(),
+            mvc.perform(
+                MockMvcRequestBuilders.post(
+                    "/schools/{school}/schedules",
+                    new SlsPostgres(ctx).create(
+                        new SlInputName(new SlInput(), "Школа проверки CSRF")
+                    ).uid()
+                ).accept("application/vnd.surok.schedule-v1+json")
+                    .contentType("application/vnd.surok.schedule-v1+json")
+                    .content("{\"name\":\"Year\"}").with(
+                        SecurityMockMvcRequestPostProcessors.httpBasic(
+                            SecurityConfigTest.administrator(ctx).credentials().username(),
+                            "ValidPassword1!"
+                        )
+                    )
+            ).andReturn().getResponse().getStatus(),
+            "Basic authentication bypassed CSRF protection"
         );
     }
 
