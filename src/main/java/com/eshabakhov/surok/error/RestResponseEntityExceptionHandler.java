@@ -3,7 +3,6 @@
  */
 package com.eshabakhov.surok.error;
 
-import com.eshabakhov.surok.controller.api.ScheduleRequiredFieldException;
 import com.eshabakhov.surok.federal.curriculum.input.CurriculumInputException;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RequirementInputException;
 import com.eshabakhov.surok.school.SchoolFailedCreateException;
@@ -17,7 +16,9 @@ import com.eshabakhov.surok.school.building.cabinet.input.CabinetInputException;
 import com.eshabakhov.surok.school.building.input.BuildingInputException;
 import com.eshabakhov.surok.school.input.SchoolInputException;
 import com.eshabakhov.surok.school.schedule.ScheduleAlreadyExistsException;
+import com.eshabakhov.surok.school.schedule.ScheduleFailedCreateException;
 import com.eshabakhov.surok.school.schedule.ScheduleNotFoundException;
+import com.eshabakhov.surok.school.schedule.input.ScheduleInputException;
 import com.eshabakhov.surok.school.schedule.load.LoadAlreadyExistsException;
 import com.eshabakhov.surok.school.schedule.load.LoadFailedCreateException;
 import com.eshabakhov.surok.school.schedule.load.LoadNotFoundException;
@@ -87,7 +88,7 @@ public final class RestResponseEntityExceptionHandler {
             SchoolInputException.class,
             BuildingInputException.class,
             CabinetInputException.class,
-            ScheduleRequiredFieldException.class,
+            ScheduleInputException.class,
             SchoolClassInputException.class,
             SubjectInputException.class,
             TeacherInputException.class,
@@ -177,6 +178,7 @@ public final class RestResponseEntityExceptionHandler {
             SchoolFailedCreateException.class,
             SchoolClassFailedCreateException.class,
             LoadFailedCreateException.class,
+            ScheduleFailedCreateException.class,
             SubjectFailedCreateException.class,
             TeacherFailedCreateException.class
         }

@@ -35,11 +35,19 @@
                 <xsl:for-each select="$school/schedules/schedule">
                     <a class="sidebar-schedule-link"
                        href="{$school-path}/schedules/{id}" title="{name}">
+                        <xsl:if test="id = /surok/schedule/id">
+                            <xsl:attribute name="class">sidebar-schedule-link active</xsl:attribute>
+                        </xsl:if>
                         <span><xsl:value-of select="name"/></span>
                     </a>
                     <xsl:if test="id = /surok/schedule/id">
                         <a class="sidebar-subnav-link active" title="Учебная нагрузка"
-                           href="{$school-path}/schedules/{id}/loads">Учебная нагрузка</a>
+                           href="{$school-path}/schedules/{id}/loads">
+                            <xsl:if test="not(/surok/loads)">
+                                <xsl:attribute name="class">sidebar-subnav-link</xsl:attribute>
+                            </xsl:if>
+                            <xsl:text>Учебная нагрузка</xsl:text>
+                        </a>
                     </xsl:if>
                 </xsl:for-each>
             </div>

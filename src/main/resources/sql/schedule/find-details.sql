@@ -1,3 +1,3 @@
-SELECT schedule.id, schedule.name
+SELECT *
 FROM public.schedule
-WHERE schedule.id = ?
+WHERE schedule.id = ? AND schedule.is_deleted = ?
