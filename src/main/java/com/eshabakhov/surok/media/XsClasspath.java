@@ -65,7 +65,7 @@ public final class XsClasspath implements Xslt {
                     new StreamResult(output)
                 );
             }
-            return output.toString();
+            return new HtmlOutput().apply(output.toString());
         } catch (final IOException | TransformerException err) {
             throw new IllegalStateException(
                 String.format("Failed to transform %s", this.resource), err

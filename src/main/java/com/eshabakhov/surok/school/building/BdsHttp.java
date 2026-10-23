@@ -445,7 +445,10 @@ public class BdsHttp {
             new SlsBrief(new SlsPostgres(this.ctx)),
             new CsToken((CsrfToken) request.getAttribute(CsrfToken.class.getName()))
         ).print(
-            new MdXslt(new MdXml("surok"), new XsClasspath("xslt/buildings.xsl", view))
+            new MdXslt(
+                new MdXml("surok").with("path", request.getRequestURI()),
+                new XsClasspath("xslt/buildings.xsl", view)
+            )
         ).with("school", new SlBrief(school))
             .with("error", request.getParameter("error") != null);
     }

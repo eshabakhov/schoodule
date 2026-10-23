@@ -23,7 +23,7 @@ final class XsSchoolClassesTest {
         MatcherAssert.assertThat(
             XsSchoolClassesTest.page(view),
             Matchers.allOf(
-                Matchers.containsString("name=\"_csrf\" value=\"token\""),
+                Matchers.containsString("name=\"_csrf\" type=\"hidden\" value=\"token\""),
                 Matchers.containsString("id=\"grade-name\" name=\"grade\" type=\"number\""),
                 Matchers.containsString("id=\"litera-name\" name=\"litera\""),
                 Matchers.containsString("Укажите параллель от 1 до 11 и непустую литеру"),

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:template name="page-description">Surok - система управления школьными расписаниями</xsl:template>
-    <xsl:template name="canonical"/>
+    <xsl:template name="canonical">
+        <link rel="canonical" href="{concat('https://surok.com', /surok/path)}"/>
+    </xsl:template>
     <xsl:template name="base-styles"><link rel="stylesheet" href="/css/main.css"/></xsl:template>
     <xsl:template name="sidebar"/>
 

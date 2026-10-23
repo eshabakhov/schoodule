@@ -3,7 +3,13 @@
  */
 package com.eshabakhov.surok.error;
 
+import com.eshabakhov.surok.federal.curriculum.CurriculumAlreadyExistsException;
+import com.eshabakhov.surok.federal.curriculum.CurriculumFailedCreateException;
+import com.eshabakhov.surok.federal.curriculum.CurriculumNotFoundException;
 import com.eshabakhov.surok.federal.curriculum.input.CurriculumInputException;
+import com.eshabakhov.surok.federal.curriculum.requirement.RequirementAlreadyExistsException;
+import com.eshabakhov.surok.federal.curriculum.requirement.RequirementFailedCreateException;
+import com.eshabakhov.surok.federal.curriculum.requirement.RequirementNotFoundException;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RequirementInputException;
 import com.eshabakhov.surok.school.SchoolFailedCreateException;
 import com.eshabakhov.surok.school.SchoolNotFoundException;
@@ -35,16 +41,18 @@ import com.eshabakhov.surok.school.teacher.TeacherAlreadyExistsException;
 import com.eshabakhov.surok.school.teacher.TeacherFailedCreateException;
 import com.eshabakhov.surok.school.teacher.TeacherNotFoundException;
 import com.eshabakhov.surok.school.teacher.input.TeacherInputException;
-import java.time.Instant;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
  * Global exception handler for REST controllers.
@@ -58,28 +66,28 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @SuppressWarnings(
     "PMD.ProhibitPublicStaticMethods"
 )
-public final class RestResponseEntityExceptionHandler {
+public final class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
     private RestResponseEntityExceptionHandler() { }
 
     /**
      * Handle a missing request header.
      *
+     * @param request Incoming request
      * @param exception Missing header exception
      * @return Bad request response
      */
     @ExceptionHandler(MissingRequestHeaderException.class)
-    public static ResponseEntity<Object> handleMissingRequestHeaderException(
-        final MissingRequestHeaderException exception
+    public static ResponseEntity<String> handleMissingRequestHeaderException(
+        final HttpServletRequest request, final MissingRequestHeaderException exception
     ) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(new SimpleError(exception.getMessage(), Instant.now()));
+        return new ErHttp(request, HttpStatus.BAD_REQUEST, exception.getMessage()).response();
     }
 
     /**
      * Handle an invalid client request.
      *
+     * @param request Incoming request
      * @param exception Client request exception
      * @return Bad request response
      */
@@ -97,22 +105,22 @@ public final class RestResponseEntityExceptionHandler {
             RequirementInputException.class
         }
     )
-    public static ResponseEntity<Object> handleClientException(final Exception exception) {
-        return ResponseEntity
-            .badRequest()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(new SimpleError(exception.getMessage(), Instant.now()));
+    public static ResponseEntity<String> handleClientException(
+        final HttpServletRequest request, final Exception exception
+    ) {
+        return new ErHttp(request, HttpStatus.BAD_REQUEST, exception.getMessage()).response();
     }
 
     /**
      * Handle a missing resource.
      *
-     * @param model View model
-     * @return Not-found template name
+     * @param request Incoming request
+     * @return Not-found response
      */
-    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(
         {
+            CurriculumNotFoundException.class,
+            RequirementNotFoundException.class,
             BuildingNotFoundException.class,
             CabinetNotFoundException.class,
             SchoolNotFoundException.class,
@@ -123,34 +131,34 @@ public final class RestResponseEntityExceptionHandler {
             TeacherNotFoundException.class
         }
     )
-    public static String handleNotFoundException(final Model model) {
-        model.addAttribute("message", "Запрашиваемый объект не найден");
-        return "error/404";
+    public static ResponseEntity<String> handleNotFoundException(final HttpServletRequest request) {
+        return new ErHttp(request, HttpStatus.NOT_FOUND).response();
     }
 
     /**
      * Handle an invalid method argument type.
      *
-     * @param exception Type mismatch exception
+     * @param request Incoming request
      * @return Not acceptable response
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public static ResponseEntity<Object> handleMethodArgumentTypeMismatchException(
-        final MethodArgumentTypeMismatchException exception
+    public static ResponseEntity<String> handleMethodArgumentTypeMismatchException(
+        final HttpServletRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(new SimpleError(exception.getMessage(), Instant.now()));
+        return new ErHttp(request, HttpStatus.NOT_ACCEPTABLE).response();
     }
 
     /**
      * Handle a resource conflict.
      *
+     * @param request Incoming request
      * @param exception Conflict exception
      * @return Conflict response
      */
     @ExceptionHandler(
         {
+            CurriculumAlreadyExistsException.class,
+            RequirementAlreadyExistsException.class,
             BuildingAlreadyExistsException.class,
             CabinetAlreadyExistsException.class,
             ScheduleAlreadyExistsException.class,
@@ -160,20 +168,22 @@ public final class RestResponseEntityExceptionHandler {
             TeacherAlreadyExistsException.class
         }
     )
-    public static ResponseEntity<Object> handleConflictException(final Exception exception) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(new SimpleError(exception.getMessage(), Instant.now()));
+    public static ResponseEntity<String> handleConflictException(
+        final HttpServletRequest request, final Exception exception
+    ) {
+        return new ErHttp(request, HttpStatus.CONFLICT, exception.getMessage()).response();
     }
 
     /**
      * Handle an internal server error.
      *
-     * @param exception Server exception
+     * @param request Incoming request
      * @return Internal server error response
      */
     @ExceptionHandler(
         {
+            CurriculumFailedCreateException.class,
+            RequirementFailedCreateException.class,
             CabinetFailedCreateException.class,
             SchoolFailedCreateException.class,
             SchoolClassFailedCreateException.class,
@@ -183,10 +193,19 @@ public final class RestResponseEntityExceptionHandler {
             TeacherFailedCreateException.class
         }
     )
-    public static ResponseEntity<Object> handleServerException(final Exception exception) {
-        return ResponseEntity
-            .internalServerError()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(new SimpleError(exception.getMessage(), Instant.now()));
+    public static ResponseEntity<String> handleServerException(final HttpServletRequest request) {
+        return new ErHttp(request, HttpStatus.INTERNAL_SERVER_ERROR).response();
+    }
+
+    @Override
+    public ResponseEntity<Object> createResponseEntity(
+        final Object body, final HttpHeaders headers, final HttpStatusCode status,
+        final WebRequest request
+    ) {
+        final ResponseEntity<String> error = new ErHttp(
+            ((ServletWebRequest) request).getRequest(), HttpStatus.valueOf(status.value())
+        ).response();
+        return ResponseEntity.status(status).headers(headers).headers(error.getHeaders())
+            .body(error.getBody());
     }
 }

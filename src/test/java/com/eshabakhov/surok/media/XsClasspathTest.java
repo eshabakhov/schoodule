@@ -147,7 +147,7 @@ final class XsClasspathTest {
             Matchers.allOf(
                 Matchers.containsString("class=\"error-message\""),
                 Matchers.containsString("Название не может быть пустым"),
-                Matchers.containsString("name=\"_csrf\" value=\"token\"")
+                Matchers.containsString("name=\"_csrf\" type=\"hidden\" value=\"token\"")
             )
         );
     }

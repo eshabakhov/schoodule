@@ -57,7 +57,7 @@ public final class UrBrief implements User {
             .with("username", this.credentials().username())
             .with("admin", this.isAdmin()).with(
             "subscription",
-            this.roles().list().stream().anyMatch(
+            !this.info().corporate() && !this.isAdmin() && this.roles().list().stream().anyMatch(
                 role -> Set.of(
                     "BASIC_MAKER",
                     "ADVANCED_MAKER",

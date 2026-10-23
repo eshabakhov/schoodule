@@ -8,7 +8,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.DispatcherType;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -17,7 +17,6 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -30,7 +29,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
@@ -134,15 +132,10 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth.anyRequest().authenticated()).exceptionHandling(
-                exceptions -> exceptions.authenticationEntryPoint(
-                    (request, response, auth) ->
-                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
-                    ).accessDeniedHandler(
-                        (request, response, denied) ->
-                            response.sendError(HttpServletResponse.SC_FORBIDDEN)
-                    )
+                exceptions -> exceptions.authenticationEntryPoint(new ScError())
+                    .accessDeniedHandler(new ScError())
             )
-            .httpBasic(Customizer.withDefaults())
+            .httpBasic(basic -> basic.authenticationEntryPoint(new ScError()))
             .build();
     }
 
@@ -170,11 +163,13 @@ public class SecurityConfig {
         );
         data.setIgnoredMediaTypes(Set.of(MediaType.ALL));
         return http
-            .httpBasic(Customizer.withDefaults()).cors(Customizer.withDefaults()).csrf(
+            .httpBasic(basic -> basic.authenticationEntryPoint(new ScError()))
+            .cors(Customizer.withDefaults()).csrf(
                 csrf -> csrf
                     .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             ).authorizeHttpRequests(
                 auth -> {
+                    auth.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll();
                     auth.requestMatchers(
                         "/users/login",
                         "/users/register",
@@ -237,13 +232,10 @@ public class SecurityConfig {
                     .logoutSuccessUrl("/users/login?logout")
             ).exceptionHandling(
                 exceptions -> exceptions.defaultAuthenticationEntryPointFor(
-                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), data
+                    new ScError(), data
                 ).defaultAuthenticationEntryPointFor(
                     new LoginUrlAuthenticationEntryPoint("/users/login"), wildcard
-                ).accessDeniedHandler(
-                    (request, response, denied) ->
-                        response.sendError(HttpServletResponse.SC_FORBIDDEN)
-                    )
+                ).accessDeniedHandler(new ScError())
             )
             .build();
     }

@@ -236,7 +236,7 @@
                     <xsl:if test="not(/surok/message) or /surok/message = ''"><xsl:attribute name="hidden">hidden</xsl:attribute></xsl:if>
                     <xsl:value-of select="/surok/message"/>
                 </div>
-                <div class="divider"><span></span></div>
+                <div class="divider"><span>или</span></div>
                 <div class="register-link">
                     Уже есть аккаунт?
                     <a href="/users/login" title="Войти в систему">

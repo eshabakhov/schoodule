@@ -105,7 +105,8 @@ public final class AuthHttp {
         throws Exception {
         new AcHttp(request).type();
         return new MdXslt(
-            new MdXml("surok"), new XsClasspath("xslt/authentication.xsl", view)
+            new MdXml("surok").with("path", request.getRequestURI()),
+            new XsClasspath("xslt/authentication.xsl", view)
         ).with(
             "csrf", new CsToken((CsrfToken) request.getAttribute(CsrfToken.class.getName()))
         ).with("error", request.getParameter("error"))

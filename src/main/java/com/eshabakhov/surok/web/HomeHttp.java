@@ -54,8 +54,10 @@ public final class HomeHttp {
             target = String.format("/schools/%d", user.info().school());
         }
         return ResponseEntity.ok().contentType(new MediaType(type, StandardCharsets.UTF_8)).body(
-            new MdXslt(new MdXml("surok"), new XsClasspath("xslt/home.xsl", "home"))
-                .with("url", target).print()
+            new MdXslt(
+                new MdXml("surok").with("path", request.getRequestURI()),
+                new XsClasspath("xslt/home.xsl", "home")
+            ).with("url", target).print()
         );
     }
 }

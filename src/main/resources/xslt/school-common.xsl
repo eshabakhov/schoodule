@@ -10,6 +10,7 @@
     <xsl:variable name="school-path" select="concat('/schools/', $school/id)"/>
 
     <xsl:template name="school-navigation">
+        <xsl:if test="$school/id">
         <div class="sidebar-section">
             <a class="sidebar-school-link" href="{$school-path}" title="Перейти к школе">
                 <xsl:value-of select="$school/name"/>
@@ -145,6 +146,7 @@
                     </div>
                 </xsl:if>
             </div>
+        </xsl:if>
         </xsl:if>
     </xsl:template>
     <xsl:template name="name-sort">

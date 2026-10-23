@@ -334,6 +334,11 @@ public class CrsHttp {
             ),
             new SlsBrief(new SlsPostgres(this.ctx)),
             new CsToken((CsrfToken) request.getAttribute(CsrfToken.class.getName()))
-        ).print(new MdXslt(new MdXml("surok"), new XsClasspath(stylesheet, view)));
+        ).print(
+            new MdXslt(
+                new MdXml("surok").with("path", request.getRequestURI()),
+                new XsClasspath(stylesheet, view)
+            )
+        );
     }
 }

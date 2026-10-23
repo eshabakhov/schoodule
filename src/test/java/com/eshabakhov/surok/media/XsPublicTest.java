@@ -23,10 +23,10 @@ final class XsPublicTest {
         MatcherAssert.assertThat(
             XsPublicTest.page(view),
             Matchers.allOf(
-                Matchers.containsString("name=\"_csrf\" value=\"token\""),
+                Matchers.containsString("name=\"_csrf\" type=\"hidden\" value=\"token\""),
                 Matchers.containsString("name=\"_csrf_header\" content=\"X-CSRF-TOKEN\""),
                 Matchers.containsString("href=\"/css/login.css\""),
-                Matchers.containsString("type=\"module\" src=\"/js/authentication.js\""),
+                Matchers.containsString("src=\"/js/authentication.js\" type=\"module\""),
                 Matchers.containsString("eye-icon eye-on is-hidden"),
                 Matchers.not(Matchers.containsString("<aside")),
                 Matchers.not(Matchers.containsString("app-header")),

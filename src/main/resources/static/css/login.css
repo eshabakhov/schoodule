@@ -215,6 +215,10 @@ input:focus {
     animation: fade-in 0.2s ease both;
 }
 
+.alert[hidden] {
+    display: none;
+}
+
 @keyframes fade-in {
     from {
         opacity: 0;
