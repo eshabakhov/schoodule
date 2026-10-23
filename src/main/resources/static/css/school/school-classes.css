@@ -1,0 +1,144 @@
+.school-classes-add {
+    text-decoration: none;
+}
+
+.school-classes-add svg {
+    width: 15px;
+    height: 15px;
+}
+
+.school-classes-content {
+    display: grid;
+    grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+}
+
+.school-classes-search {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+.school-classes-results {
+    display: contents;
+}
+
+.school-classes-sort-controls {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.school-classes-sort {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .375rem;
+    min-height: 34px;
+    padding: .375rem .75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--muted-fg);
+    font-size: .8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--ease), color var(--ease), border-color var(--ease);
+}
+
+.school-classes-sort:hover {
+    background: var(--accent);
+    color: var(--fg);
+}
+
+.school-classes-sort.active {
+    border-color: var(--primary);
+    color: var(--fg);
+}
+
+.school-classes-sort-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1em;
+    line-height: 1;
+}
+
+.school-classes-content .card-grid,
+.school-classes-content .pagination-wrap {
+    grid-column: 1 / -1;
+}
+
+.school-classes-empty {
+    grid-column: 1 / -1;
+    padding: 3rem;
+    color: var(--muted-fg);
+    text-align: center;
+}
+
+.school-class-card {
+    cursor: pointer;
+}
+
+.school-class-details-heading {
+    margin-bottom: 1.5rem;
+}
+
+.school-class-delete,
+.school-class-delete:hover {
+    border-color: var(--error-border);
+    background: var(--error-bg);
+    color: var(--destructive);
+}
+
+.school-class-form-heading {
+    justify-content: center;
+}
+
+.school-class-form-heading h1 {
+    margin: 0;
+}
+
+.school-class-form-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.school-class-form-wrap {
+    max-width: 480px;
+    margin-inline: auto;
+}
+
+.school-class-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.school-class-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+    font-size: .875rem;
+    font-weight: 500;
+}
+
+.school-class-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .75rem;
+    margin-top: .25rem;
+}
+
+@media (width <= 900px) {
+    .school-classes-content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .school-classes-sort {
+        width: 100%;
+    }
+}

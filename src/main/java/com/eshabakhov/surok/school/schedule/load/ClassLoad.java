@@ -3,68 +3,28 @@
  */
 package com.eshabakhov.surok.school.schedule.load;
 
-import com.eshabakhov.surok.Jsonable;
-import com.eshabakhov.surok.school.SchoolClass;
-import com.eshabakhov.surok.school.Subject;
+import com.eshabakhov.surok.Printable;
 
 /**
- * Teaching load assigned to a school class for a subject.
- *
- * <p>Defines how many hours per week a specific class studies a subject.</p>
+ * A subject's weekly teaching load for a school class.
  *
  * @since 0.0.1
  */
-public interface ClassLoad extends Jsonable {
+public interface ClassLoad extends Printable {
 
     /**
-     * Returns the unique identifier of this class load.
+     * Load identifier.
      *
-     * @return Class load identifier
+     * @return Identifier
      */
     Long uid();
 
     /**
-     * Returns the school class.
+     * Revises all load fields atomically.
      *
-     * @return School class
+     * @param input Requested load fields
+     * @return Revised load
+     * @throws Exception If revision fails
      */
-    SchoolClass schoolClass();
-
-    /**
-     * Returns the subject.
-     *
-     * @return Subject
-     */
-    Subject subject();
-
-    /**
-     * Returns the number of hours per week planned for this subject.
-     *
-     * @return Hours per week
-     */
-    Integer hoursPerWeek();
-
-    /**
-     * Returns a new load assigned to the specified subject.
-     *
-     * @param subject New subject
-     * @return New load with changed subject
-     */
-    ClassLoad teach(Subject subject);
-
-    /**
-     * Returns a new load assigned to the specified school class.
-     *
-     * @param clazz New school class
-     * @return New load with changed school class
-     */
-    ClassLoad target(SchoolClass clazz);
-
-    /**
-     * Returns a new load with allocated weekly hours.
-     *
-     * @param hours New amount of hours per week
-     * @return New load with changed weekly hours
-     */
-    ClassLoad allocate(Integer hours);
+    ClassLoad revise(ClassLoadInput input) throws Exception;
 }

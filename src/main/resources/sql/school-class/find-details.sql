@@ -1,3 +1,3 @@
-SELECT school_class.id, school_class.litera, school_class.grade
+SELECT *
 FROM public.school_class
-WHERE school_class.id = ?
+WHERE school_class.id = ? AND school_class.is_deleted = ?

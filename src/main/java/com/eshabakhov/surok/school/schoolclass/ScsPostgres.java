@@ -3,12 +3,17 @@
  */
 package com.eshabakhov.surok.school.schoolclass;
 
+import com.eshabakhov.surok.Filters;
+import com.eshabakhov.surok.Media;
 import com.eshabakhov.surok.Page;
-import com.eshabakhov.surok.PageableList;
-import com.eshabakhov.surok.page.ResponsePageableList;
-import com.eshabakhov.surok.school.SchoolClass;
-import com.eshabakhov.surok.school.SchoolClasses;
+import com.eshabakhov.surok.PrItems;
+import com.eshabakhov.surok.Sorts;
+import com.eshabakhov.surok.page.ResponsePage;
+import com.eshabakhov.surok.school.schoolclass.filter.FlsCdSchoolClass;
+import com.eshabakhov.surok.school.schoolclass.input.MdScInput;
+import com.eshabakhov.surok.school.schoolclass.sort.StsJqSchoolClass;
 import com.eshabakhov.surok.sql.ClasspathSql;
+import java.util.Map;
 import lombok.EqualsAndHashCode;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -22,17 +27,16 @@ import org.jooq.impl.DSL;
  * @checkstyle LambdaBodyLengthCheck (1000 lines)
  */
 @EqualsAndHashCode
-@SuppressWarnings({"PMD.AvoidCatchingGenericException", "PMD.PreserveStackTrace"})
 public final class ScsPostgres implements SchoolClasses {
 
     /** JOOQ DSL context for executing database queries. */
     private final DSLContext ctx;
 
-    /** School ID. */
+    /** School id. */
     private final Long sid;
 
     /**
-     * New school classes collection.
+     * New classes collection.
      *
      * @param ctx Database context
      * @param sid School ID
@@ -44,113 +48,114 @@ public final class ScsPostgres implements SchoolClasses {
     }
 
     @Override
-    public SchoolClass create(final String litera, final Integer grade) throws Exception {
-        try {
-            return this.ctx.transactionResult(
-                config -> {
-                    final DSLContext ttx = DSL.using(config);
-                    if (ttx.resultQuery(
-                        new ClasspathSql("school-class/find-existing.sql").text(),
+    public SchoolClass create(final SchoolClassInput input) throws Exception {
+        final Map<String, String> fields = input.print(new MdScInput()).print();
+        return this.ctx.transactionResult(
+            config -> {
+                final DSLContext ttx = DSL.using(config);
+                if (ttx.resultQuery(
+                    new ClasspathSql("school-class/find-existing.sql").text(),
+                    this.sid,
+                    Integer.valueOf(fields.get("grade")),
+                    fields.get("litera"),
+                    false
+                ).fetchOne() == null) {
+                    final Record created = ttx.resultQuery(
+                        new ClasspathSql("school-class/create.sql").text(),
                         this.sid,
-                        grade,
-                        litera,
+                        Integer.valueOf(fields.get("grade")),
+                        fields.get("litera"),
                         false
-                    ).fetchOne() == null) {
-                        final Record created = ttx.resultQuery(
-                            new ClasspathSql("school-class/create.sql").text(),
-                            this.sid,
-                            grade,
-                            litera,
-                            false
-                        ).fetchOne();
-                        if (created == null) {
-                            throw new SchoolClassFailedCreateException();
-                        }
-                        return new ScPostgres(this.ctx, created.get("id", Long.class));
-                    } else {
-                        throw new SchoolClassAlreadyExistsException(
-                            String.format(
-                                "SchoolClass with `%d%s` already exists",
-                                grade, litera
-                            )
-                        );
+                    ).fetchOne();
+                    if (created == null) {
+                        throw new SchoolClassFailedCreateException();
                     }
+                    return new ScPostgres(this.ctx, created.get("id", Long.class));
+                } else {
+                    throw new SchoolClassAlreadyExistsException(
+                        String.format(
+                            "School class `%s%s` already exists",
+                            fields.get("grade"), fields.get("litera")
+                        )
+                    );
                 }
-            );
-            // @checkstyle IllegalCatchCheck (1 line)
-        } catch (final Exception ex) {
-            final Exception cause = (Exception) ex.getCause();
-            if (cause == null) {
-                throw ex;
             }
-            throw cause;
-        }
+        );
     }
 
     @Override
-    public SchoolClass clazz(final long clazzid) throws Exception {
+    public SchoolClass clazz(final long cid) throws Exception {
         final Record selected = this.ctx.resultQuery(
             new ClasspathSql("school-class/find-by-id-and-school-id.sql").text(),
-            clazzid,
+            cid,
             this.sid,
             false
         ).fetchOne();
         if (selected == null) {
             throw new SchoolClassNotFoundException(
-                String.format("SchoolClass `%s` not found", clazzid)
+                String.format("School class with id=%d not found", cid)
             );
         }
         return new ScPostgres(this.ctx, selected.get("id", Long.class));
     }
 
     @Override
-    public PageableList<SchoolClass> classes(
-        final Condition condition,
-        final Page page
+    public SchoolClasses selection(
+        final Filters filters,
+        final Page page,
+        final Sorts sorts
     ) throws Exception {
-        return new ResponsePageableList<>(
+        final Condition scoped = new FlsCdSchoolClass(filters).condition().and(
+            DSL.condition(
+                new ClasspathSql("school-class/conditions/by-school-id-and-is-deleted.sql").text(),
+                this.sid,
+                false
+            )
+        );
+        return new ScsSelected(
+            this,
             this.ctx.resultQuery(
                 new ClasspathSql("school-class/list.sql").text(),
-                condition.and(
-                    DSL.condition(
-                        new ClasspathSql("school-class/conditions/by-school-id.sql").text(),
-                        this.sid
-                    )
-                ),
+                scoped,
+                DSL.list(new StsJqSchoolClass(sorts).fields()),
                 DSL.val(page.limit()),
                 DSL.val((page.offset() - 1) * page.limit())
-            ).fetch(
-                selected ->
-                    new ScPostgres(this.ctx, selected.get("id", Long.class))
-            ),
-            this.ctx.resultQuery(
-                new ClasspathSql("school-class/count.sql").text(),
-                condition
-            ).fetchSingle(0, Integer.class),
-            page
+            ).fetch(selected -> new ScPostgres(this.ctx, selected.get("id", Long.class))),
+            new ResponsePage(
+                page,
+                this.ctx.resultQuery(
+                    new ClasspathSql("school-class/count.sql").text(), scoped
+                ).fetchSingle(0, Integer.class)
+            )
         );
     }
 
     @Override
-    public void remove(final long clazzid) throws Exception {
-        final Record clazz = this.ctx.resultQuery(
+    public Iterable<SchoolClass> iterate() {
+        return this.ctx.resultQuery(
+            new ClasspathSql("school-class/list-active.sql").text(), this.sid, false
+        ).fetch(selected -> new ScPostgres(this.ctx, selected.get("id", Long.class)));
+    }
+
+    @Override
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        return media.with(new PrItems("school-class", this.iterate()));
+    }
+
+    @Override
+    public void remove(final long cid) throws Exception {
+        if (this.ctx.resultQuery(
             new ClasspathSql("school-class/find-by-id-and-school-id.sql").text(),
-            clazzid,
+            cid,
             this.sid,
             false
-        ).fetchOne();
-        if (clazz == null) {
+        ).fetchOne() == null) {
             throw new SchoolClassNotFoundException(
-                String.format("SchoolClass with id=%d not found", clazzid)
+                String.format("School class with id=%d not found", cid)
             );
         }
-        this.ctx.transactionResult(
-            config ->
-                DSL.using(config).resultQuery(
-                    new ClasspathSql("school-class/soft-delete.sql").text(),
-                    true,
-                    clazzid
-                ).execute()
-        );
+        this.ctx.resultQuery(
+            new ClasspathSql("school-class/soft-delete.sql").text(), true, cid
+        ).execute();
     }
 }
