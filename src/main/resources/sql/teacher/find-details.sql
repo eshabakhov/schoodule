@@ -1,3 +1,3 @@
-SELECT teacher.id, teacher.name
+SELECT *
 FROM public.teacher
-WHERE teacher.id = ?
+WHERE teacher.id = ? AND teacher.is_deleted = ?

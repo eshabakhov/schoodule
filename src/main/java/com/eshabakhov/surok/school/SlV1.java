@@ -9,6 +9,7 @@ import com.eshabakhov.surok.Users;
 import com.eshabakhov.surok.school.building.Buildings;
 import com.eshabakhov.surok.school.schoolclass.SchoolClasses;
 import com.eshabakhov.surok.school.subject.Subjects;
+import com.eshabakhov.surok.school.teacher.Teachers;
 
 /**
  * Versioned school fields, for example {@code new SlV1(school).print(media)}.

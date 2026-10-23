@@ -1,4 +1,4 @@
 UPDATE public.teacher
 SET name = ?
-WHERE teacher.id = ?
+WHERE teacher.id = ? AND teacher.is_deleted = ?
 RETURNING id
