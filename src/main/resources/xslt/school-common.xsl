@@ -4,6 +4,7 @@
     <xsl:variable name="school" select="/surok/school"/>
     <xsl:variable name="building" select="/surok/building | /surok/buildings/building[$view = 'details' or $view = 'edit']"/>
     <xsl:variable name="cabinet" select="/surok/cabinets/cabinet[$view = 'details' or $view = 'edit']"/>
+    <xsl:variable name="clazz" select="/surok/classes/school-class[not(/surok/loads) and ($view = 'details' or $view = 'edit')]"/>
     <xsl:variable name="school-path" select="concat('/schools/', $school/id)"/>
 
     <xsl:template name="school-navigation">
@@ -34,6 +35,10 @@
                        href="{$school-path}/schedules/{id}" title="{name}">
                         <span><xsl:value-of select="name"/></span>
                     </a>
+                    <xsl:if test="id = /surok/schedule/id">
+                        <a class="sidebar-subnav-link active" title="Учебная нагрузка"
+                           href="{$school-path}/schedules/{id}/loads">Учебная нагрузка</a>
+                    </xsl:if>
                 </xsl:for-each>
             </div>
         </xsl:if>
@@ -64,6 +69,12 @@
                         </svg>
                         <span class="sidebar-link-label">Классы</span>
                     </a>
+        <xsl:if test="$clazz/id">
+            <div class="sidebar-subnav">
+                <a class="sidebar-subnav-link active" href="{$school-path}/classes/{$clazz/id}"
+                   title="Перейти к классу"><xsl:value-of select="$clazz/name"/></a>
+            </div>
+        </xsl:if>
         <a class="sidebar-link"
                        href="{$school-path}/subjects"
                        title="Предметы">

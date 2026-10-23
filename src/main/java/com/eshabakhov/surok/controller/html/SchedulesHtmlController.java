@@ -5,13 +5,18 @@ package com.eshabakhov.surok.controller.html;
 
 import com.eshabakhov.surok.PageableList;
 import com.eshabakhov.surok.School;
+import com.eshabakhov.surok.filter.FiltersRequest;
+import com.eshabakhov.surok.media.MdJson;
 import com.eshabakhov.surok.media.MdThymeleaf;
 import com.eshabakhov.surok.page.PageRequest;
 import com.eshabakhov.surok.school.Schedule;
 import com.eshabakhov.surok.school.SlWeb;
 import com.eshabakhov.surok.school.SlsPostgres;
+import com.eshabakhov.surok.sort.SortsRequest;
 import com.eshabakhov.surok.sql.ClasspathSql;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
@@ -267,9 +272,10 @@ public class SchedulesHtmlController {
             Map.of(
                 "school", new SlWeb(sch).print(new MdThymeleaf("", "")).print().getModel(),
                 "schedule", sched,
-                "classCount", sch.schoolClasses()
-                    .classes(DSL.trueCondition(), new PageRequest(Integer.MAX_VALUE, 1))
-                    .total(),
+                "classCount", sch.schoolClasses().selection(
+                    new FiltersRequest(Set.of()), new PageRequest(1, 1),
+                    new SortsRequest(List.of())
+                ).print(new MdJson()).print().path("page").path("total").asInt(),
                 "subjectCount", this.ctx.resultQuery(
                     new ClasspathSql("class-load/count-subjects.sql").text(),
                     DSL.countDistinct(

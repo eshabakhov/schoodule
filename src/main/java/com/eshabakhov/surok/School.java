@@ -4,11 +4,11 @@
 package com.eshabakhov.surok;
 
 import com.eshabakhov.surok.school.Schedules;
-import com.eshabakhov.surok.school.SchoolClasses;
 import com.eshabakhov.surok.school.SchoolInput;
 import com.eshabakhov.surok.school.Subjects;
 import com.eshabakhov.surok.school.Teachers;
 import com.eshabakhov.surok.school.building.Buildings;
+import com.eshabakhov.surok.school.schoolclass.SchoolClasses;
 
 /**
  * School domain entity interface.

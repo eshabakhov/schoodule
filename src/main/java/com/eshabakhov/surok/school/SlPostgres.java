@@ -10,6 +10,7 @@ import com.eshabakhov.surok.school.building.BdsPostgres;
 import com.eshabakhov.surok.school.building.Buildings;
 import com.eshabakhov.surok.school.input.MdSlInput;
 import com.eshabakhov.surok.school.schedule.SdsPostgres;
+import com.eshabakhov.surok.school.schoolclass.SchoolClasses;
 import com.eshabakhov.surok.school.schoolclass.ScsPostgres;
 import com.eshabakhov.surok.school.subject.SbsPostgres;
 import com.eshabakhov.surok.school.teacher.ThsPostgres;

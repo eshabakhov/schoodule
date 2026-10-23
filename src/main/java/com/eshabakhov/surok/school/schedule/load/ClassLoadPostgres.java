@@ -3,35 +3,38 @@
  */
 package com.eshabakhov.surok.school.schedule.load;
 
-import com.eshabakhov.surok.school.SchoolClass;
-import com.eshabakhov.surok.school.Subject;
-import com.eshabakhov.surok.school.schoolclass.ScPostgres;
-import com.eshabakhov.surok.school.subject.SbPostgres;
+import com.eshabakhov.surok.Media;
+import com.eshabakhov.surok.school.schedule.load.input.ClInputScoped;
+import com.eshabakhov.surok.school.schedule.load.input.LoadInputException;
+import com.eshabakhov.surok.school.schedule.load.input.MdClInput;
 import com.eshabakhov.surok.sql.ClasspathSql;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Map;
 import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
+import org.jooq.impl.DSL;
 
 /**
- * Postgres implementation of {@link ClassLoad}.
+ * Postgres teaching load, including names needed to display historical assignments.
+ *
+ * <p>Checked domain failures are unwrapped from transaction failures.</p>
  *
  * @since 0.0.1
- * @checkstyle LambdaBodyLengthCheck (1000 lines)
+ * @checkstyle LambdaBodyLengthCheck (100 lines)
  */
 public final class ClassLoadPostgres implements ClassLoad {
 
-    /** JOOQ DSL context for executing database queries. */
+    /** Database context. */
     private final DSLContext ctx;
 
     /** Load identifier. */
     private final Long lid;
 
     /**
-     * New class load.
+     * New load.
      *
      * @param ctx Database context
-     * @param lid Load ID
-     * @since 0.0.1
+     * @param lid Load identifier
      */
     public ClassLoadPostgres(final DSLContext ctx, final Long lid) {
         this.ctx = ctx;
@@ -44,94 +47,73 @@ public final class ClassLoadPostgres implements ClassLoad {
     }
 
     @Override
-    public SchoolClass schoolClass() {
-        return new ScPostgres(
-            this.ctx,
-            this.ctx.resultQuery(
-                new ClasspathSql("class-load/find-by-id.sql").text(),
-                this.lid
-            ).fetchOne("school_class_id", Long.class)
-        );
-    }
-
-    @Override
-    public Subject subject() {
-        return new SbPostgres(
-            this.ctx,
-            this.ctx.resultQuery(
-                new ClasspathSql("class-load/find-by-id.sql").text(),
-                this.lid
-            ).fetchOne("subject_id", Long.class)
-        );
-    }
-
-    @Override
-    public Integer hoursPerWeek() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("class-load/find-by-id.sql").text(),
-            this.lid
-        ).fetchOne("hours_per_week", Integer.class);
-    }
-
-    @Override
-    public ClassLoad teach(final Subject subject) {
-        this.ctx.resultQuery(
-            new ClasspathSql("class-load/teach.sql").text(),
-            subject.uid(),
-            this.lid
-        ).execute();
-        return new ClassLoadPostgres(this.ctx, this.lid);
-    }
-
-    @Override
-    public ClassLoad target(final SchoolClass cls) {
-        this.ctx.resultQuery(
-            new ClasspathSql("class-load/target.sql").text(),
-            cls.uid(),
-            this.lid
-        ).execute();
-        return new ClassLoadPostgres(this.ctx, this.lid);
-    }
-
-    @Override
-    public ClassLoad allocate(final Integer hours) {
-        this.ctx.resultQuery(
-            new ClasspathSql("class-load/allocate.sql").text(),
-            hours,
-            this.lid
-        ).execute();
-        return new ClassLoadPostgres(this.ctx, this.lid);
-    }
-
-    @Override
-    public ObjectNode json() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("class-load/find-details.sql").text(),
-            this.lid
-        ).fetchOne(
-            r -> {
-                final ObjectNode json = JsonNodeFactory.instance.objectNode();
-                json.put("id", r.get("id", Long.class));
-                json.set(
-                    "schoolClass",
-                    new ScPostgres(
-                        this.ctx,
-                        r.get("school_class_id", Long.class)
-                    ).json()
-                );
-                json.set(
-                    "subject",
-                    new SbPostgres(
-                        this.ctx,
-                        r.get("subject_id", Long.class)
-                    ).json()
-                );
-                json.put(
-                    "hoursPerWeek",
-                    r.get("hours_per_week", Integer.class)
-                );
-                return json;
+    @SuppressWarnings("PMD.PreserveStackTrace")
+    public ClassLoad revise(final ClassLoadInput input) throws Exception {
+        try {
+            return this.ctx.transactionResult(
+                config -> {
+                    final DSLContext transaction = DSL.using(config);
+                    final Record current = transaction.resultQuery(
+                        new ClasspathSql("class-load/find-by-id.sql").text(), this.lid
+                    ).fetchOne();
+                    if (current == null) {
+                        throw new LoadNotFoundException(
+                            String.format("Class load with id=%d not found", this.lid)
+                        );
+                    }
+                    final long schedule = current.get("schedule_id", Long.class);
+                    final Map<String, String> fields = new ClInputScoped(
+                        transaction, schedule, input
+                    ).print(new MdClInput()).print();
+                    final Record existing = transaction.resultQuery(
+                        new ClasspathSql("class-load/find-existing.sql").text(), schedule,
+                        Long.valueOf(fields.get("schoolClassId")),
+                        Long.valueOf(fields.get("subjectId"))
+                    ).fetchOne();
+                    if (existing != null && !this.lid.equals(existing.get("id", Long.class))) {
+                        throw new LoadAlreadyExistsException();
+                    }
+                    if (transaction.resultQuery(
+                        new ClasspathSql("class-load/revise.sql").text(),
+                        Long.valueOf(fields.get("schoolClassId")),
+                        Long.valueOf(fields.get("subjectId")),
+                        Integer.valueOf(fields.get("hoursPerWeek")), this.lid, schedule
+                    ).fetchOne() == null) {
+                        throw new LoadNotFoundException(
+                            String.format("Class load with id=%d not found", this.lid)
+                        );
+                    }
+                    return new ClassLoadPostgres(this.ctx, this.lid);
+                }
+            );
+        } catch (final DataAccessException exception) {
+            switch (exception.getCause()) {
+                case LoadAlreadyExistsException duplicate -> throw duplicate;
+                case LoadNotFoundException missing -> throw missing;
+                case LoadInputException invalid -> throw invalid;
+                case null, default -> throw exception;
             }
-        );
+        }
+    }
+
+    @Override
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("class-load/find-details.sql").text(), this.lid
+        ).fetchOne();
+        if (selected == null) {
+            throw new LoadNotFoundException(
+                String.format("Class load with id=%d not found", this.lid)
+            );
+        }
+        return media.with("id", selected.get("id", Long.class))
+            .with("schoolClassId", selected.get("school_class_id", Long.class)).with(
+                "schoolClassName", String.format(
+                    "%d%s", selected.get("class_grade", Integer.class),
+                    selected.get("class_litera", String.class)
+                )
+            ).with("subjectId", selected.get("subject_id", Long.class))
+            .with("subjectName", selected.get("subject_name", String.class))
+            .with("hoursPerWeek", selected.get("hours_per_week", Integer.class));
     }
 }

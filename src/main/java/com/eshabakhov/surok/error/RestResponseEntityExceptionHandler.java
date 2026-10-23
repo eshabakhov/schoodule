@@ -4,7 +4,6 @@
 package com.eshabakhov.surok.error;
 
 import com.eshabakhov.surok.controller.api.ScheduleRequiredFieldException;
-import com.eshabakhov.surok.controller.api.SchoolClassRequiredFieldException;
 import com.eshabakhov.surok.controller.api.SubjectRequiredFieldException;
 import com.eshabakhov.surok.controller.api.TeacherRequiredFieldException;
 import com.eshabakhov.surok.federal.curriculum.input.CurriculumInputException;
@@ -20,7 +19,15 @@ import com.eshabakhov.surok.school.building.cabinet.input.CabinetInputException;
 import com.eshabakhov.surok.school.building.input.BuildingInputException;
 import com.eshabakhov.surok.school.input.SchoolInputException;
 import com.eshabakhov.surok.school.schedule.ScheduleAlreadyExistsException;
+import com.eshabakhov.surok.school.schedule.ScheduleNotFoundException;
+import com.eshabakhov.surok.school.schedule.load.LoadAlreadyExistsException;
+import com.eshabakhov.surok.school.schedule.load.LoadFailedCreateException;
+import com.eshabakhov.surok.school.schedule.load.LoadNotFoundException;
+import com.eshabakhov.surok.school.schedule.load.input.LoadInputException;
 import com.eshabakhov.surok.school.schoolclass.SchoolClassAlreadyExistsException;
+import com.eshabakhov.surok.school.schoolclass.SchoolClassFailedCreateException;
+import com.eshabakhov.surok.school.schoolclass.SchoolClassNotFoundException;
+import com.eshabakhov.surok.school.schoolclass.input.SchoolClassInputException;
 import com.eshabakhov.surok.school.subject.SubjectAlreadyExistsException;
 import com.eshabakhov.surok.school.teacher.TeacherAlreadyExistsException;
 import com.eshabakhov.surok.school.teacher.TeacherFailedCreateException;
@@ -79,10 +86,11 @@ public final class RestResponseEntityExceptionHandler {
             BuildingInputException.class,
             CabinetInputException.class,
             ScheduleRequiredFieldException.class,
-            SchoolClassRequiredFieldException.class,
+            SchoolClassInputException.class,
             SubjectRequiredFieldException.class,
             TeacherRequiredFieldException.class,
             CurriculumInputException.class,
+            LoadInputException.class,
             RequirementInputException.class
         }
     )
@@ -105,6 +113,9 @@ public final class RestResponseEntityExceptionHandler {
             BuildingNotFoundException.class,
             CabinetNotFoundException.class,
             SchoolNotFoundException.class,
+            SchoolClassNotFoundException.class,
+            LoadNotFoundException.class,
+            ScheduleNotFoundException.class,
             TeacherNotFoundException.class
         }
     )
@@ -136,10 +147,10 @@ public final class RestResponseEntityExceptionHandler {
      */
     @ExceptionHandler(
         {
-            SchoolClassAlreadyExistsException.class,
             BuildingAlreadyExistsException.class,
             CabinetAlreadyExistsException.class,
             ScheduleAlreadyExistsException.class,
+            LoadAlreadyExistsException.class,
             SchoolClassAlreadyExistsException.class,
             SubjectAlreadyExistsException.class,
             TeacherAlreadyExistsException.class
@@ -161,6 +172,8 @@ public final class RestResponseEntityExceptionHandler {
         {
             CabinetFailedCreateException.class,
             SchoolFailedCreateException.class,
+            SchoolClassFailedCreateException.class,
+            LoadFailedCreateException.class,
             TeacherFailedCreateException.class
         }
     )

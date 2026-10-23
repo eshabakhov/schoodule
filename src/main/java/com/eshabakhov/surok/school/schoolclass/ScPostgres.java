@@ -3,109 +3,101 @@
  */
 package com.eshabakhov.surok.school.schoolclass;
 
-import com.eshabakhov.surok.school.SchoolClass;
+import com.eshabakhov.surok.Media;
+import com.eshabakhov.surok.school.schoolclass.input.MdScInput;
 import com.eshabakhov.surok.sql.ClasspathSql;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Map;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 /**
- * Postgres implementation of {@link SchoolClass}.
+ * Postgres school class.
  *
  * @since 0.0.1
+ * @checkstyle LambdaBodyLengthCheck (100 lines)
  */
 public final class ScPostgres implements SchoolClass {
 
     /** Database context. */
     private final DSLContext ctx;
 
-    /** School class id. */
-    private final Long clazzid;
+    /** Class identifier. */
+    private final Long id;
 
     /**
      * New school class.
      *
      * @param ctx Database context
-     * @param clazzid School class ID
-     * @since 0.0.1
+     * @param id Class identifier
      */
-    public ScPostgres(final DSLContext ctx, final Long clazzid) {
+    public ScPostgres(final DSLContext ctx, final Long id) {
         this.ctx = ctx;
-        this.clazzid = clazzid;
+        this.id = id;
     }
 
     @Override
     public Long uid() {
-        return this.clazzid;
+        return this.id;
     }
 
     @Override
-    public String name() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("school-class/find-name.sql").text(),
-            DSL.concat(
-                DSL.field(
-                    DSL.name("public", "school_class", "grade"),
-                    Integer.class
-                ).cast(String.class),
-                DSL.field(DSL.name("public", "school_class", "litera"), String.class)
-            ),
-            DSL.val(this.clazzid)
-        ).fetchOne(0, String.class);
-    }
-
-    @Override
-    public Integer grade() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("school-class/find-grade.sql").text(),
-            this.clazzid
-        ).fetchOneInto(Integer.class);
-    }
-
-    @Override
-    public String litera() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("school-class/find-litera.sql").text(),
-            this.clazzid
-        ).fetchOneInto(String.class);
-    }
-
-    @Override
-    public SchoolClass regraded(final Integer grade) {
-        return new ScPostgres(
-            this.ctx,
-            this.ctx.resultQuery(
-                new ClasspathSql("school-class/update-grade.sql").text(),
-                grade,
-                this.clazzid
-            ).fetchOne("id", Long.class)
+    public SchoolClass revise(final SchoolClassInput input) throws Exception {
+        final Map<String, String> fields = input.print(new MdScInput()).print();
+        return this.ctx.transactionResult(
+            config -> {
+                final DSLContext transaction = DSL.using(config);
+                final Record current = transaction.resultQuery(
+                    new ClasspathSql("school-class/find-details.sql").text(), this.id, false
+                ).fetchOne();
+                if (current == null) {
+                    throw new SchoolClassNotFoundException(
+                        String.format("School class with id=%d not found", this.id)
+                    );
+                }
+                final Record existing = transaction.resultQuery(
+                    new ClasspathSql("school-class/find-existing.sql").text(),
+                    current.get("school_id", Long.class),
+                    Integer.valueOf(fields.get("grade")), fields.get("litera"), false
+                ).fetchOne();
+                if (existing != null && !this.id.equals(existing.get("id", Long.class))) {
+                    throw new SchoolClassAlreadyExistsException(
+                        String.format(
+                            "School class `%s%s` already exists",
+                            fields.get("grade"), fields.get("litera")
+                        )
+                    );
+                }
+                final Long revised = transaction.resultQuery(
+                    new ClasspathSql("school-class/revise.sql").text(),
+                    Integer.valueOf(fields.get("grade")), fields.get("litera"), this.id, false
+                ).fetchOne("id", Long.class);
+                if (revised == null) {
+                    throw new SchoolClassNotFoundException(
+                        String.format("School class with id=%d not found", this.id)
+                    );
+                }
+                return new ScPostgres(this.ctx, revised);
+            }
         );
     }
 
     @Override
-    public SchoolClass reliterated(final String litera) {
-        return new ScPostgres(
-            this.ctx,
-            this.ctx.resultQuery(
-                new ClasspathSql("school-class/update-litera.sql").text(),
-                litera,
-                this.clazzid
-            ).fetchOne("id", Long.class)
-        );
-    }
-
-    @Override
-    public ObjectNode json() {
-        return this.ctx.resultQuery(
-            new ClasspathSql("school-class/find-details.sql").text(),
-            this.clazzid
-        ).fetchOne(
-            clazz ->
-                JsonNodeFactory.instance.objectNode()
-                    .put("id", clazz.get("id", Long.class))
-                    .put("grade", clazz.get("grade", Integer.class))
-                    .put("litera", clazz.get("litera", String.class))
-        );
+    public <T> Media<T> print(final Media<T> media) throws Exception {
+        final Record selected = this.ctx.resultQuery(
+            new ClasspathSql("school-class/find-details.sql").text(), this.id, false
+        ).fetchOne();
+        if (selected == null) {
+            throw new SchoolClassNotFoundException(
+                String.format("School class with id=%d not found", this.id)
+            );
+        }
+        return media.with("id", selected.get("id", Long.class)).with(
+            "name", String.format(
+                "%d%s", selected.get("grade", Integer.class),
+                selected.get("litera", String.class)
+            )
+        ).with("grade", selected.get("grade", Integer.class))
+            .with("litera", selected.get("litera", String.class));
     }
 }
