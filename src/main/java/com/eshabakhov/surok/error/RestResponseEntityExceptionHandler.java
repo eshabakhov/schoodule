@@ -4,7 +4,6 @@
 package com.eshabakhov.surok.error;
 
 import com.eshabakhov.surok.controller.api.ScheduleRequiredFieldException;
-import com.eshabakhov.surok.controller.api.SubjectRequiredFieldException;
 import com.eshabakhov.surok.controller.api.TeacherRequiredFieldException;
 import com.eshabakhov.surok.federal.curriculum.input.CurriculumInputException;
 import com.eshabakhov.surok.federal.curriculum.requirement.input.RequirementInputException;
@@ -29,6 +28,9 @@ import com.eshabakhov.surok.school.schoolclass.SchoolClassFailedCreateException;
 import com.eshabakhov.surok.school.schoolclass.SchoolClassNotFoundException;
 import com.eshabakhov.surok.school.schoolclass.input.SchoolClassInputException;
 import com.eshabakhov.surok.school.subject.SubjectAlreadyExistsException;
+import com.eshabakhov.surok.school.subject.SubjectFailedCreateException;
+import com.eshabakhov.surok.school.subject.SubjectNotFoundException;
+import com.eshabakhov.surok.school.subject.input.SubjectInputException;
 import com.eshabakhov.surok.school.teacher.TeacherAlreadyExistsException;
 import com.eshabakhov.surok.school.teacher.TeacherFailedCreateException;
 import com.eshabakhov.surok.school.teacher.TeacherNotFoundException;
@@ -87,7 +89,7 @@ public final class RestResponseEntityExceptionHandler {
             CabinetInputException.class,
             ScheduleRequiredFieldException.class,
             SchoolClassInputException.class,
-            SubjectRequiredFieldException.class,
+            SubjectInputException.class,
             TeacherRequiredFieldException.class,
             CurriculumInputException.class,
             LoadInputException.class,
@@ -116,6 +118,7 @@ public final class RestResponseEntityExceptionHandler {
             SchoolClassNotFoundException.class,
             LoadNotFoundException.class,
             ScheduleNotFoundException.class,
+            SubjectNotFoundException.class,
             TeacherNotFoundException.class
         }
     )
@@ -174,6 +177,7 @@ public final class RestResponseEntityExceptionHandler {
             SchoolFailedCreateException.class,
             SchoolClassFailedCreateException.class,
             LoadFailedCreateException.class,
+            SubjectFailedCreateException.class,
             TeacherFailedCreateException.class
         }
     )

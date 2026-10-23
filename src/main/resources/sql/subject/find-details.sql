@@ -1,3 +1,3 @@
-SELECT subject.id, subject.name
+SELECT *
 FROM public.subject
-WHERE subject.id = ?
+WHERE subject.id = ? AND subject.is_deleted = ?

@@ -92,7 +92,8 @@ final class XsLoadsTest {
                 Matchers.containsString("Учебный год"),
                 Matchers.not(Matchers.containsString("/buildings/7")),
                 Matchers.not(Matchers.containsString("/classes/7")),
-                Matchers.not(Matchers.containsString("/classes/10"))
+                Matchers.not(Matchers.containsString("/classes/10")),
+                Matchers.not(Matchers.containsString("/subjects/30"))
             )
         );
     }

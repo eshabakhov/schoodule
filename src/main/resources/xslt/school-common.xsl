@@ -5,6 +5,7 @@
     <xsl:variable name="building" select="/surok/building | /surok/buildings/building[$view = 'details' or $view = 'edit']"/>
     <xsl:variable name="cabinet" select="/surok/cabinets/cabinet[$view = 'details' or $view = 'edit']"/>
     <xsl:variable name="clazz" select="/surok/classes/school-class[not(/surok/loads) and ($view = 'details' or $view = 'edit')]"/>
+    <xsl:variable name="subject" select="/surok/subjects/subject[not(/surok/loads) and ($view = 'details' or $view = 'edit')]"/>
     <xsl:variable name="school-path" select="concat('/schools/', $school/id)"/>
 
     <xsl:template name="school-navigation">
@@ -88,6 +89,12 @@
                         </svg>
                         <span class="sidebar-link-label">Предметы</span>
                     </a>
+        <xsl:if test="$subject/id">
+            <div class="sidebar-subnav">
+                <a class="sidebar-subnav-link active" href="{$school-path}/subjects/{$subject/id}"
+                   title="Перейти к предмету"><xsl:value-of select="$subject/name"/></a>
+            </div>
+        </xsl:if>
         <a class="sidebar-link"
                        href="{$school-path}/buildings"
                        title="Корпусы">

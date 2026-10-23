@@ -1,1 +1,0 @@
-subject.school_id = ?
