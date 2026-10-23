@@ -461,7 +461,7 @@ public class ClsHttp {
         ).with("school", new SlBrief(school))
             .with("schedule", new SdBrief(schedule))
             .with("classes", school.schoolClasses())
-            .with("subjects", new ClSubjects(this.ctx, school.uid()))
+            .with("subjects", school.subjects())
             .with("error", request.getParameter("error"));
     }
 }
