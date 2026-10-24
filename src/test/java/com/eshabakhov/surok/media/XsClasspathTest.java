@@ -3,10 +3,16 @@
  */
 package com.eshabakhov.surok.media;
 
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -18,6 +24,50 @@ import org.junit.jupiter.params.provider.ValueSource;
  * @since 0.0.1
  */
 final class XsClasspathTest {
+
+    /**
+     * Verifies headers use build metadata even with unfiltered stylesheets.
+     *
+     * @param stylesheet Page stylesheet
+     * @param directory Isolated build metadata directory
+     * @throws Exception If metadata cannot be prepared or the page cannot be rendered
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"schools", "federal-curriculums"})
+    void displaysVersionFromBuildMetadata(
+        final String stylesheet, @TempDir final Path directory
+    ) throws Exception {
+        final String version = String.format("%s-SNAPSHOT", UUID.randomUUID());
+        Files.writeString(
+            Files.createDirectories(directory.resolve("META-INF"))
+                .resolve("build-info.properties"),
+            String.format("build.version=%s%n", version)
+        );
+        final Thread thread = Thread.currentThread();
+        @SuppressWarnings("PMD.UnnecessaryLocalRule")
+        final ClassLoader previous = thread.getContextClassLoader();
+        try (
+            URLClassLoader loader = new URLClassLoader(
+                new URL[]{
+                    directory.toUri().toURL(),
+                    Path.of("src", "main", "resources").toUri().toURL(),
+                },
+                ClassLoader.getPlatformClassLoader()
+            )
+        ) {
+            thread.setContextClassLoader(loader);
+            MatcherAssert.assertThat(
+                "Page header ignored the version in build metadata",
+                new XsClasspath(String.format("xslt/%s.xsl", stylesheet), "list")
+                    .transform("<surok><school><name>Лицей</name></school></surok>"),
+                Matchers.containsString(
+                    String.format("class=\"app-header-logo-version\">v%s</span>", version)
+                )
+            );
+        } finally {
+            thread.setContextClassLoader(previous);
+        }
+    }
 
     /** Verifies fragments do not contain the page layout. */
     @Test
@@ -147,7 +197,7 @@ final class XsClasspathTest {
             Matchers.allOf(
                 Matchers.containsString("class=\"error-message\""),
                 Matchers.containsString("Название не может быть пустым"),
-                Matchers.containsString("name=\"_csrf\" value=\"token\"")
+                Matchers.containsString("name=\"_csrf\" type=\"hidden\" value=\"token\"")
             )
         );
     }

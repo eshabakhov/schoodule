@@ -6,16 +6,13 @@ package com.eshabakhov.surok;
 import com.eshabakhov.surok.federal.curriculum.input.CrInput;
 import com.eshabakhov.surok.federal.curriculum.input.CrInputYear;
 import com.eshabakhov.surok.media.MdJson;
-import com.eshabakhov.surok.media.MdThymeleaf;
 import com.eshabakhov.surok.media.MdXml;
 import com.eshabakhov.surok.media.MdXslt;
 import com.eshabakhov.surok.media.XsClasspath;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.servlet.ModelAndView;
 
 /**
  * Tests media printing.
@@ -64,21 +61,6 @@ final class MediaTest {
                     "curriculum", List.of(new CrInputYear(new CrInput(), "2026/2027"))
                 )
             ).print()
-        );
-    }
-
-    @Test
-    void printsThymeleafView() {
-        final ModelAndView printed = new MdThymeleaf(
-            "schools/details", "school"
-        ).with("id", 1L).print();
-        Assertions.assertEquals(
-            "schools/details",
-            printed.getViewName()
-        );
-        Assertions.assertEquals(
-            1L,
-            ((Map<?, ?>) printed.getModel().get("school")).get("id")
         );
     }
 

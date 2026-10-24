@@ -23,7 +23,7 @@ final class XsTeachersTest {
         MatcherAssert.assertThat(
             XsTeachersTest.page(view),
             Matchers.allOf(
-                Matchers.containsString("name=\"_csrf\" value=\"token\""),
+                Matchers.containsString("name=\"_csrf\" type=\"hidden\" value=\"token\""),
                 Matchers.containsString("id=\"teacher-name\" name=\"name\""),
                 Matchers.containsString("Имя не может быть пустым"),
                 Matchers.containsString("href=\"/css/school/teachers.css\""),

@@ -457,7 +457,10 @@ public class ClsHttp {
             new SlsBrief(new SlsPostgres(this.ctx)),
             new CsToken((CsrfToken) request.getAttribute(CsrfToken.class.getName()))
         ).print(
-            new MdXslt(new MdXml("surok"), new XsClasspath("xslt/class-loads.xsl", view))
+            new MdXslt(
+                new MdXml("surok").with("path", request.getRequestURI()),
+                new XsClasspath("xslt/class-loads.xsl", view)
+            )
         ).with("school", new SlBrief(school))
             .with("schedule", new SdBrief(schedule))
             .with("classes", school.schoolClasses())

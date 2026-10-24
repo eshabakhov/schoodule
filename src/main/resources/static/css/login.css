@@ -1,5 +1,9 @@
 @import url("tokens.css");
 
+.eye-icon.is-hidden {
+    display: none;
+}
+
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -209,6 +213,10 @@ input:focus {
     margin-top: 0.875rem;
     border: 1px solid transparent;
     animation: fade-in 0.2s ease both;
+}
+
+.alert[hidden] {
+    display: none;
 }
 
 @keyframes fade-in {

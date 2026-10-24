@@ -353,7 +353,11 @@ public class SlsHttp {
                 (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()
             ), schools,
             new CsToken((CsrfToken) request.getAttribute(CsrfToken.class.getName()))
-        ).print(new MdXslt(new MdXml("surok"), new XsClasspath(stylesheet, view)))
-            .with("error", request.getParameter("error") != null);
+        ).print(
+            new MdXslt(
+                new MdXml("surok").with("path", request.getRequestURI()),
+                new XsClasspath(stylesheet, view)
+            )
+        ).with("error", request.getParameter("error") != null);
     }
 }

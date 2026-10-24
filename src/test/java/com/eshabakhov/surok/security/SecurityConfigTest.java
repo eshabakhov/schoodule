@@ -278,9 +278,9 @@ final class SecurityConfigTest {
     }
 
     /**
-     * Both template engines must display the version of the built artifact.
+     * XSLT pages must display the version of the built artifact.
      *
-     * @param path Thymeleaf or XSLT page
+     * @param path Page path
      * @param mvc HTTP client
      * @param ctx Database context
      * @throws Exception If the page cannot be rendered

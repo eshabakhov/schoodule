@@ -8,7 +8,7 @@
     "lint": "npm run lint:js && npm run lint:css && npm run lint:html",
     "lint:js": "eslint src/main/resources/static/js --max-warnings=0",
     "lint:css": "stylelint \"src/main/resources/static/css/**/*.css\"",
-    "lint:html": "htmlhint \"src/main/resources/templates/**/*.html\""
+    "lint:html": "java tools/RenderHtml.java && htmlhint \"target/html-lint/*.html\""
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -3,7 +3,7 @@
  */
 
 /**
- * Media implementations for JSON, XML, and Thymeleaf output.
+ * Media implementations for JSON, XML, and HTML output.
  *
  * @since 0.0.1
  */

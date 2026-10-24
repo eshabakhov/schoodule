@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:import href="web-common.xsl"/>
+    <xsl:output method="html" encoding="UTF-8" omit-xml-declaration="yes" doctype-system="about:legacy-compat"/>
+    <xsl:template match="/"><xsl:call-template name="page"/></xsl:template>
+    <xsl:template name="page-description">Surok - онлайн-сервис для составления школьных расписаний, управления учебными планами, учителями и кабинетами.</xsl:template>
+    <xsl:template name="canonical"><link rel="canonical" href="https://surok.com"/></xsl:template>
+    <xsl:template name="base-styles"><link rel="stylesheet" href="/css/tokens.css"/></xsl:template>
+    <xsl:template name="styles">
+        <link rel="stylesheet" href="/css/landing.css"/>
+        <link rel="stylesheet" href="/css/footer.css"/>
+    </xsl:template>
+    <xsl:template name="page-body">
+<div class="landing">
+    <header class="hero">
+        <h1>Surok</h1>
+        <p>Открой для себя новый опыт составления расписаний</p>
+        <a class="cta"
+           href="{/surok/url}"
+           title="Начать работу с расписаниями">
+            Открыть расписание
+        </a>
+    </header>
+    <main>
+        <section class="preview">
+            <div class="schedule-preview">
+                <div class="day">Пн</div>
+                <div class="lesson">1</div>
+                <div class="cell">Математика</div>
+                <div class="day">Пн</div>
+                <div class="lesson">2</div>
+                <div class="cell">Русский</div>
+                <div class="day">Вт</div>
+                <div class="lesson">1</div>
+                <div class="cell">История</div>
+            </div>
+        </section>
+        <section class="features">
+            <div class="feature">
+                <h3 class="feature-title">
+                    <svg fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <rect height="18" rx="2" width="16" x="4" y="3"/>
+                        <line x1="8" x2="16" y1="8"  y2="8"/>
+                        <line x1="8" x2="16" y1="12" y2="12"/>
+                        <line x1="8" x2="12" y1="16" y2="16"/>
+                    </svg>
+                    Учебные планы
+                </h3>
+                <p>Привязывайте предметы к классам</p>
+            </div>
+            <div class="feature">
+                <h3 class="feature-title">
+                    <svg fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="7" r="4"/>
+                        <path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>
+                    </svg>
+                    Учителя
+                </h3>
+                <p>Ведите справочник преподавателей школы</p>
+            </div>
+            <div class="feature">
+                <h3 class="feature-title">
+                    <svg fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <rect height="16" rx="2" width="18" x="3" y="4"/>
+                        <line x1="3" x2="21" y1="10" y2="10"/>
+                        <line x1="9" x2="9" y1="10" y2="20"/>
+                        <line x1="15" x2="15" y1="10" y2="20"/>
+                    </svg>
+                    Расписания
+                </h3>
+                <p>Составляйте онлайн и экспортируйте в удобный формат</p>
+            </div>
+            <div class="feature">
+                <h3 class="feature-title">
+                    <svg fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <line x1="4" x2="4" y1="20" y2="10"/>
+                        <line x1="10" x2="10" y1="20" y2="4"/>
+                        <line x1="16" x2="16" y1="20" y2="14"/>
+                        <line x1="22" x2="22" y1="20"  y2="8"/>
+                    </svg>
+                    Отчеты
+                </h3>
+                <p>Готовьте сводки по учебным планам</p>
+            </div>
+            <div class="feature">
+                <h3 class="feature-title">
+                    <svg fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <rect height="18" rx="2" width="12" x="6" y="3"/>
+                        <circle cx="14" cy="12" r="1"/>
+                    </svg>
+                    Кабинеты
+                </h3>
+                <p>Выбирайте без конфликтов и накладок</p>
+            </div>
+        </section>
+    </main>
+</div>
+        <xsl:call-template name="footer"/>
+    </xsl:template>
+</xsl:stylesheet>

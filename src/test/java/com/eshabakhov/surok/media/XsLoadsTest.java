@@ -23,7 +23,7 @@ final class XsLoadsTest {
         MatcherAssert.assertThat(
             XsLoadsTest.page(view),
             Matchers.allOf(
-                Matchers.containsString("name=\"_csrf\" value=\"token\""),
+                Matchers.containsString("name=\"_csrf\" type=\"hidden\" value=\"token\""),
                 Matchers.containsString("name=\"schoolClassId\""),
                 Matchers.containsString("name=\"subjectId\""),
                 Matchers.containsString("name=\"hoursPerWeek\""),
@@ -44,7 +44,7 @@ final class XsLoadsTest {
                 Matchers.containsString("action=\"/schools/3/schedules/9/loads/create\""),
                 Matchers.containsString("name=\"hoursPerWeek\""),
                 Matchers.containsString("value=\"\""),
-                Matchers.not(Matchers.containsString("selected=\"selected\""))
+                Matchers.not(Matchers.containsString("selected=\"\""))
             )
         );
     }
@@ -55,8 +55,8 @@ final class XsLoadsTest {
             XsLoadsTest.page("edit"),
             Matchers.allOf(
                 Matchers.containsString("action=\"/schools/3/schedules/9/loads/7/edit\""),
-                Matchers.containsString("value=\"10\" selected>5А</option>"),
-                Matchers.containsString("value=\"30\" selected>Математика</option>"),
+                Matchers.containsString("value=\"10\" selected=\"\">5А</option>"),
+                Matchers.containsString("value=\"30\" selected=\"\">Математика</option>"),
                 Matchers.containsString("value=\"5\""),
                 Matchers.containsString("Сохранить")
             )
@@ -68,7 +68,7 @@ final class XsLoadsTest {
         MatcherAssert.assertThat(
             XsLoadsTest.page("list"),
             Matchers.allOf(
-                Matchers.containsString("<dialog id=\"load-create-dialog\""),
+                Matchers.containsString("<dialog class=\"load-dialog\" id=\"load-create-dialog\""),
                 Matchers.containsString("aria-labelledby=\"load-dialog-title\""),
                 Matchers.containsString("data-open-load-dialog=\"true\""),
                 Matchers.containsString("data-close-load-dialog=\"true\""),

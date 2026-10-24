@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * Media that an object can print itself into.
- * Implementations define how data is rendered (JSON, Thymeleaf map, etc.).
+ * Implementations define how data is rendered (JSON, XML, or HTML).
  *
  * @param <T> Printed representation type
  * @since 0.0.1

@@ -23,7 +23,7 @@ final class XsSchedulesTest {
         MatcherAssert.assertThat(
             XsSchedulesTest.page(view),
             Matchers.allOf(
-                Matchers.containsString("name=\"_csrf\" value=\"token\""),
+                Matchers.containsString("name=\"_csrf\" type=\"hidden\" value=\"token\""),
                 Matchers.containsString("id=\"schedule-name\" name=\"name\""),
                 Matchers.containsString("Название не может быть пустым"),
                 Matchers.containsString("href=\"/css/school/schedules.css\""),

@@ -255,7 +255,7 @@ final class SlsHttpTest {
     }
 
     /**
-     * Verifies legacy Thymeleaf consumers accept the printed school model.
+     * Verifies nested XSLT pages accept the printed school model.
      *
      * @param path Page suffix
      */
@@ -264,10 +264,19 @@ final class SlsHttpTest {
     void preservesNestedSchoolPages(final String path) throws Exception {
         this.prepare();
         this.mvc.perform(
-            MockMvcRequestBuilders.get(String.format("/schools/3%s", path)).with(
-                SecurityMockMvcRequestPostProcessors.user(this.principal(Roles.RoleEnum.DIRECTOR))
+            MockMvcRequestBuilders.get(String.format("/schools/3%s", path))
+                .queryParam("unused", "ignored").with(
+                    SecurityMockMvcRequestPostProcessors.user(
+                        this.principal(Roles.RoleEnum.DIRECTOR)
+                    )
+                )
+        ).andExpect(MockMvcResultMatchers.status().isOk()).andExpect(
+            MockMvcResultMatchers.content().string(
+                Matchers.containsString(
+                    String.format("rel=\"canonical\" href=\"https://surok.com/schools/3%s\"", path)
+                )
             )
-        ).andExpect(MockMvcResultMatchers.status().isOk());
+        );
     }
 
     /** Prepares independent school fixtures before a scenario. */
