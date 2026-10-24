@@ -15,6 +15,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 /**
  * Classpath XSLT transformation.
@@ -60,6 +61,12 @@ public final class XsClasspath implements Xslt {
                     stylesheet
                 );
                 transformer.setParameter("view", this.view);
+                transformer.setParameter(
+                    "version",
+                    PropertiesLoaderUtils.loadProperties(
+                        new ClassPathResource("META-INF/build-info.properties")
+                    ).getProperty("build.version")
+                );
                 transformer.transform(
                     new StreamSource(source),
                     new StreamResult(output)

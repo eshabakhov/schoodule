@@ -129,7 +129,6 @@
 					<include>**/application*.yml</include>
 					<include>**/application*.yaml</include>
 					<include>**/application*.properties</include>
-					<include>xslt/web-common.xsl</include>
 				</includes>
 			</resource>
 			<resource>
@@ -139,7 +138,6 @@
 					<exclude>**/application*.yml</exclude>
 					<exclude>**/application*.yaml</exclude>
 					<exclude>**/application*.properties</exclude>
-					<exclude>xslt/web-common.xsl</exclude>
 				</excludes>
 			</resource>
 		</resources>

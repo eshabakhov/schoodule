@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:param name="version"/>
     <xsl:template name="page-description">Surok - система управления школьными расписаниями</xsl:template>
     <xsl:template name="canonical">
         <link rel="canonical" href="{concat('https://surok.com', /surok/path)}"/>
@@ -75,7 +76,7 @@
                    title="Перейти на главную страницу">
                     <xsl:call-template name="brand-mark"/>
                     <xsl:text>Surok</xsl:text>
-                    <span class="app-header-logo-version">v@project.version@</span>
+                    <span class="app-header-logo-version">v<xsl:value-of select="$version"/></span>
                 </a>
                 <h1 class="app-header-title">
                     <xsl:call-template name="page-title"/>
